@@ -1,0 +1,152 @@
+<!-- {{extend 'layout.html'}} -->
+<!-- {{block header}} -->
+<html>
+  <body>
+    <head>
+      <link rel="stylesheet" type="text/css" href="styles.css">
+    </head>
+<div style="background-color: #333; color:white; padding:30px">
+  <!-- <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} -->
+  <h1>Cognates Visualization Tool</h1>
+  </div>
+<!-- {{end}} -->
+
+<!--<h2>{{=URL('data')}}</h2>-->
+
+<!-- EDIT -->
+<!--{{extend 'layout.html'}}-->
+<div id="biggest-div" style="padding:5px">
+
+<!-- {{if 'message' in globals():}} -->
+<!-- <h2>{{=message}}</h2> -->
+<p>Enter a word below.</p>
+
+<script src='js/cytoscape.min.js'></script>
+<script src='js/jquery.js'></script>
+
+<!-- popper import imports -->
+<!--<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>-->
+<!-- <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popp0er.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script> -->
+<!-- <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script> -->
+
+<!-- dagre imports -->
+<script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+<!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
+<script src='js/wtf.min.js'></script>
+<script src=''></script>
+<!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
+
+<script src=js/first.js></script>
+<script src=ts/bin/second.js></script>
+
+<script src=js/graph.js></script>
+
+<form onsubmit="return false;">
+<input type="text" id="q1" name="q1" value=""/>
+<!--<INPUT type="text" id="q2" name="q2" value=""/>-->
+<!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
+<!--<INPUT type="text" id="q3" name="q3" value=""/>-->
+<!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
+<!--<INPUT type="text" id="q4" name="q4" value=""/>-->
+<input type="text" id="qlang" name="qlang" placeholder="Insert Target Language"/>
+<input type="submit" id="submitq" value="submit" onclick="onSubmit()"/>
+
+<br>
+<input type="button" value="clear graph" onclick="removeCyto();"/>
+
+     <!--onclick="alert('{{=URL('data')}}');onSubmit()"/>-->
+<!--"ajax('{{=URL('data')}}',['q1','q2','q3','q4'],'target');"-->
+<!--<p>{{=URL('data')}}</p>-->
+
+</form>
+
+
+<!-- <details> -->
+ <!-- <summary>Text Output</summary> -->
+ <!-- <div id="target">{{=quer}}</div> -->
+<div id='closeinspect'></div>
+
+<!-- </details> -->
+<div id="cycontainer">
+ <div id="cy"></div>
+</div>
+<div id="collectordiv">
+    <form action="javascript:void(0);">
+        <label for="cquery">Filter results by language: </label>
+        <input type="text" id="clang" name="qlang" value="English"/>
+        <input type="text" id="cquery" name="q1" placeholder="Enter an optional word"/>
+        <input type="button" id="submitc" value="Filter" onclick="onCollector()"/>
+    </form>
+</div>
+
+</div>
+<style>
+    #cy {
+        width: 100%;
+        height: 100%;
+        /*margin-top: 100px;*/
+        /*top: 100px;*/
+        /*left: 100px;*/
+    }
+    #cycontainer {
+        width: 60%;
+        height: 500px;
+        border: 1px solid black;
+    }
+</style>
+
+
+
+
+<!--script type="module"-->
+<script type="module">
+</script>
+
+
+
+<!-- /EDIT -->
+<p>Cognatetool icon is <a href="https://thenounproject.com/search/?q=network+tree&i=1569724">Tree Network Topology by Trevor Dsouza from the Noun Project</a></p>
+
+
+<details>
+  <summary>Debug</summary>
+  <div id="debug-target"></div>
+  <details>
+    <!-- <p class="lead">{{=T('How did you get here?')}}</p> -->
+    <ol>
+      <!-- <li>{{=T('Application success')}}</li> -->
+      <!-- <li>{{=XML(T('You visited the url %s', A(request.env.path_info,_href=request.env.path_info)))}}</li> -->
+      <!-- <li>{{=XML(T('Which called the function %s located in the file %s', -->
+        <!-- (A(request.function+'()',_href='#'), -->
+        <!-- A('web2py/applications/%(application)s/controllers/%(controller)s.py' % request, -->
+        <!-- _href=URL('admin','default','peek', args=(request.application,'controllers',request.controller+'.py'))))))}}</li> -->
+      <!-- <li>{{=XML(T('The output of the file is a dictionary that was rendered by the view %s', -->
+        <!-- A('web2py/applications/%(application)s/views/%(controller)s/index.html' % request, -->
+        <!-- _href=URL('admin','default','peek',args=(request.application,'views',request.controller,'index.html')))))}}</li> -->
+    </ol>
+</details>
+
+</details>
+<!-- </div> -->
+<div style="padding:50px">
+  <a class="btn btn-primary" href="{{=URL('admin','default','index', scheme='https')}}">
+    <i class="glyphicon glyphicon-cog"></i>
+    <!-- {{=T("admin")}} -->
+  </a>
+  <!-- <a class="btn btn-secondary" href="{{=URL('examples','default','index')}}">{{=T("Online examples")}}</a> -->
+  <!-- <a class="btn btn-secondary" href="http://web2py.com/book">{{=T('Documentation')}}</a> -->
+    <!-- <a class="btn btn-secondary" href="/">{{=T('Documentation')}}</a> -->
+  <!-- <a class="btn btn-secondary" href="{{=URL('default','api_get_user_email')}}">{{=T('API Example')}}</a> -->
+  <!-- <a class="btn btn-secondary" href="{{=URL('default','grid/auth_user')}}">{{=T('Grid Example')}}</a> -->
+  <!-- <a class="btn btn-secondary" href="{{=URL('default','wiki')}}">{{=T('Wiki Example')}}</a> -->
+</div>
+<!-- {{elif 'content' in globals():}} -->
+<!-- {{=content}} -->
+<!-- {{else:}} -->
+<!-- {{=BEAUTIFY(response._vars)}} -->
+<!-- {{pass}} -->
+</body>
+</html>

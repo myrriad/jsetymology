@@ -1,0 +1,2 @@
+npx tsc ts/*
+pause
