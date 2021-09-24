@@ -1,3 +1,14 @@
 #closeinspect {
     white-space: pre-wrap;
 }
+.template {
+    cursor: pointer;
+}
+.template.t-active {
+    background-color: #00FF0022; /*#0000FF22; /*#FF000022; /*#00FF0022;*/
+
+}
+.template.t-inactive {
+    background-color: #00000022;
+
+}

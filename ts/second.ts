@@ -196,18 +196,22 @@ function plop(entry: Section | EtyEntry, override=true) {
     for(let i=0;i<idxs.length;i++) {
         let idx = idxs[i];
         end = idx;
-        let textCont = document.createTextNode(t.slice(start, end));
-        let span = document.createElement('span');
-        span.appendChild(textCont);
-        $('#closeinspect')[0].appendChild(span);
+        let text = document.createTextNode(t.slice(start, end));
+        let textbox = document.createElement('span');
+        textbox.appendChild(text);
+        $('#closeinspect')[0].appendChild(textbox);
 
         start = end;
         end = start + lens[i];
-        let textTempl = document.createTextNode(t.slice(start, end));
-        let spanTempl = document.createElement('span');
-        spanTempl.setAttribute('style', 'background-color: #FF000022;');
-        spanTempl.appendChild(textTempl);
-        $('#closeinspect')[0].appendChild(spanTempl);
+        let ttext = t.slice(start, end);
+        let ttextNode = document.createTextNode(ttext);
+        let template = document.createElement('span');
+        // template.setAttribute('style', 'background-color: #FF000022;');
+        template.appendChild(ttextNode);
+        template.classList.add('template');
+        template.classList.add(findRelevance(ttext) ? 't-active' : 't-inactive');
+        template.onclick = () => onTemplateClicked(template);
+        $('#closeinspect')[0].appendChild(template);
         start = end;
     }
 }
@@ -255,4 +259,66 @@ function getTemplates(sec: Section | string) {
         }
     }
     return [idxs, lens];
+}
+
+
+
+function onTemplateClicked(templ: HTMLSpanElement) {
+
+    // templ.setAttribute('style', 'background-color: #FF000022;');
+    let isActive = !!templ.classList.contains('t-active');
+    if(isActive) templ.classList.remove('t-active');
+    if(!isActive) templ.classList.remove('t-inactive');
+    templ.classList.add(isActive ? 't-inactive' : 't-active');
+
+}
+
+function findRelevance(templatestr: str) {
+    // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
+    // makes a Mediawiki parser emulator
+    assert(templatestr.indexOf('}}') >= 0);
+    let pipe = templatestr.indexOf('|');
+    let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
+    let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
+
+    let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
+        'PIE root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
+        'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
+        'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
+
+    if (etys.includes(ttype)) return true; // Whitelist.
+
+
+    if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws', // Blacklist.
+        'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
+        'IPA', 'rfap', 'rfp'].includes(ttype)) return false;
+
+    for (let comb in ['quote', 'R:', 'Swadesh', 'ws ']) if (ttype.startsWith(comb)) return false;
+
+    // Form of.
+    let templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
+    // https://en.wiktionary.org/wiki/Category:Form-of_templates
+    // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
+    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
+    let frag = ttype;
+    let formFlag = false;
+    if (ttype.endsWith('-form')) {
+        frag = ttype.slice(-5); // take off the form
+        formFlag = true;
+        // pretty likely
+        console.log('Candidate: ' + ttype);
+    }
+    for (let pos in templPOS) if (frag.endsWith('-' + pos)) return true;
+
+    if (ttype.endsWith(' of')) return true; // many POSs end with ' of'.
+    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
+
+    if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
+        'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype)) return false;
+
+    if (templatestr.includes('-')) return true; // if it has a hyphen, there's a pretty good chance it's a lemma
+
+    // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
+
+    return false;
 }
