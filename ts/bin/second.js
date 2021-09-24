@@ -243,6 +243,8 @@ function getTemplates(sec) {
     return [idxs, lens];
 }
 function onTemplateClicked(templ) {
+    if (!$('#tb-toggle').is(':checked'))
+        return;
     // templ.setAttribute('style', 'background-color: #FF000022;');
     let isActive = !!templ.classList.contains('t-active');
     if (isActive)
@@ -250,6 +252,14 @@ function onTemplateClicked(templ) {
     if (!isActive)
         templ.classList.remove('t-inactive');
     templ.classList.add(isActive ? 't-inactive' : 't-active');
+}
+function onCheckbox() {
+    if ($('#tb-toggle').is(':checked')) {
+        $('.template').addClass('noSelect');
+    }
+    else {
+        $('.template').removeClass('noSelect');
+    }
 }
 function findRelevance(templatestr) {
     // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or

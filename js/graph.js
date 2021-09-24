@@ -75,27 +75,34 @@ function onSubmit(qy, qlang, downward) {
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     
-        gofetch(qy, qlang, function ondata(data2) {
-            // alert(data);
-            let idx;
-            if(data2.length > 1) {
-                let str = prompt(`${data2.length} different etymologies found! Pick one: `, '1');
-                idx = parseInt(str);
-                idx = isNaN(idx) ? 1 : idx;
-                idx = Math.max(1, Math.min(idx, data2.length));
-            } else if (data2.length === 1) {
-                idx = 1;
-            } else throw "No entries found!";
-            let etyentry = data2[idx - 1]; // idx start at 0 instead of 1.
-            // $('#target').text(data2);
-            plop(etyentry.ety, true);
-            for (let defn of etyentry.defns) plop(defn.defn, false);
-            return;
-        });
+    gofetch(qy, qlang, function ondata(data2) {
+        // alert(data);
+        let idx;
+        if(data2.length > 1) {
+            let str = prompt(`${data2.length} different etymologies found! Pick one: `, '1');
+            idx = parseInt(str);
+            idx = isNaN(idx) ? 1 : idx;
+            idx = Math.max(1, Math.min(idx, data2.length));
+        } else if (data2.length === 1) {
+            idx = 1;
+        } else throw "No entries found!";
+        let etyentry = data2[idx - 1]; // idx start at 0 instead of 1.
+        // $('#target').text(data2);
+        plop(etyentry.ety, true);
+        for (let defn of etyentry.defns) plop(defn.defn, false);
+        onCheckbox();
+    });
     
         // var graph = ondata();
     // clickToQuery();
 
+}
+function submitGraph() {
+    // homebrew graph creation.
+    // relies on second.ts
+    for(let temp of $('span.template.t-active')) {
+        // if(temp)
+    }
 }
 function testGraph(node_count) {
     var cy = window.cytograph;
@@ -321,7 +328,7 @@ function onCollector() {
 }
 function clickToQuery() {
     let cy = window.cytograph;
-    cy.unbind('click');  // always unbind before binding an event to prevent binding it twiche/multiple times
+    cy.unbind('click');  // unbind before binding an event to prevent binding it twice/multiple times
     cy.bind('click', 'node, edge', function(event) {
         // console.log("hi");
         // TODO: query
@@ -336,7 +343,7 @@ function clickToQuery() {
         console.log(target);
         let id = target[0]._private.data.id;
         console.log(id);
-        let as = id.split(",");
+        let as = id.split(", ");
         onSubmit(as[0], as[1]);
       }
     });

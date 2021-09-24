@@ -265,12 +265,22 @@ function getTemplates(sec: Section | string) {
 
 function onTemplateClicked(templ: HTMLSpanElement) {
 
+    if (!$('#tb-toggle').is(':checked')) return;
+
     // templ.setAttribute('style', 'background-color: #FF000022;');
     let isActive = !!templ.classList.contains('t-active');
     if(isActive) templ.classList.remove('t-active');
     if(!isActive) templ.classList.remove('t-inactive');
     templ.classList.add(isActive ? 't-inactive' : 't-active');
 
+}
+
+function onCheckbox() {
+    if($('#tb-toggle').is(':checked')) {
+        $('.template').addClass('noSelect');
+    } else {
+        $('.template').removeClass('noSelect');
+    }
 }
 
 function findRelevance(templatestr: str) {
@@ -322,3 +332,4 @@ function findRelevance(templatestr: str) {
 
     return false;
 }
+
