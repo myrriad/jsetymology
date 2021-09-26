@@ -278,7 +278,7 @@ function onTemplateClicked(templ: HTMLSpanElement) {
 
 function onCheckbox() {
     if($('#tb-toggle').is(':checked')) {
-        $('.template').addClass('noSelect');
+        // $('.template').addClass('noSelect');
     } else {
         $('.template').removeClass('noSelect');
     }

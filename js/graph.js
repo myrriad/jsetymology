@@ -25,10 +25,12 @@ function reLayout(cy) {
         stop: undefined, // callback on layoutstop
         transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
     };
-    let viewportAt = cy.viewport();
+    // let viewportAt = cy.viewport();
     var layout = cy.layout( options );
     layout.run();
-    cy.viewport(viewportAt); // prevent the relayout from resetting viewport
+    // cy.pan(viewportAt.pan);
+    // cy.zoom(viewportAt.zoom);
+    // cy.viewport(viewportAt); // prevent the relayout from resetting viewport
 }
 
 function print(obj, str='') {
@@ -81,6 +83,7 @@ function onSubmit(word, lang, downward) {
         // $('#target').text(data2);
         plop(etyentry.ety, true);
         for (let defn of etyentry.defns) plop(defn.defn, false);
+        createTree();
         onCheckbox();
     });
     
@@ -109,11 +112,13 @@ function createTree() {
 
             ret[i] = str;
         }
-
+        if(ret.length === 1) return ret[0];
         return ret;
     }
-    if(!window.cytograph) createCyto(testGraph());
-    removeCyto();
+    if(!window.cytograph) {
+        createCyto(testGraph());
+        removeCyto();
+    }
     let word = $('#qword').val();
     let lang = $('#qlang').val();
     [word, lang] = parse(word, lang);
@@ -134,12 +139,16 @@ function createTree() {
     let i=1;
     for(let temptxt of $('span.template.t-active')) {
         // if(temp)
-        let temp = decipherTemplate(temptxt.textContent);
+        let temp = decodeTemplate(temptxt.textContent);
+        if(!temp) continue;
+
         let word2 = parse(temp.word);
         let langcode = parse(temp.lang);
         let lang2 = LANGCODES.name(langcode);
-        if(!lang2) lang2 = langcode;
-        if(!word2) continue;
+        if(!lang2) lang2 = langcode; 
+        if(!word2) continue; 
+
+        word2 = decodeWord(word2, lang2); // anti-macron. TODO: more robust.
         // console.log(a);
         let target = cy().$(`node[id="${word2}, ${lang2}"]`);
         if (target && target.length) {
@@ -155,18 +164,20 @@ function createTree() {
                 }
             });
         }
-
-        cy().add({
-            group: 'edges',
-            data: {
-                id: `${parse(temp.ttype)} || ${word}, ${lang} || ${i++}`,
-            
-                source: `${word2}, ${lang2}`,
-                target: `${word}, ${lang}`,
-            }
-        });
-        reLayout();
-        
+        try {
+            cy().add({
+                group: 'edges',
+                data: {
+                    id: `${parse(temp.ttype)} || ${word}, ${lang} || ${i++}`,
+                
+                    source: `${word2}, ${lang2}`,
+                    target: `${word}, ${lang}`,
+                }
+            });
+            reLayout();
+        } catch(e) {
+            // soft fails
+        }
     }
     
 }
@@ -399,10 +410,18 @@ function clickToQuery() {
         let id = target[0]._private.data.id;
         console.log(id);
         let as = id.split(", ");
-        onSubmit(as[0], as[1]);
+
+        let fixedword = decodeWord(as[0], as[1]); // anti-macron
+        $('#qword').val(fixedword);
+        $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
+        // it later reads this to deduce the origin. 
+        // Cue dumb bugs from race conditions. 
+        onSubmit(fixedword, as[1]);
       }
     });
-    cy.on('cxttap', "node", function (event) {
+    cy.on('cxttap', "node", function (event) { // right click to remove
+        let target = event.target;
+        cy.remove(target);
 
     });
 

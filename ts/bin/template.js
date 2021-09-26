@@ -1,5 +1,6 @@
 "use strict";
-let decipherTemplate;
+let decodeTemplate;
+let decodeWord;
 class Templated {
     constructor(ttype, word, lang, self_lang) {
         this.ttype = ttype;
@@ -62,7 +63,10 @@ class Templated {
         if (!lang && !word) {
             if (ttype.endsWith(' of')) {
                 lang = rest[0];
-                lang = rest[1];
+                word = rest[1];
+            }
+            else if (ttype.endsWith('-form')) {
+                word = rest[0]; // la-verb-form
             }
             else {
                 console.log(`Unprepared template type ${ttype}!`);
@@ -72,7 +76,7 @@ class Templated {
             return [word, lang]; //`${lang}, ${word}`;
         return undefined;
     }
-    decipherTemplate = function (templstr) {
+    decodeTemplate = function (templstr) {
         assert(templstr.startsWith('{{') && templstr.endsWith('}}'));
         let ttxt = templstr.slice(2, -2);
         let parts = ttxt.trim().split('|');
@@ -83,5 +87,15 @@ class Templated {
             return new Templated(ttype, result[0], result[1]);
         }
         return undefined;
+    };
+    decodeWord = function (word, lang) {
+        if (lang === 'Latin') {
+            let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
+            let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
+            for (let i = 0; i < macrons.length; i++) {
+                word = word.replace(macrons[i], norms[i]);
+            }
+        }
+        return word;
     };
 }());
