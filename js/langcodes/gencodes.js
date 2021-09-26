@@ -8164,5 +8164,6 @@ LANGCODES.general = { // these are most
 LANGCODES.name = function(code) {
     let val = LANGCODES.general[code];
     if(val !== undefined) return val;
+    return undefined;
 }
 // Thankfully we don't need to go the other way around - for now.

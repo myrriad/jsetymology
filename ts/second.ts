@@ -46,6 +46,7 @@ class EtyEntry {
 }
 
 function gofetch(word: string, lang?: string, callback?: (etys: EtyEntry[]) => void) {
+    if(!word) throw "You didn't pass a word in to search!";
     wth.fetch(word, {
         lang: 'en',
         wiki: 'wiktionary'
@@ -53,7 +54,7 @@ function gofetch(word: string, lang?: string, callback?: (etys: EtyEntry[]) => v
         // doc.
         // let doc3 = doc2[0];
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
-        if(!doc) throw "empty doc";
+        if(!doc) throw `Could not find the document for ${word}, ${lang}!`;
         doc = doc as wtt.default.Document;
         // console.log(doc);
 
@@ -157,7 +158,7 @@ function getIndices(sec: wtt.default.Section, temps?: wtt.default.Template[]) {
 
 // gofetch('leaflet', 'english')
 // @ts-ignore
-gofetch('lead', 'english', (x)=>window.x = x);
+// gofetch('lead', 'english', (x)=>window.x = x);
 
 function friendlyError(str: string, override=true) {
     if(override) $('#closeinspect')[0].innerHTML = '';
@@ -292,7 +293,7 @@ function findRelevance(templatestr: str) {
     let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
 
     let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
-        'PIE root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
+        'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
         'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
         'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
 
@@ -303,7 +304,7 @@ function findRelevance(templatestr: str) {
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
         'IPA', 'rfap', 'rfp'].includes(ttype)) return false;
 
-    for (let comb in ['quote', 'R:', 'Swadesh', 'ws ']) if (ttype.startsWith(comb)) return false;
+    for (let comb of ['quote', 'R:', 'Swadesh', 'ws ']) if (ttype.startsWith(comb)) return false;
 
     // Form of.
     let templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
@@ -318,7 +319,7 @@ function findRelevance(templatestr: str) {
         // pretty likely
         console.log('Candidate: ' + ttype);
     }
-    for (let pos in templPOS) if (frag.endsWith('-' + pos)) return true;
+    for (let pos of templPOS) if (frag.endsWith('-' + pos)) return true;
 
     if (ttype.endsWith(' of')) return true; // many POSs end with ' of'.
     // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
@@ -333,3 +334,7 @@ function findRelevance(templatestr: str) {
     return false;
 }
 
+function saveWiktEntry() {
+    let html = $('#closeinspect').html();
+    console.log(html);
+}

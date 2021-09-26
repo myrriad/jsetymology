@@ -1,9 +1,5 @@
 // const { data } = require("jquery");
 
-function URL(str, controller="default", domain="welcome") {
-    return domain + "/" + controller + "/" + str;
-}
-
 function reLayout(cy) {
     if(!cy) cy = window.cytograph;
     let options = {
@@ -29,53 +25,48 @@ function reLayout(cy) {
         stop: undefined, // callback on layoutstop
         transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
     };
-
+    let viewportAt = cy.viewport();
     var layout = cy.layout( options );
     layout.run();
+    cy.viewport(viewportAt); // prevent the relayout from resetting viewport
 }
 
-function print(obj, str='', sep='<br>') {
-    if(str) {
-        console.log(str);
-    }
-    if(obj) {
-        console.log(obj);
-    }
-    return;
+function print(obj, str='') {
+    if(str) console.log(str);
+    if(obj) console.log(obj);
 }
-function formatQuery(q1, qlang) {
-    if(!q1 instanceof String) {
+function formatQuery(word, lang) {
+    if(!word instanceof String) {
         throw "q1 isn't a string !?";
     }
-    var qypts = q1.split('#');
+    var qypts = word.split('#');
     if(qypts.length === 1) {
         var word = qypts[0];
         if(!word) throw "Query cannot be empty?";
         // if(!qlang) throw "Language cannot be empty?" // Language CAN be empty if we want the program to do the infer
-        if(!qlang) {
+        if(!lang) {
             return word.toString(); // in the event that language is empty, only return word
         } else {
-            return word.toString() + "#" + qlang.toString();
+            return word.toString() + "#" + lang.toString();
         }
     } else if (qypts.length === 2) {
 
-        return q1;
+        return word;
     } else {
         throw "Unexpected character '#'";
         return false;
     }
 }
 
-function onSubmit(qy, qlang, downward) {
-    if (qy === undefined) qy = $('#q1').val();
-    if (qlang === undefined) qlang = $('#qlang').val();
+function onSubmit(word, lang, downward) {
+    if (word === undefined) word = $('#qword').val();
+    if (lang === undefined) lang = $('#qlang').val();
     if (downward === undefined) downward = false;
-
 
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     
-    gofetch(qy, qlang, function ondata(data2) {
+    gofetch(word, lang, function ondata(data2) {
         // alert(data);
         let idx;
         if(data2.length > 1) {
@@ -97,12 +88,87 @@ function onSubmit(qy, qlang, downward) {
     // clickToQuery();
 
 }
-function submitGraph() {
+function createTree() {
     // homebrew graph creation.
     // relies on second.ts
-    for(let temp of $('span.template.t-active')) {
-        // if(temp)
+    // let origin = cy.$('node#origin');
+    // target = 
+    function parse(...strs) {
+
+        let ret = new Array(strs.length);
+        for(let i=0;i<strs.length;i++) {
+            
+            let str = strs[i];
+            if(!str) {
+                ret[i] = '';
+                continue;
+            }
+            str = str.replace('"', 'quote');
+            str = str.replace('\\', 'backslash');
+            str = str.replace(',', 'comma');
+
+            ret[i] = str;
+        }
+
+        return ret;
     }
+    if(!window.cytograph) createCyto(testGraph());
+    removeCyto();
+    let word = $('#qword').val();
+    let lang = $('#qlang').val();
+    [word, lang] = parse(word, lang);
+    let orig = cy().$(`node[id="${word}, ${lang}"]`);
+    if (orig && orig.length) {
+        console.log(orig);
+        orig = orig[0];
+    } else {
+        orig = cy().add({
+            group: 'nodes',
+            data: {
+                id: `${word}, ${lang}`// ,
+            // data: { weight: 75 },
+            // position: { x: 200, y: 200 }
+            }
+        });
+    }
+    let i=1;
+    for(let temptxt of $('span.template.t-active')) {
+        // if(temp)
+        let temp = decipherTemplate(temptxt.textContent);
+        let word2 = parse(temp.word);
+        let langcode = parse(temp.lang);
+        let lang2 = LANGCODES.name(langcode);
+        if(!lang2) lang2 = langcode;
+        if(!word2) continue;
+        // console.log(a);
+        let target = cy().$(`node[id="${word2}, ${lang2}"]`);
+        if (target && target.length) {
+            console.log(target);
+            target = target[0];
+        } else {
+            target = cy().add({
+                group: 'nodes',
+                data: {
+                    id: `${word2}, ${lang2}`// ,
+                    // data: { weight: 75 },
+                    // position: { x: 200, y: 200 }
+                }
+            });
+        }
+
+        cy().add({
+            group: 'edges',
+            data: {
+                id: `${parse(temp.ttype)} || ${word}, ${lang} || ${i++}`,
+            
+                source: `${word2}, ${lang2}`,
+                target: `${word}, ${lang}`,
+            }
+        });
+        reLayout();
+        
+    }
+    
 }
 function testGraph(node_count) {
     var cy = window.cytograph;
@@ -209,59 +275,50 @@ function extendG(data, newdata) {
 
 function removeCyto() {
     cy().remove(cy().elements());
-    
 }
 
-function createCyto(data, merge=true, relayout=false) {
+function createCyto(data, relayout=false) {
     // alert("hi");
     /** @type {cytoscape.Core} */
     var cy = window.cytograph;
     if(!data) {
         data = defaultGraph();
     }
-    if(merge) { // "new" behavior
-        var tograph = data;
-        if(cy) { // merge graph with old graph
-            var jsonify, elems;
-            print(jsonify = cy.json(), "prior:");// to json
-            
-            // cy.$('*[loadBatch=50]')
+    var tograph = data;
+    if(cy) { // merge graph with old graph
+        var jsonify, elems;
+        print(jsonify = cy.json(), "prior:");// to json
+        
+        // cy.$('*[loadBatch=50]')
 
-            print(data, "data:");
-            print(elems = data["elements"], "elements:");// get elements of the new data
+        print(data, "data:");
+        print(elems = data["elements"], "elements:");// get elements of the new data
 
-            for (let elem of elems.nodes) {
-                elem.data.batchIndex = window.universe.batchIndex;
-            }
-
-            for (let elem of elems.edges) {
-                elem.data.batchIndex = window.universe.batchIndex;
-            }
-
-            cy.add(elems); // add data
-            print(tograph = cy.json(), "posterior:");
-
-            // formerly if !relayout
-            reLayout(cy);
-            window.cytograph = cy;
-            bindTooltips();
-            return cy;
-
-
-        } else { // if it's the first time
-            // formerly if relayout
-            print(tograph, "data:");
-            tograph = initiable(tograph, true);
-            print(tograph, "graphing:");
-            cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
-            reLayout(cy);
+        for (let elem of elems.nodes) {
+            elem.data.batchIndex = window.universe.batchIndex;
         }
-    } else { // "old" behavior warning: crappy
-        // var merged = $.extend(predata, data);
-        // var merged = extendG(predata, data);
-        // var tograph = initiable(data, true);
-        // cy = cytoscape(tograph);
+
+        for (let elem of elems.edges) {
+            elem.data.batchIndex = window.universe.batchIndex;
+        }
+
+        cy.add(elems); // add data
+        print(tograph = cy.json(), "posterior:");
+
+        if(!relayout) reLayout(cy);
+        window.cytograph = cy;
+        bindTooltips();
+        return cy;
+
+    } else { // if it's the first time
+        // formerly if relayout
+        print(tograph, "data:");
+        tograph = initiable(tograph, true);
+        print(tograph, "graphing:");
+        cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
+        reLayout(cy);
     }
+
     // the following only gets executed on initialization.
     window.cytograph = cy; // endpoint for modules. TODO: explore alternatives to global state
     window.cy = function() {
@@ -280,7 +337,6 @@ function bindTooltips() {
     // https://stackoverflow.com/questions/54352041/how-can-i-change-the-color-an-individual-node-in-a-grid-of-cytoscape-js
     // https://stackoverflow.com/questions/54547927/show-and-hide-node-info-on-mouseover-in-cytoscape/54556015
     
-    // popper doesn't seem to be working so let's exit. TODO fix this.
     var cy = window.cy();
     // cy.ready(function() {
     cy.elements().forEach(function(ele) {
@@ -296,7 +352,6 @@ function bindTooltips() {
 }
 
 function makePopper(ele) {
-    
     let ref = ele.popperRef(); // used only for positioning
 
     ele.tippy = tippy(ref, { // tippy options:
@@ -314,7 +369,7 @@ function makePopper(ele) {
 function onCollector() {
     let cy = window.cytograph;
     let clang = $("#clang").val();
-    let cword = $("#cquery").val();
+    let cword = $("#cword").val();
     if(clang) {
         let nodes = cy.nodes();
         nodes.style({'background-color': ''});
@@ -352,12 +407,20 @@ function clickToQuery() {
     });
 
 }
+const SAMPLE = function() {
+    let ret = {};
+    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
+    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French'];
+    ret.random = function() {
+        let r = Math.floor(Math.random() * ret.words.length);
+        return [SAMPLE.words[r], SAMPLE.langs[r]];
+    }
+    return ret;
+}();
 $(document).ready(function(){
-    // let field = window.getElementById("q1");
-    let values =["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
-    let langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French']
-    let r = Math.floor(Math.random() * values.length);
+    // let field = window.getElementById("qword");
     // field.value = r;
-    $("#q1").val(values[r]);
-    $("#qlang").val(langs[r]);
+    let [w, l] = SAMPLE.random();
+    $("#qword").val(w);
+    $("#qlang").val(l);
 });

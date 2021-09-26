@@ -40,6 +40,8 @@ class EtyEntry {
     }
 }
 function gofetch(word, lang, callback) {
+    if (!word)
+        throw "You didn't pass a word in to search!";
     wth.fetch(word, {
         lang: 'en',
         wiki: 'wiktionary'
@@ -48,7 +50,7 @@ function gofetch(word, lang, callback) {
         // let doc3 = doc2[0];
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
         if (!doc)
-            throw "empty doc";
+            throw `Could not find the document for ${word}, ${lang}!`;
         doc = doc;
         // console.log(doc);
         window.doc = doc;
@@ -143,7 +145,7 @@ function getIndices(sec, temps) {
 }
 // gofetch('leaflet', 'english')
 // @ts-ignore
-gofetch('lead', 'english', (x) => window.x = x);
+// gofetch('lead', 'english', (x)=>window.x = x);
 function friendlyError(str, override = true) {
     if (override)
         $('#closeinspect')[0].innerHTML = '';
@@ -269,7 +271,7 @@ function findRelevance(templatestr) {
     let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
     let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
     let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
-        'PIE root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
+        'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
         'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
         'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
     if (etys.includes(ttype))
@@ -278,7 +280,7 @@ function findRelevance(templatestr) {
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
         'IPA', 'rfap', 'rfp'].includes(ttype))
         return false;
-    for (let comb in ['quote', 'R:', 'Swadesh', 'ws '])
+    for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
         if (ttype.startsWith(comb))
             return false;
     // Form of.
@@ -294,7 +296,7 @@ function findRelevance(templatestr) {
         // pretty likely
         console.log('Candidate: ' + ttype);
     }
-    for (let pos in templPOS)
+    for (let pos of templPOS)
         if (frag.endsWith('-' + pos))
             return true;
     if (ttype.endsWith(' of'))
@@ -307,4 +309,8 @@ function findRelevance(templatestr) {
         return true; // if it has a hyphen, there's a pretty good chance it's a lemma
     // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
     return false;
+}
+function saveWiktEntry() {
+    let html = $('#closeinspect').html();
+    console.log(html);
 }

@@ -11,48 +11,41 @@
     <!-- <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} -->
     <h1>Cognates Visualization Tool</h1>
   </div>
-  <!-- {{end}} -->
-
-  <!--<h2>{{=URL('data')}}</h2>-->
-
-  <!-- EDIT -->
-  <!--{{extend 'layout.html'}}-->
-  <div id="biggest-div" style="padding:5px">
-
-    <!-- {{if 'message' in globals():}} -->
-    <!-- <h2>{{=message}}</h2> -->
-    <p>Enter a word below.</p>
-
-    <script src='js/cytoscape.min.js'></script>
+  
+  <div id='scripts'>
+    <script src='js/cytoscape.min.js'></script> <!--https://unpkg.com/cytoscape/dist/cytoscape.min.js-->
     <script src='js/jquery.js'></script>
-
+  
     <!-- popper import imports -->
-    <!--<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>-->
-    <!-- <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popp0er.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script> -->
-    <!-- <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script> -->
-
+    <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
+  
     <!-- dagre imports -->
     <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
     <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
-
+  
     <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
     <script src='js/wtf.min.js'></script>
-    <script src=''></script>
     <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
+  
+    <script src='js/langcodes/gencodes.js'></script> <!-- 200kb-->
+    <script src='js/first.js'></script>
+    <script src='ts/bin/second.js'></script>
+    <script src='ts/bin/template.js'></script>
+  
+    <script src='js/graph.js'></script>
+  </div>
 
-    <script src=js/first.js></script>
-    <script src=ts/bin/second.js></script>
+  <div id="biggest-div" style="padding:5px">
 
-    <script src=js/graph.js></script>
+    <p>Enter a word below.</p>
 
+    
     <form onsubmit="return false;">
-      <input type="text" id="q1" name="q1" value="" />
-      <!--<INPUT type="text" id="q2" name="q2" value=""/>-->
+      <input type="text" id="qword" name="qword" value="" />
       <!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
-      <!--<INPUT type="text" id="q3" name="q3" value=""/>-->
       <!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
-      <!--<INPUT type="text" id="q4" name="q4" value=""/>-->
       <input type="text" id="qlang" name="qlang" placeholder="Insert Target Language" />
       <input type="submit" id="submitq" value="submit" onclick="onSubmit()" />
 
@@ -72,7 +65,7 @@
     <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label
       for="tb-toggle">Edit/toggle templates</label>
     <div id='closeinspect'></div>
-    <button onclick="submitGraph()">Add to graph</button>
+    <button onclick="createTree()">Add to graph</button>
 
     <!-- </details> -->
     <div id="cycontainer">
@@ -82,7 +75,7 @@
       <form action="javascript:void(0);">
         <label for="cquery">Filter results by language: </label>
         <input type="text" id="clang" name="qlang" value="English" />
-        <input type="text" id="cquery" name="q1" placeholder="Enter an optional word" />
+        <input type="text" id="cword" name="qword" placeholder="Enter an optional word" />
         <input type="button" id="submitc" value="Filter" onclick="onCollector()" />
       </form>
     </div>
