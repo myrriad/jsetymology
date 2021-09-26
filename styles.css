@@ -1,6 +1,15 @@
+#flexwrap {
+    display: flex;
+}
+#inspector {
+    flex: 0 0 65%; /*left*/
+}
 #closeinspect {
     white-space: pre-wrap;
+    flex: 1; /*right*/
+
 }
+
 .template {
     cursor: pointer;
 }

@@ -1,16 +1,27 @@
+// <reference path='js/langcodes/gencodes.js'/>
 let decodeTemplate: (templstr: str) => Templated | undefined;
-let decodeWord;
 
 class Templated {
     ttype: str;
-    lang: string;
+    langcode: string;
+    lang: str;
     word: str;
     self_lang?: str;
-    constructor(ttype: str, word: str, lang: str, self_lang?: str) {
+    constructor(ttype: str, word: str, langcode: str, self_lang?: str) {
         this.ttype = ttype;
         this.word = word;
-        this.lang = lang;
+        this.langcode = langcode;
+        // @ts-ignore
+        this.lang = LANGCODES.name(langcode);
+        if(!this.lang) this.lang = this.langcode;
         this.self_lang = self_lang;
+    }
+    _is_recon:boolean|undefined;
+    get isRecon() {
+        if(this._is_recon === undefined) {
+            this._is_recon = isReconstructed(this.word, this.lang, this.langcode);
+        }
+        return this._is_recon;
     }
 }
 (function() {
@@ -92,14 +103,33 @@ class Templated {
         }
         return undefined;
     }
-    decodeWord = function(word: str, lang: str) {
-        if(lang === 'Latin') {
-            let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
-            let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
-            for(let i=0;i<macrons.length;i++) {
-                word = word.replace(macrons[i], norms[i]);
-            } 
-        }
-        return word;
-    }
 }());
+function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
+    if (isRecon === undefined) isRecon = isReconstructed(word, lang, langcode);
+    if(isRecon && word.startsWith('*')) {
+        word = word.slice(1);
+    }
+    if (lang === 'Latin') {
+        let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
+        let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
+        for (let i = 0; i < macrons.length; i++) {
+            word = word.replace(macrons[i], norms[i]);
+        }
+    }
+    return word;
+}
+function isReconstructed(word: str, lang: str, langcode?: str) {
+    /* hard-coded heuristic*/
+    if(langcode && langcode.endsWith('-pro')) return true;
+    if(lang.startsWith('Proto')) return true;
+    if(word.startsWith('*')) {
+        if (lang.startsWith('Old ') || lang.startsWith('Middle ')) return true;
+        if(lang.includes('Latin')) return true;
+        if(word.length >= 3) return true;
+        return false;
+        // you know it's probably true. It's better 
+    }//
+    return false;
+
+    
+}

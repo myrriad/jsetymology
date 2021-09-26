@@ -1,42 +1,6 @@
 // const { data } = require("jquery");
 
-function reLayout(cy) {
-    if(!cy) cy = window.cytograph;
-    let options = {
-        name: 'dagre',
 
-        fit: true, // whether to fit the viewport to the graph
-        padding: 30, // padding used on fit
-        boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-        avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
-        avoidOverlapPadding: 10, // extra spacing around nodes when avoidOverlap: true
-        nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
-        spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
-        condense: false, // uses all available space on false, uses minimal space on true
-        rows: undefined, // force num of rows in the grid
-        cols: undefined, // force num of columns in the grid
-        position: function( node ){}, // returns { row, col } for element
-        sort: undefined, // a sorting function to order the nodes; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-        animate: false, // whether to transition the node positions
-        animationDuration: 500, // duration of animation in ms if enabled
-        animationEasing: undefined, // easing of animation if enabled
-        animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
-        ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
-        transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
-    };
-    // let viewportAt = cy.viewport();
-    var layout = cy.layout( options );
-    layout.run();
-    // cy.pan(viewportAt.pan);
-    // cy.zoom(viewportAt.zoom);
-    // cy.viewport(viewportAt); // prevent the relayout from resetting viewport
-}
-
-function print(obj, str='') {
-    if(str) console.log(str);
-    if(obj) console.log(obj);
-}
 function formatQuery(word, lang) {
     if(!word instanceof String) {
         throw "q1 isn't a string !?";
@@ -60,15 +24,29 @@ function formatQuery(word, lang) {
     }
 }
 
-function onSubmit(word, lang, downward) {
+function query(word, lang, downward, target) {
     if (word === undefined) word = $('#qword').val();
     if (lang === undefined) lang = $('#qlang').val();
     if (downward === undefined) downward = false;
 
+    // TODO search for existing node in graph, to extract additional info like langcode, isRecon
+
+    if(!target) {
+        target = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`);
+    }
+    let isRecon, langcode;
+    if(target && target.length) {
+        isRecon = target[0].data().isRecon;
+        langcode = target[0].data().langcode;
+    } else {
+        isRecon = isReconstructed(word, lang, langcode, isRecon);
+    }
+    let fixedword = decodeWord(word, lang, langcode, isRecon); // anti-macron
+
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     
-    gofetch(word, lang, function ondata(data2) {
+    gofetch(word, lang, isRecon, function ondata(data2) {
         // alert(data);
         let idx;
         if(data2.length > 1) {
@@ -83,7 +61,7 @@ function onSubmit(word, lang, downward) {
         // $('#target').text(data2);
         plop(etyentry.ety, true);
         for (let defn of etyentry.defns) plop(defn.defn, false);
-        createTree();
+        createTree(word, lang);
         onCheckbox();
     });
     
@@ -91,38 +69,36 @@ function onSubmit(word, lang, downward) {
     // clickToQuery();
 
 }
-function createTree() {
+function _parse(...strs) {
+
+    let ret = new Array(strs.length);
+    for (let i = 0; i < strs.length; i++) {
+
+        let str = strs[i];
+        if (!str) {
+            ret[i] = '';
+            continue;
+        }
+        str = str.replace('"', 'quote');
+        str = str.replace('\\', 'backslash');
+        str = str.replace(',', 'comma');
+
+        ret[i] = str;
+    }
+    if (ret.length === 1) return ret[0];
+    return ret;
+}
+function createTree(oword, olang) {
     // homebrew graph creation.
     // relies on second.ts
     // let origin = cy.$('node#origin');
     // target = 
-    function parse(...strs) {
+    
 
-        let ret = new Array(strs.length);
-        for(let i=0;i<strs.length;i++) {
-            
-            let str = strs[i];
-            if(!str) {
-                ret[i] = '';
-                continue;
-            }
-            str = str.replace('"', 'quote');
-            str = str.replace('\\', 'backslash');
-            str = str.replace(',', 'comma');
-
-            ret[i] = str;
-        }
-        if(ret.length === 1) return ret[0];
-        return ret;
-    }
-    if(!window.cytograph) {
-        createCyto(testGraph());
-        removeCyto();
-    }
-    let word = $('#qword').val();
-    let lang = $('#qlang').val();
-    [word, lang] = parse(word, lang);
-    let orig = cy().$(`node[id="${word}, ${lang}"]`);
+    if(!oword) oword = $('#qword').val();
+    if(!olang) olang = $('#qlang').val();
+    [oword, olang] = _parse(oword, olang);
+    let orig = cy().$(`node[id="${oword}, ${olang}"]`);
     if (orig && orig.length) {
         console.log(orig);
         orig = orig[0];
@@ -130,7 +106,7 @@ function createTree() {
         orig = cy().add({
             group: 'nodes',
             data: {
-                id: `${word}, ${lang}`// ,
+                id: `${oword}, ${olang}`// ,
             // data: { weight: 75 },
             // position: { x: 200, y: 200 }
             }
@@ -142,134 +118,51 @@ function createTree() {
         let temp = decodeTemplate(temptxt.textContent);
         if(!temp) continue;
 
-        let word2 = parse(temp.word);
-        let langcode = parse(temp.lang);
-        let lang2 = LANGCODES.name(langcode);
-        if(!lang2) lang2 = langcode; 
-        if(!word2) continue; 
+        let word = _parse(temp.word);
+        let langcode = _parse(temp.langcode);
+        let lang = _parse(temp.lang);
+        if(!lang) lang = langcode; 
+        if(!word) continue; 
 
-        word2 = decodeWord(word2, lang2); // anti-macron. TODO: more robust.
+        // put the anti-macron on the querying side.
         // console.log(a);
-        let target = cy().$(`node[id="${word2}, ${lang2}"]`);
+        let target = cy().$(`node[id="${word}, ${lang}"]`);
         if (target && target.length) {
             console.log(target);
             target = target[0];
+            target.data().langcode = langcode;
+            target.data().isRecon = temp.isRecon;
         } else {
             target = cy().add({
                 group: 'nodes',
                 data: {
-                    id: `${word2}, ${lang2}`// ,
+                    id: `${word}, ${lang}`,
+                    langcode: langcode,
+                    isRecon: temp.isRecon
+
                     // data: { weight: 75 },
                     // position: { x: 200, y: 200 }
-                }
+                },
             });
         }
         try {
             cy().add({
                 group: 'edges',
                 data: {
-                    id: `${parse(temp.ttype)} || ${word}, ${lang} || ${i++}`,
+                    id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
                 
-                    source: `${word2}, ${lang2}`,
-                    target: `${word}, ${lang}`,
+                    source: `${word}, ${lang}`,
+                    target: `${oword}, ${olang}`,
                 }
             });
-            reLayout();
+            relayout();
         } catch(e) {
             // soft fails
         }
     }
     
 }
-function testGraph(node_count) {
-    var cy = window.cytograph;
-    var obj = {
-       "elements": {
-          "nodes": [
-             {
-                "data": {"id": "a"},
-                "position": {"x": 64.833336,"y": 249}
-             },
-             {
-                "data": {"id": "b"},
-                "position": {"x": 194.5,"y": 249}
-             }
-          ],
-          "edges": [
-             {
-                "data": {"id": "ab", "source": "a", "target": "b"},
-                "position": {"x": 0,"y": 0},
-             }
-          ]
-       },
-       "data": []
-    };
-    if(node_count >= 3) {
-        obj['elements']['nodes'].push({
-                "data": {"id": "c"}
-             });
-    }
-    if(node_count >= 4) {
-        obj['elements']['nodes'].push({
-                "data": {"id": "d"},
-                "position": {"x": 324.16666,"y": 260}
-            });
-    }
-    // cy.json(obj);
-    return obj;
-}
-function defaultGraph() {
-    return {
-                elements: [ // list of graph elements to start with
-                { // node a
-                  data: { id: 'a' }
-                },
-                { // node b
-                  data: { id: 'b' }
-                },
-                { // node c
-                   data: { id: 'c' }
-                },
-                { // edge ab
-                  data: { id: 'ab', source: 'a', target: 'b' }
-                }
-                ]
-            };
-}
-function initiable(obj, restyle=true) {
-    if(!obj.hasOwnProperty("container")) {
-        obj["container"] = document.getElementById('cy'); // container to render in
-    } else if(!obj.hasOwnProperty("layout")) {
-        obj["layout"] = {name: 'dagre'} // , rows: 1}; // dagre
-    }
-    if(restyle) {
-        obj.style = [ // the stylesheet for the graph
-                    {
-                      selector: 'node',
-                      style: {
-                        // 'background-color': '#666',
-                        'label': 'data(id)'
-                      }
-                    },
-                    {
-                      selector: 'edge',
-                      style: {
-                        'width': 3,
-                        'line-color': '#ccc',
-                        'target-arrow-color': '#ccc',
-                        'target-arrow-shape': 'triangle',
-                        'curve-style': 'bezier'
-                      }
-                    }
-                ];
-    }
-    obj.wheelSensitivity = 0.5;
-    return obj;
-}
-// require("/welcome/static/js/node_modules/cytoscape/dist/cytoscape.esm.min.js");
-// import cytoscape from "/welcome/static/js/node_modules/cytoscape/dist/cytoscape.esm.min.js";
-// import dagre from "/welcome/static/js/node_modules/cytoscape-dagre/cytoscape-dagre.js";
-// cytoscape.use(dagre);
+
 function extendG(data, newdata) {
 
     for (var attrname in newdata) {
@@ -282,84 +175,6 @@ function extendG(data, newdata) {
     }
     return data
 
-}
-
-function removeCyto() {
-    cy().remove(cy().elements());
-}
-
-function createCyto(data, relayout=false) {
-    // alert("hi");
-    /** @type {cytoscape.Core} */
-    var cy = window.cytograph;
-    if(!data) {
-        data = defaultGraph();
-    }
-    var tograph = data;
-    if(cy) { // merge graph with old graph
-        var jsonify, elems;
-        print(jsonify = cy.json(), "prior:");// to json
-        
-        // cy.$('*[loadBatch=50]')
-
-        print(data, "data:");
-        print(elems = data["elements"], "elements:");// get elements of the new data
-
-        for (let elem of elems.nodes) {
-            elem.data.batchIndex = window.universe.batchIndex;
-        }
-
-        for (let elem of elems.edges) {
-            elem.data.batchIndex = window.universe.batchIndex;
-        }
-
-        cy.add(elems); // add data
-        print(tograph = cy.json(), "posterior:");
-
-        if(!relayout) reLayout(cy);
-        window.cytograph = cy;
-        bindTooltips();
-        return cy;
-
-    } else { // if it's the first time
-        // formerly if relayout
-        print(tograph, "data:");
-        tograph = initiable(tograph, true);
-        print(tograph, "graphing:");
-        cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
-        reLayout(cy);
-    }
-
-    // the following only gets executed on initialization.
-    window.cytograph = cy; // endpoint for modules. TODO: explore alternatives to global state
-    window.cy = function() {
-        return window.cytograph;
-    }
-    clickToQuery();
-    bindTooltips();
-    return cy;
-}
-window.createCyto = createCyto;
-
-
-
-
-function bindTooltips() {
-    // https://stackoverflow.com/questions/54352041/how-can-i-change-the-color-an-individual-node-in-a-grid-of-cytoscape-js
-    // https://stackoverflow.com/questions/54547927/show-and-hide-node-info-on-mouseover-in-cytoscape/54556015
-    
-    var cy = window.cy();
-    // cy.ready(function() {
-    cy.elements().forEach(function(ele) {
-        makePopper(ele);
-    });
-    // });
-
-    cy.elements().unbind('mouseover');
-    cy.elements().bind('mouseover', (event) => event.target.tippy.show());
-
-    cy.elements().unbind('mouseout');
-    cy.elements().bind('mouseout', (event) => event.target.tippy.hide());
 }
 
 function makePopper(ele) {
@@ -406,17 +221,19 @@ function clickToQuery() {
         //   'background-color': 'white',
         //   'border-color': 'blue'
         // });
+        if(target && target.length) target = target[0];
         console.log(target);
-        let id = target[0]._private.data.id;
+        let id = target.data().id;
         console.log(id);
         let as = id.split(", ");
 
-        let fixedword = decodeWord(as[0], as[1]); // anti-macron
-        $('#qword').val(fixedword);
+        
+
+        $('#qword').val(as[0]);
         $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
         // it later reads this to deduce the origin. 
         // Cue dumb bugs from race conditions. 
-        onSubmit(fixedword, as[1]);
+        query(as[0], as[1], target.data().langcode, target.data().isRecon);
       }
     });
     cy.on('cxttap', "node", function (event) { // right click to remove
@@ -426,6 +243,7 @@ function clickToQuery() {
     });
 
 }
+
 const SAMPLE = function() {
     let ret = {};
     ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];

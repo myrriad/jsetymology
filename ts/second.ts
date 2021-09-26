@@ -45,16 +45,21 @@ class EtyEntry {
     }
 }
 
-function gofetch(word: string, lang?: string, callback?: (etys: EtyEntry[]) => void) {
+function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEntry[]) => void) {
     if(!word) throw "You didn't pass a word in to search!";
-    wth.fetch(word, {
+    // @ts-ignore
+    let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
+    wth.fetch(qy, {
         lang: 'en',
         wiki: 'wiktionary'
     }, function (err, doc2) {
         // doc.
         // let doc3 = doc2[0];
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
-        if(!doc) throw `Could not find the document for ${word}, ${lang}!`;
+        if(!doc) {
+            alert(`Could not find the document for ${word}, ${lang}!`);
+            return;
+        }
         doc = doc as wtt.default.Document;
         // console.log(doc);
 
@@ -172,6 +177,7 @@ function friendlyError(str: string, override=true) {
 }
 
 function plop(entry: Section | EtyEntry, override=true) {
+    // TODO plop a link here for easy access
     if(!entry || entry instanceof EtyEntry && !entry.ety) {
         $('#closeinspect')[0].innerHTML = '<i>No etymology found. (Perhaps it\'s lemmatized?)</i>';
         return;
