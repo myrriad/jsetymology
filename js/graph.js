@@ -1,29 +1,6 @@
 // const { data } = require("jquery");
 
 
-function formatQuery(word, lang) {
-    if(!word instanceof String) {
-        throw "q1 isn't a string !?";
-    }
-    var qypts = word.split('#');
-    if(qypts.length === 1) {
-        var word = qypts[0];
-        if(!word) throw "Query cannot be empty?";
-        // if(!qlang) throw "Language cannot be empty?" // Language CAN be empty if we want the program to do the infer
-        if(!lang) {
-            return word.toString(); // in the event that language is empty, only return word
-        } else {
-            return word.toString() + "#" + lang.toString();
-        }
-    } else if (qypts.length === 2) {
-
-        return word;
-    } else {
-        throw "Unexpected character '#'";
-        return false;
-    }
-}
-
 function query(word, lang, downward, target) {
     if (word === undefined) word = $('#qword').val();
     if (lang === undefined) lang = $('#qlang').val();
@@ -59,7 +36,7 @@ function query(word, lang, downward, target) {
         } else throw "No entries found!";
         let etyentry = data2[idx - 1]; // idx start at 0 instead of 1.
         // $('#target').text(data2);
-        plop(etyentry.ety, true);
+        if (!plop(etyentry.ety, true)) $('#closeinspect')[0].innerHTML += ` https://en.wiktionary.org/wiki/${etyentry.qy}`;
         for (let defn of etyentry.defns) plop(defn.defn, false);
         createTree(word, lang);
         onCheckbox();
@@ -100,7 +77,6 @@ function createTree(oword, olang) {
     [oword, olang] = _parse(oword, olang);
     let orig = cy().$(`node[id="${oword}, ${olang}"]`);
     if (orig && orig.length) {
-        console.log(orig);
         orig = orig[0];
     } else {
         orig = cy().add({
@@ -115,49 +91,52 @@ function createTree(oword, olang) {
     let i=1;
     for(let temptxt of $('span.template.t-active')) {
         // if(temp)
-        let temp = decodeTemplate(temptxt.textContent);
-        if(!temp) continue;
+        let out = decodeTemplate(temptxt.textContent);
+        if (!out) continue;
+        let temps;
+        if (out.length) {
+            temps = out;
+        } else temps = [out];
+        for(let temp of temps) {
+            let word = _parse(temp.word);
+            let langcode = _parse(temp.langcode);
+            let lang = _parse(temp.lang);
+            if(!lang) lang = langcode; 
+            if(!word) continue; 
 
-        let word = _parse(temp.word);
-        let langcode = _parse(temp.langcode);
-        let lang = _parse(temp.lang);
-        if(!lang) lang = langcode; 
-        if(!word) continue; 
+            // put the anti-macron on the querying side.
+            let target = cy().$(`node[id="${word}, ${lang}"]`);
+            if (target && target.length) {
+                target = target[0];
+                target.data().langcode = langcode;
+                target.data().isRecon = temp.isRecon;
+            } else {
+                target = cy().add({
+                    group: 'nodes',
+                    data: {
+                        id: `${word}, ${lang}`,
+                        langcode: langcode,
+                        isRecon: temp.isRecon
 
-        // put the anti-macron on the querying side.
-        // console.log(a);
-        let target = cy().$(`node[id="${word}, ${lang}"]`);
-        if (target && target.length) {
-            console.log(target);
-            target = target[0];
-            target.data().langcode = langcode;
-            target.data().isRecon = temp.isRecon;
-        } else {
-            target = cy().add({
-                group: 'nodes',
-                data: {
-                    id: `${word}, ${lang}`,
-                    langcode: langcode,
-                    isRecon: temp.isRecon
-
-                    // data: { weight: 75 },
-                    // position: { x: 200, y: 200 }
-                },
-            });
-        }
-        try {
-            cy().add({
-                group: 'edges',
-                data: {
-                    id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
-                
-                    source: `${word}, ${lang}`,
-                    target: `${oword}, ${olang}`,
-                }
-            });
-            relayout();
-        } catch(e) {
-            // soft fails
+                        // data: { weight: 75 },
+                        // position: { x: 200, y: 200 }
+                    },
+                });
+            }
+            try {
+                cy().add({
+                    group: 'edges',
+                    data: {
+                        id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
+                    
+                        source: `${word}, ${lang}`,
+                        target: `${oword}, ${olang}`,
+                    }
+                });
+                relayout();
+            } catch(e) {
+                // soft fails
+            }
         }
     }
     
@@ -211,7 +190,6 @@ function clickToQuery() {
     let cy = window.cytograph;
     cy.unbind('click');  // unbind before binding an event to prevent binding it twice/multiple times
     cy.bind('click', 'node, edge', function(event) {
-        // console.log("hi");
         // TODO: query
         let target = event.target;
       if (target.isEdge()) {
@@ -222,9 +200,7 @@ function clickToQuery() {
         //   'border-color': 'blue'
         // });
         if(target && target.length) target = target[0];
-        console.log(target);
         let id = target.data().id;
-        console.log(id);
         let as = id.split(", ");
 
         

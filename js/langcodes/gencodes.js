@@ -8163,7 +8163,10 @@ LANGCODES.general = { // these are most
 
 LANGCODES.name = function(code, ety=true) {
     let val = LANGCODES.general[code];
-    if(val === undefined && ety) val = LANGCODES.etycodes[code].canonicalName; 
+    if(val === undefined && ety) {
+        val = LANGCODES.etycodes[code]
+        if(val) val = val.canonicalName; 
+    }
     if(val !== undefined) return val;
     return undefined;
 }

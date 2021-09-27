@@ -14,7 +14,9 @@ const PARTS_OF_SPEECH = [
     "letter", "character", "phrase", "proverb", "idiom",
     "symbol", "syllable", "numeral", "initialism", "interjection",
     "definitions", "pronoun",
+    "particle", "root" // These POS were found in P-I-E articles
 ];
+const templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
 const RELATIONS = [
     "synonyms", "antonyms", "hypernyms", "hyponyms",
     "meronyms", "holonyms", "troponyms", "related terms",
@@ -34,9 +36,10 @@ class DictEntry {
     }
 }
 class EtyEntry {
-    constructor(defns, ety) {
+    constructor(defns, ety, url) {
         this.defns = defns;
         this.ety = ety;
+        this.qy = url;
     }
 }
 function gofetch(word, lang = '', reconstr = false, callback) {
@@ -50,9 +53,12 @@ function gofetch(word, lang = '', reconstr = false, callback) {
     }, function (err, doc2) {
         // doc.
         // let doc3 = doc2[0];
+        if (err) {
+            throw err;
+        }
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
         if (!doc) {
-            alert(`Could not find the document for ${word}, ${lang}!`);
+            friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
             return;
         }
         doc = doc;
@@ -72,6 +78,8 @@ function gofetch(word, lang = '', reconstr = false, callback) {
             if (!lang) {
                 if (!toplvl.nextSibling()) {
                     skiplang = true;
+                    let lang = toplvl.title();
+                    $('#qlang').val(lang); // DUMBEST hack but it works I guess
                     // if there's only 1 lang, then we infer lang.
                 }
                 else {
@@ -96,7 +104,7 @@ function gofetch(word, lang = '', reconstr = false, callback) {
                                 myDictEntries.push(parseDictEntry(lvl3));
                             }
                         }
-                        etylist.push(new EtyEntry(myDictEntries, lvl2));
+                        etylist.push(new EtyEntry(myDictEntries, lvl2, qy));
                     }
                     else if (lvl2.title() === 'Etymology') {
                         assert(!multiEtyMode);
@@ -110,7 +118,7 @@ function gofetch(word, lang = '', reconstr = false, callback) {
                 }
             }
         }
-        let etys = multiEtyMode ? etylist : [new EtyEntry(dictEntries, myety)];
+        let etys = multiEtyMode ? etylist : [new EtyEntry(dictEntries, myety, qy)];
         assert(flag, "No section found or parsed?", false);
         if (callback)
             callback(etys);
@@ -162,8 +170,8 @@ function friendlyError(str, override = true) {
 function plop(entry, override = true) {
     // TODO plop a link here for easy access
     if (!entry || entry instanceof EtyEntry && !entry.ety) {
-        $('#closeinspect')[0].innerHTML = '<i>No etymology found. (Perhaps it\'s lemmatized?)</i>';
-        return;
+        $('#closeinspect')[0].innerHTML = `<i>No etymology found. (Perhaps it\'s lemmatized?)</i>`;
+        return false;
     }
     let sec = entry instanceof EtyEntry ? entry.ety : entry;
     let t = sec.wikitext();
@@ -200,6 +208,7 @@ function plop(entry, override = true) {
         $('#closeinspect')[0].appendChild(template);
         start = end;
     }
+    return true;
 }
 function templTknr(inp, startidx, nests) {
     assert(inp[startidx] === '{' && inp[startidx + 1] === '{');
@@ -283,13 +292,12 @@ function findRelevance(templatestr) {
         return true; // Whitelist.
     if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
-        'IPA', 'rfap', 'rfp'].includes(ttype))
+        'IPA', 'rfap', 'rfp', 'Q'].includes(ttype))
         return false;
     for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
         if (ttype.startsWith(comb))
             return false;
     // Form of.
-    let templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
     // https://en.wiktionary.org/wiki/Category:Form-of_templates
     // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
     // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
@@ -303,7 +311,7 @@ function findRelevance(templatestr) {
     }
     for (let pos of templPOS)
         if (frag.endsWith('-' + pos))
-            return true;
+            return true; // actually these seem not to be useful
     if (ttype.endsWith(' of'))
         return true; // many POSs end with ' of'.
     // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
