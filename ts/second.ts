@@ -5,8 +5,12 @@
 // https://unpkg.com/wtf_wikipedia@9.0.1/builds/wtf_wikipedia-client.min.js
 type num= number;
 type str = string;
+type bool = boolean;
+
+declare function cy(): cytoscape.Core;
+
 // @ts-ignore
-let wth = wtf as typeof wtt.default; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
+// let wth = wtf as typeof wtt.default; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
 // wtf.extend(require('wtf-plugin-html'))
 // @ts-ignore
 // wtf.extend(wtfHtml);
@@ -30,7 +34,7 @@ const RELATIONS = [
 function assert(x: any, message='', hard=true) {
     if(!x) if(hard) throw TypeError(message); else console.warn(message);
 }
-type Section = wtt.default.Section;
+type Section = wtf.default.Section;
 class DictEntry {
     defn;
     deriv;
@@ -46,13 +50,14 @@ class EtyEntry {
         this.ety = ety;
         this.qy = url;
     }
+
 }
 
 function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEntry[]) => void) {
     if(!word) throw "You didn't pass a word in to search!";
     // @ts-ignore
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
-    wth.fetch(qy, {
+    wtf.fetch(qy, {
         lang: 'en',
         wiki: 'wiktionary'
     }, function (err, doc2) {
@@ -66,7 +71,7 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
             friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
             return;
         }
-        doc = doc as wtt.default.Document;
+        doc = doc as wtf.default.Document;
         // console.log(doc);
 
         (window as any).doc = doc;
@@ -75,7 +80,7 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
         let dictEntries = [];
 
         
-        let toplvl = doc.sections()[0] as wtt.default.Section | null;
+        let toplvl = doc.sections()[0] as wtf.default.Section | null;
         
         let skiplang= false;
         // auto-inferral
@@ -105,12 +110,12 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
             if(toplvl.title().toLowerCase() === lang?.toLowerCase() || skiplang) {
                 
                 flag = true;
-                for (let lvl2=toplvl.sections()[0] as wtt.default.Section|null; lvl2; lvl2=lvl2.nextSibling()) {
+                for (let lvl2=toplvl.sections()[0] as wtf.default.Section|null; lvl2; lvl2=lvl2.nextSibling()) {
                     // console.log(lvl2);
                     if (/Etymology \d+/.test(lvl2.title())) {
                         multiEtyMode = true;
                         let myDictEntries = [];
-                        for (let lvl3 = lvl2.sections()[0] as wtt.default.Section | null; lvl3; lvl3 = lvl3.nextSibling()) {
+                        for (let lvl3 = lvl2.sections()[0] as wtf.default.Section | null; lvl3; lvl3 = lvl3.nextSibling()) {
                             if (PARTS_OF_SPEECH.indexOf(lvl3.title().toLowerCase()) >= 0) {
                                 myDictEntries.push(parseDictEntry(lvl3));
                             }
@@ -143,7 +148,7 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
 function parseDictEntry(sec: Section): DictEntry {
     let defn = sec;
     let derivs = [];
-    for (let sec2 = sec.sections()[0] as wtt.default.Section | null; sec2; sec2 = sec2.nextSibling()) {
+    for (let sec2 = sec.sections()[0] as wtf.default.Section | null; sec2; sec2 = sec2.nextSibling()) {
         if (sec2.title() === 'Derived terms') {
             derivs.push(sec2);
         }
@@ -154,7 +159,7 @@ function parseDictEntry(sec: Section): DictEntry {
     return new DictEntry(defn, derivs ? derivs[0] : undefined);
 }
 
-function getIndices(sec: wtt.default.Section, temps?: wtt.default.Template[]) {
+function getIndices(sec: wtf.default.Section, temps?: wtf.default.Template[]) {
     if(!temps) temps = sec.templates();
     let i=0;
     let idxs = [];
@@ -184,7 +189,7 @@ function friendlyError(str: string, override=true) {
 
 }
 
-function plop(entry: Section | EtyEntry, override=true) {
+function plop(entry?: Section | EtyEntry, override=true) {
     // TODO plop a link here for easy access
     if(!entry || entry instanceof EtyEntry && !entry.ety) {
         $('#closeinspect')[0].innerHTML = `<i>No etymology found. (Perhaps it\'s lemmatized?)</i>`;

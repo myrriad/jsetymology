@@ -4,7 +4,7 @@
 // / <reference path='https://unpkg.com/wtf_wikipedia'/>
 window.doc = undefined;
 // @ts-ignore
-let wth = wtf; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
+// let wth = wtf as typeof wtt.default; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
 // wtf.extend(require('wtf-plugin-html'))
 // @ts-ignore
 // wtf.extend(wtfHtml);
@@ -47,7 +47,7 @@ function gofetch(word, lang = '', reconstr = false, callback) {
         throw "You didn't pass a word in to search!";
     // @ts-ignore
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
-    wth.fetch(qy, {
+    wtf.fetch(qy, {
         lang: 'en',
         wiki: 'wiktionary'
     }, function (err, doc2) {

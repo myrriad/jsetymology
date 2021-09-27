@@ -122,6 +122,20 @@ function relayout(cy) {
     cy.zoom(viewportAt.zoom());
     // cy.viewport(viewportAt); // prevent the relayout from resetting viewport
 }
+function makePopper(ele) {
+    let ref = ele.popperRef(); // used only for positioning
+
+    ele.tippy = tippy(ref, { // tippy options:
+        content: () => {
+            let content = document.createElement('div');
+
+            content.innerHTML = ele.data("value"); // .id()
+
+            return content;
+        },
+        trigger: 'manual' // probably want manual mode
+    });
+}
 function bindTooltips() {
     // https://stackoverflow.com/questions/54352041/how-can-i-change-the-color-an-individual-node-in-a-grid-of-cytoscape-js
     // https://stackoverflow.com/questions/54547927/show-and-hide-node-info-on-mouseover-in-cytoscape/54556015
