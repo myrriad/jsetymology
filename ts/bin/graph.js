@@ -18,7 +18,6 @@ function query(word, lang, downward, target) {
     else {
         isRecon = isReconstructed(word, lang, langcode);
     }
-    let fixedword = decodeWord(word, lang, langcode, isRecon); // anti-macron
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     gofetch(word, lang, isRecon, function ondata(data2) {
@@ -80,17 +79,21 @@ function createTree(oword, olang) {
     let orig;
     if (origarr && origarr.length) {
         orig = origarr[0];
+        orig.data.searched = true;
     }
     else {
         orig = cy().add({
             group: 'nodes',
             data: {
-                id: `${oword}, ${olang}` // ,
+                id: `${oword}, ${olang}`,
+                searched: true
+                // ,
                 // data: { weight: 75 },
                 // position: { x: 200, y: 200 }
             }
         });
     }
+    orig.style('background-color', 'green');
     let i = 1;
     for (let temptxt of $('span.template.t-active')) {
         // if(temp)
@@ -139,6 +142,8 @@ function createTree(oword, olang) {
                     group: 'edges',
                     data: {
                         id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
+                        label: `${_parse(temp.ttype)}`,
+                        template: `${temp.orig_template}`,
                         source: `${word}, ${lang}`,
                         target: `${oword}, ${olang}`,
                     }

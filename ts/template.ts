@@ -42,6 +42,7 @@ class Templated {
     function _multiGetKeyFunc(wtfobj: any | str, key: num, make_temps = false, make_temps_idx: num[] =[], error=true): str | Templated[] | undefined{
         // @ts-ignore
         if (typeof wtfobj === 'string') wtfobj = wtf(wtf_obj).templates()[0];
+        assert(wtfobj, 'remember to fix the template bug with {{cog}}!')
         let elem;
         let wtfdata = wtfobj.data;
         let did_list = undefined;
@@ -133,6 +134,12 @@ class Templated {
                 break;
             // TODO: multi-term templates: root, affix, blend, doublet
             // TODO: onom, named-after
+            case 'form of':
+                // weird one
+                lang = getFromKey(templ, 1);
+                let formof = getFromKey(templ, 2);
+                word = getFromKey(templ, 3);
+                break;
             default:
                 lang = '';
                 word = '';
@@ -166,7 +173,28 @@ class Templated {
                         return multiParamTemplateParse(templ, 1, [2, 3]);
 
                 }
-                console.log(`Unprepared template type ${ttype}!`);
+                let flag = false;
+                for(let pos of templPOS) {
+                    if(ttype.endsWith('-' + pos)) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag) {
+                    let a = getFromKey(templ, 1); // this category is horrendously messy.
+                    let b = getFromKey(templ, 2); // TODO improve this 
+                    if(a && b && a.length <= 2 && b.length > a.length) word = b;
+                    else word = a;
+                    if(word && word.length === 1) {
+                        word = ''; // probably
+                        lang = '';
+                    } else {
+                        lang = ttype.slice(0, ttype.indexOf('-')); // this is decently reliable I guess
+                    }
+                    
+                } else {
+                    console.log(`Unprepared template type ${ttype}!`);
+                }
             }
         }
         if(lang && word) {
@@ -217,4 +245,53 @@ function isReconstructed(word: str, lang: str, langcode?: str) {
     return false;
 
     
+}
+
+function findRelevance(templatestr: str) {
+    // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
+    // makes a Mediawiki parser emulator
+    assert(templatestr.indexOf('}}') >= 0);
+    let pipe = templatestr.indexOf('|');
+    let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
+    let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
+
+    let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
+        'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
+        'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
+        'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
+
+    if (etys.includes(ttype)) return true; // Whitelist.
+
+
+    if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws', // Blacklist.
+        'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
+        'IPA', 'rfap', 'rfp', 'Q'].includes(ttype)) return false;
+
+    for (let comb of ['quote', 'R:', 'Swadesh', 'ws ']) if (ttype.startsWith(comb)) return false;
+
+    // Form of.
+    // https://en.wiktionary.org/wiki/Category:Form-of_templates
+    // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
+    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
+    let frag = ttype;
+    let formFlag = false;
+    if (ttype.endsWith('-form')) {
+        frag = ttype.slice(-5); // take off the form
+        formFlag = true;
+        // pretty likely
+        console.log('Candidate: ' + ttype);
+    }
+    for (let pos of templPOS) if (frag.endsWith('-' + pos)) return true; // actually these seem not to be useful
+
+    if (ttype.endsWith(' of')) return true; // many POSs end with ' of'.
+    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
+
+    if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
+        'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype)) return false;
+
+    if (templatestr.includes('-')) return true; // if it has a hyphen, there's a pretty good chance it's a lemma
+
+    // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
+
+    return false;
 }

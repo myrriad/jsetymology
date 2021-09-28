@@ -74,7 +74,10 @@ function initiable(obj, restyle = true) {
                     'line-color': '#ccc',
                     'target-arrow-color': '#ccc',
                     'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier'
+                    'curve-style': 'bezier',
+                    'label': 'data(label)', // maps to data.label
+                    'font-size': '10px',
+                    'color': '#FF0000'
                 }
             },
             {

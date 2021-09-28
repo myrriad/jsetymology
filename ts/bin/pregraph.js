@@ -2,7 +2,7 @@
 // let mw = wtf.default;
 // import wtf from 'https://unpkg.com/wtf_wikipedia';
 // / <reference path='https://unpkg.com/wtf_wikipedia'/>
-window.doc = undefined;
+// https://unpkg.com/wtf_wikipedia@9.0.1/builds/wtf_wikipedia-client.min.js
 // @ts-ignore
 // let wth = wtf as typeof wtt.default; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
 // wtf.extend(require('wtf-plugin-html'))
@@ -22,13 +22,6 @@ const RELATIONS = [
     "meronyms", "holonyms", "troponyms", "related terms",
     "coordinate terms",
 ];
-function assert(x, message = '', hard = true) {
-    if (!x)
-        if (hard)
-            throw TypeError(message);
-        else
-            console.warn(message);
-}
 class DictEntry {
     constructor(defn, deriv) {
         this.defn = defn;
@@ -45,9 +38,8 @@ class EtyEntry {
 function gofetch(word, lang = '', reconstr = false, callback) {
     if (!word)
         throw "You didn't pass a word in to search!";
-    // @ts-ignore
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
-    wtf.fetch(qy, {
+    wtffetch(qy, {
         lang: 'en',
         wiki: 'wiktionary'
     }, function (err, doc2) {
@@ -59,6 +51,9 @@ function gofetch(word, lang = '', reconstr = false, callback) {
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
         if (!doc) {
             friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
+            let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
+            h.data.searched = true;
+            h.style('background-color', 'green');
             return;
         }
         doc = doc;
@@ -138,35 +133,20 @@ function parseDictEntry(sec) {
     assert(derivs.length <= 1, 'more than 1 deriv? ' + derivs, false);
     return new DictEntry(defn, derivs ? derivs[0] : undefined);
 }
-function getIndices(sec, temps) {
-    if (!temps)
-        temps = sec.templates();
-    let i = 0;
-    let idxs = [];
-    let str = sec.wikitext();
-    for (let temp of temps) {
-        let i2 = str.indexOf(temp.wikitext(), i);
-        assert(i2 >= 0, 'template not found! ' + temp.wikitext(), false);
-        if (i2 === -1)
-            i2 = 0;
-        else
-            i = i2;
-        idxs.push(i);
-    }
-    return idxs;
-}
-// gofetch('leaflet', 'english')
-// @ts-ignore
-// gofetch('lead', 'english', (x)=>window.x = x);
-function friendlyError(str, override = true) {
-    if (override)
-        $('#closeinspect')[0].innerHTML = '';
-    let txt = document.createTextNode(str);
-    let span = document.createElement('span');
-    span.setAttribute('style', 'color: red;'); // font-style: italic; 
-    span.appendChild(txt);
-    $('#closeinspect')[0].appendChild(span);
-}
+// function getIndices(sec: wtf.default.Section, temps?: wtf.default.Template[]) {
+//     if(!temps) temps = sec.templates();
+//     let i=0;
+//     let idxs = [];
+//     let str = sec.wikitext();
+//     for(let temp of temps) {
+//         let i2 = str.indexOf(temp.wikitext(), i);
+//         assert(i2 >= 0, 'template not found! ' + temp.wikitext(), false);
+//         if(i2 === -1) i2 = 0; 
+//         else i = i2;
+//         idxs.push(i);
+//     }
+//     return idxs;
+// }
 function plop(entry, override = true) {
     // TODO plop a link here for easy access
     if (!entry || entry instanceof EtyEntry && !entry.ety) {
@@ -203,7 +183,7 @@ function plop(entry, override = true) {
         // template.setAttribute('style', 'background-color: #FF000022;');
         template.appendChild(ttextNode);
         template.classList.add('template');
-        template.classList.add(findRelevance(ttext) ? 't-active' : 't-inactive');
+        template.classList.add(findRelevance(ttext) ? 't-active' : 't-inactive'); // requires a dependency on template.ts
         template.onclick = () => onTemplateClicked(template);
         $('#closeinspect')[0].appendChild(template);
         start = end;
@@ -217,12 +197,8 @@ function templTknr(inp, startidx, nests) {
         if (c === '{') {
             if (inp[i + 1] && inp[i + 1] === '{') {
                 let [segm, newidx] = templTknr(inp, i, nests);
-                if (segm) {
-                    nests.push(segm);
-                }
-                else {
-                    throw "bad template!";
-                }
+                assert(segm, "bad template!");
+                nests.push(segm);
                 i = newidx;
             }
             else
@@ -239,7 +215,8 @@ function templTknr(inp, startidx, nests) {
     return ['', startidx];
 }
 function getTemplates(sec) {
-    // somehow this custom naive function works better
+    // somehow this custom naive function works better, as {{cog}} are ignored. 
+    // See https://github.com/spencermountain/wtf_wikipedia/issues/432
     let plain = typeof sec === 'string' ? sec : sec.wikitext();
     let idxs = [];
     let lens = [];
@@ -276,54 +253,4 @@ function onCheckbox() {
     else {
         $('.template').removeClass('noSelect');
     }
-}
-function findRelevance(templatestr) {
-    // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
-    // makes a Mediawiki parser emulator
-    assert(templatestr.indexOf('}}') >= 0);
-    let pipe = templatestr.indexOf('|');
-    let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
-    let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
-    let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
-        'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
-        'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
-        'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
-    if (etys.includes(ttype))
-        return true; // Whitelist.
-    if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
-        'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
-        'IPA', 'rfap', 'rfp', 'Q'].includes(ttype))
-        return false;
-    for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
-        if (ttype.startsWith(comb))
-            return false;
-    // Form of.
-    // https://en.wiktionary.org/wiki/Category:Form-of_templates
-    // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
-    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
-    let frag = ttype;
-    let formFlag = false;
-    if (ttype.endsWith('-form')) {
-        frag = ttype.slice(-5); // take off the form
-        formFlag = true;
-        // pretty likely
-        console.log('Candidate: ' + ttype);
-    }
-    for (let pos of templPOS)
-        if (frag.endsWith('-' + pos))
-            return true; // actually these seem not to be useful
-    if (ttype.endsWith(' of'))
-        return true; // many POSs end with ' of'.
-    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
-    if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
-        'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype))
-        return false;
-    if (templatestr.includes('-'))
-        return true; // if it has a hyphen, there's a pretty good chance it's a lemma
-    // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
-    return false;
-}
-function saveWiktEntry() {
-    let html = $('#closeinspect').html();
-    console.log(html);
 }

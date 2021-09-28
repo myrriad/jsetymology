@@ -18,7 +18,6 @@ function query(word: str, lang: str, downward?: boolean, target?: any) {
     } else {
         isRecon = isReconstructed(word, lang, langcode);
     }
-    let fixedword = decodeWord(word, lang, langcode, isRecon); // anti-macron
 
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
@@ -82,16 +81,20 @@ function createTree(oword: str, olang: str) {
     let orig;
     if (origarr && origarr.length) {
         orig = origarr[0];
+        (orig.data as any).searched = true;
     } else {
         orig = cy().add({
             group: 'nodes',
             data: {
-                id: `${oword}, ${olang}`// ,
+                id: `${oword}, ${olang}`,
+                searched: true
+                // ,
                 // data: { weight: 75 },
                 // position: { x: 200, y: 200 }
             }
         });
     }
+    orig.style('background-color', 'green');
     let i = 1;
     for (let temptxt of $('span.template.t-active')) {
         // if(temp)
@@ -135,7 +138,8 @@ function createTree(oword: str, olang: str) {
                     group: 'edges',
                     data: {
                         id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
-
+                        label: `${_parse(temp.ttype)}`,
+                        template: `${temp.orig_template}`, // FIXME unparsed. But afaik this is ok???
                         source: `${word}, ${lang}`,
                         target: `${oword}, ${olang}`,
                     }
