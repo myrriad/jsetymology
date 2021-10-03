@@ -128,7 +128,7 @@ class Templated {
             case 'noncog':
             case 'ncog':
             case 'nc':
-            
+            case 'l':
                 lang = getFromKey(templ, 1); // this is all according to spec. TODO apply flexible, as shown below as impl. in "form of"
                 word = getFromKey(templ, 2);
                 break;
@@ -160,6 +160,7 @@ class Templated {
             } else if(ttype.endsWith('-form')) {
                 word = getFromKey(templ, 1); // la-verb-form
             } else {
+                let m;
                 switch(ttype) {
 
                     case 'blend':
@@ -167,11 +168,21 @@ class Templated {
                         return multiParamTemplateParse(templ, 1);// in 1-indexed (wiktionary) terms
                     case 'root':
                         return multiParamTemplateParse(templ, 2);
-                    case 'affix':
-                    case 'suffix':
+
                     case 'compound':
                         return multiParamTemplateParse(templ, 1, [2, 3]);
+                    case 'prefix':
+                        m = multiParamTemplateParse(templ, 1, [2, 3]);
+                        if (!m[0].word.endsWith('-')) m[0].word = m[0].word + '-';
+                        return m;
 
+                    case 'suffix':
+                        m = multiParamTemplateParse(templ, 1, [2, 3]);
+                        if (!m[0].word.startsWith('-')) m[0].word = '-' + m[0].word;
+                        return m;
+                    case 'affix':
+                        m = multiParamTemplateParse(templ, 1);
+                        return m;
                 }
                 let flag = false;
                 for(let pos of templPOS) {
@@ -222,7 +233,7 @@ function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
     if(isRecon && word.startsWith('*')) {
         word = word.slice(1);
     }
-    if (lang === 'Latin') {
+    if (lang === 'Latin' || lang === 'Old English') {
         let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
         let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
         for (let i = 0; i < macrons.length; i++) {

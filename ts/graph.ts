@@ -96,8 +96,11 @@ function createTree(oword: str, olang: str) {
     }
     orig.style('background-color', 'green');
     let i = 1;
+    let lastConnector;
+
     for (let temptxt of $('span.template.t-active')) {
         // if(temp)
+        
         let txt = temptxt.textContent;
         if(!txt) continue;
         let out = decodeTemplate(txt);
@@ -133,23 +136,42 @@ function createTree(oword: str, olang: str) {
                     },
                 });
             }
+            // we have the other word. Now we want to look for the node to conenct that word to
+            // usually it's the origin, but for chains of inheritance we want to do inheritance.
+            let prev = temptxt.previousSibling;
+            let connector;
+            if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
+                if(prev.textContent.toLowerCase().includes('from') // from
+                || prev.textContent === ', ') {
+                // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
+                    connector = lastConnector;
+                }
+            } 
+            if (!connector) {
+                connector = `${oword}, ${olang}`
+            }
             try {
+                let me = `${word}, ${lang}`;
+                lastConnector = me;
+                console.log(`edge ${me};  ${connector}`)
                 cy().add({
                     group: 'edges',
                     data: {
-                        id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${i++}`,
+                        id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${connector}; ${me} || ${i++}`,
                         label: `${_parse(temp.ttype)}`,
                         template: `${temp.orig_template}`, // FIXME unparsed. But afaik this is ok???
-                        source: `${word}, ${lang}`,
-                        target: `${oword}, ${olang}`,
+                        source: me,
+                        target: connector,
                     }
                 });
                 relayout();
             } catch (e) {
-                // soft fails
+                // soft fails. Usually because there is a duplicate edge.
+                console.log(e);
             }
         }
     }
+
 
 }
 
