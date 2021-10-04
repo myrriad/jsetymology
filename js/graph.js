@@ -222,8 +222,8 @@ function clickToQuery() {
 
 const SAMPLE = function() {
     let ret = {};
-    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
-    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French'];
+    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux', 'pesticide'];
+    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French', 'English'];
     ret.random = function() {
         let r = Math.floor(Math.random() * ret.words.length);
         return [SAMPLE.words[r], SAMPLE.langs[r]];

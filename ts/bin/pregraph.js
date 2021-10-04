@@ -35,14 +35,20 @@ class EtyEntry {
         this.qy = url;
     }
 }
-function gofetch(word, lang = '', reconstr = false, callback) {
+function gofetch(word, lang = '', reconstr = false, callback, cachedresponse) {
     if (!word)
         throw "You didn't pass a word in to search!";
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
-    wtffetch(qy, {
-        lang: 'en',
-        wiki: 'wiktionary'
-    }, function (err, doc2) {
+    if (cachedresponse) {
+        ondoc(undefined, cachedresponse); // function hoisting
+    }
+    else {
+        wtffetch(qy, {
+            lang: 'en',
+            wiki: 'wiktionary'
+        }, ondoc); // function hoisting
+    }
+    function ondoc(err, doc2) {
         // doc.
         // let doc3 = doc2[0];
         if (err) {
@@ -52,7 +58,7 @@ function gofetch(word, lang = '', reconstr = false, callback) {
         if (!doc) {
             friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
             let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
-            h.data.searched = true;
+            h.data().searched = true;
             h.style('background-color', 'green');
             return;
         }
@@ -116,11 +122,11 @@ function gofetch(word, lang = '', reconstr = false, callback) {
         let etys = multiEtyMode ? etylist : [new EtyEntry(dictEntries, myety, qy)];
         assert(flag, "No section found or parsed?", false);
         if (callback)
-            callback(etys);
+            callback(etys, doc);
         // let members = doc.get('etymology'); // doc.infobox().get('current members')
         // members.links().map((l) => l.page())
         //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
-    });
+    }
 }
 function parseDictEntry(sec) {
     let defn = sec;

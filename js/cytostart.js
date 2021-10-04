@@ -167,12 +167,12 @@ function createCyto(data, reLayout = false) {
     var tograph = data;
     if (cy) { // merge graph with old graph
         var jsonify, elems;
-        print(jsonify = cy.json(), "prior:");// to json
+        // print(jsonify = cy.json(), "prior:");// to json
 
         // cy.$('*[loadBatch=50]')
 
-        print(data, "data:");
-        print(elems = data["elements"], "elements:");// get elements of the new data
+        // print(data, "data:");
+        // print(elems = data["elements"], "elements:");// get elements of the new data
 
         for (let elem of elems.nodes) {
             elem.data.batchIndex = window.universe.batchIndex;
@@ -183,7 +183,7 @@ function createCyto(data, reLayout = false) {
         }
 
         cy.add(elems); // add data
-        print(tograph = cy.json(), "posterior:");
+        // print(tograph = cy.json(), "posterior:");
 
         if (!reLayout) relayout(cy);
         window.cytograph = cy;
@@ -192,9 +192,9 @@ function createCyto(data, reLayout = false) {
 
     } else { // if it's the first time
         // formerly if relayout
-        print(tograph, "data:");
+        // print(tograph, "data:");
         tograph = initiable(tograph, true);
-        print(tograph, "graphing:");
+        // print(tograph, "graphing:");
         cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
         relayout(cy);
     }

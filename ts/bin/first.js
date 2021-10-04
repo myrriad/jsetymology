@@ -1,12 +1,10 @@
 "use strict";
 window.universe = { batchIndex: 0 };
 window.doc = undefined;
-function print(obj, str = '') {
-    if (str)
-        console.log(str);
-    if (obj)
-        console.log(obj);
-}
+// function print(obj: any, str = '') {
+//     if (str) console.log(str);
+//     if (obj) console.log(obj);
+// }
 function assert(x, message = '', hard = true) {
     if (!x)
         if (hard)

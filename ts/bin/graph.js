@@ -1,14 +1,33 @@
 "use strict";
-function query(word, lang, downward, target) {
+function _parse(...strs) {
+    let ret = new Array(strs.length);
+    for (let i = 0; i < strs.length; i++) {
+        let str = strs[i];
+        if (!str) {
+            ret[i] = '';
+            continue;
+        }
+        str = str.replace('"', 'quote');
+        str = str.replace('\\', 'backslash');
+        str = str.replace(',', 'comma');
+        ret[i] = str;
+    }
+    if (ret.length === 1)
+        return ret[0];
+    return ret;
+}
+function query(word, lang, target, downward) {
+    var _a, _b;
     if (word === undefined)
         word = $('#qword').val();
     if (lang === undefined)
         lang = $('#qlang').val();
     if (downward === undefined)
         downward = false;
+    let [oword, olang] = _parse(word, lang);
     // TODO search for existing node in graph, to extract additional info like langcode, isRecon
     if (!target) {
-        target = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`);
+        target = cy().$(`node[id="${oword}, ${olang}"]`);
     }
     let isRecon, langcode;
     if (target && target.length) {
@@ -17,10 +36,15 @@ function query(word, lang, downward, target) {
     }
     else {
         isRecon = isReconstructed(word, lang, langcode);
+        cy().add({
+            group: 'nodes',
+            data: {
+                id: `${oword}, ${olang}`,
+            }
+        });
     }
-    // alert($('#q1')[0]);
-    // Temporarily disable URL request for debugging.
-    gofetch(word, lang, isRecon, function ondata(data2) {
+    assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length);
+    gofetch(word, lang, isRecon, function ondata(data2, doc) {
         // alert(data);
         let idx;
         if (data2.length > 1) {
@@ -42,58 +66,47 @@ function query(word, lang, downward, target) {
         }
         for (let defn of etyentry.defns)
             plop(defn.defn, false);
-        createTree(word, lang);
+        createTree(oword, olang); // this has createGraph() logic so we must create node in here too
         onCheckbox();
-    });
+    }, ((_b = target === null || target === void 0 ? void 0 : target.data) === null || _b === void 0 ? void 0 : _b.wikitext) ? wtf(target.data.wikitext) : undefined);
+    // alert($('#q1')[0]);
+    // Temporarily disable URL request for debugging.
     // var graph = ondata();
     // clickToQuery();
 }
-function _parse(...strs) {
-    let ret = new Array(strs.length);
-    for (let i = 0; i < strs.length; i++) {
-        let str = strs[i];
-        if (!str) {
-            ret[i] = '';
-            continue;
-        }
-        str = str.replace('"', 'quote');
-        str = str.replace('\\', 'backslash');
-        str = str.replace(',', 'comma');
-        ret[i] = str;
-    }
-    if (ret.length === 1)
-        return ret[0];
-    return ret;
-}
-function createTree(oword, olang) {
+function createTree(oword, olang, doc) {
+    var _a, _b;
     // homebrew graph creation.
     // relies on second.ts
     // let origin = cy.$('node#origin');
     // target = 
+    // assumes oword, olang are already parsed once.
+    if (!doc)
+        doc = wtf($('#closeinspect').text()); // TODO FIXME XSS
     if (!oword)
-        oword = $('#qword').val();
+        oword = _parse($('#qword').val());
     if (!olang)
-        olang = $('#qlang').val();
-    [oword, olang] = _parse(oword, olang);
+        olang = _parse($('#qlang').val());
     let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
-    let orig;
-    if (origarr && origarr.length) {
-        orig = origarr[0];
-        orig.data.searched = true;
-    }
-    else {
-        orig = cy().add({
+    if (!(origarr && origarr.length)) {
+        cy().add({
             group: 'nodes',
             data: {
                 id: `${oword}, ${olang}`,
-                searched: true
-                // ,
+                // searched: true
                 // data: { weight: 75 },
                 // position: { x: 200, y: 200 }
             }
         });
     }
-    orig.style('background-color', 'green');
+    origarr = cy().$(`node[id="${oword}, ${olang}"]`);
+    assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
+    if (origarr && origarr.length) {
+        let orig = origarr[0];
+        orig.data().wikitext = doc.wikitext();
+        orig.data().searched = true;
+        orig.style('background-color', 'green');
+    }
     let i = 1;
     let lastConnector;
     for (let temptxt of $('span.template.t-active')) {
@@ -146,7 +159,12 @@ function createTree(oword, olang) {
                 if (prev.textContent.toLowerCase().includes('from') // from
                     || prev.textContent === ', ') {
                     // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
-                    connector = lastConnector;
+                    if (prev.previousSibling && ((_b = prev.previousSibling.textContent) === null || _b === void 0 ? void 0 : _b.startsWith('{{root'))) {
+                        // make an exception for the first thing being a root or ine-root
+                    }
+                    else {
+                        connector = lastConnector;
+                    }
                 }
             }
             if (!connector) {
@@ -210,7 +228,7 @@ function clickToQuery() {
             $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
             // it later reads this to deduce the origin. 
             // Cue dumb bugs from race conditions. 
-            query(as[0], as[1], target.data().langcode, target.data().isRecon);
+            query(as[0], as[1], target, undefined); // target.data().langcode, target.data().isRecon);
         }
     });
     c.on('cxttap', "node", function (event) {

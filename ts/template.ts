@@ -42,7 +42,7 @@ class Templated {
     function _multiGetKeyFunc(wtfobj: any | str, key: num, make_temps = false, make_temps_idx: num[] =[], error=true): str | Templated[] | undefined{
         // @ts-ignore
         if (typeof wtfobj === 'string') wtfobj = wtf(wtf_obj).templates()[0];
-        assert(wtfobj, 'remember to fix the template bug with {{cog}}!')
+        assert(wtfobj, 'remember to fix the template bug with {{cog}}!', false);
         let elem;
         let wtfdata = wtfobj.data;
         let did_list = undefined;
@@ -70,8 +70,8 @@ class Templated {
             }
         } else {
             for(let idx of make_temps_idx) {
-                assert((key + '') in wtfdata);
-                let wd = wtfdata[(key + '')];
+                assert((idx + '') in wtfdata);
+                let wd = wtfdata[(idx + '')];
                 ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wiki)); // In this case the elem is the lang
             }
         }
@@ -172,16 +172,20 @@ class Templated {
                     case 'compound':
                         return multiParamTemplateParse(templ, 1, [2, 3]);
                     case 'prefix':
+                    case 'pre':
                         m = multiParamTemplateParse(templ, 1, [2, 3]);
                         if (!m[0].word.endsWith('-')) m[0].word = m[0].word + '-';
                         return m;
-
+                    case 'suf':
                     case 'suffix':
                         m = multiParamTemplateParse(templ, 1, [2, 3]);
                         if (!m[0].word.startsWith('-')) m[0].word = '-' + m[0].word;
                         return m;
                     case 'affix':
-                        m = multiParamTemplateParse(templ, 1);
+                    case 'af':
+                    case 'univerbation':
+                    case 'univ':
+                        m = multiParamTemplateParse(templ, 1); // , [2, 3]);
                         return m;
                 }
                 let flag = false;
@@ -233,7 +237,7 @@ function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
     if(isRecon && word.startsWith('*')) {
         word = word.slice(1);
     }
-    if (lang === 'Latin' || lang === 'Old English') {
+    if (lang.includes('Latin') || lang === 'Old English') {
         let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
         let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
         for (let i = 0; i < macrons.length; i++) {

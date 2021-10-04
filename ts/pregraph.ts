@@ -44,25 +44,30 @@ class EtyEntry {
     }
 
 }
-
-function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEntry[]) => void) {
-    if(!word) throw "You didn't pass a word in to search!";
+function gofetch(word: string, lang = '', reconstr = false, callback?: (etys: EtyEntry[], doc: wtf.Document) => void, cachedresponse?: wtf.Document) {
+    if (!word) throw "You didn't pass a word in to search!";
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
-    wtffetch(qy, {
-        lang: 'en',
-        wiki: 'wiktionary'
-    }, function (err, doc2) {
+    
+    if(cachedresponse) {
+        ondoc(undefined, cachedresponse); // function hoisting
+    } else {
+        wtffetch(qy, {
+            lang: 'en',
+            wiki: 'wiktionary'
+        }, ondoc); // function hoisting
+    }
+    function ondoc(err: unknown, doc2: wtf.Document | wtf.Document[] | null) { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
         // doc.
         // let doc3 = doc2[0];
-        if(err) {
+        if (err) {
             throw err;
         }
         let doc = doc2 instanceof Array ? doc2[0] : doc2;
-        if(!doc) {
+        if (!doc) {
             friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
 
             let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
-            (h.data as any).searched = true;
+            h.data().searched = true;
             h.style('background-color', 'green');
             return;
         }
@@ -74,21 +79,21 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
         let etylist = [];
         let dictEntries = [];
 
-        
+
         let toplvl = doc.sections()[0] as wtf.default.Section | null;
-        
-        let skiplang= false;
+
+        let skiplang = false;
         // auto-inferral
         while (toplvl && toplvl?.title() === '') toplvl = toplvl.nextSibling(); // skip the {{also|preció}} template-only stuff.
-        if(toplvl ) {
+        if (toplvl) {
             // @ts-ignore
             assert(toplvl.depth() === 0);
-            if(!lang) {
-                if(!toplvl.nextSibling()) {
+            if (!lang) {
+                if (!toplvl.nextSibling()) {
                     skiplang = true;
                     let lang = toplvl.title()
                     $('#qlang').val(lang); // DUMBEST hack but it works I guess
-                 // if there's only 1 lang, then we infer lang.
+                    // if there's only 1 lang, then we infer lang.
                 } else {
 
                     friendlyError("More than 1 lang, cannot auto-infer!");
@@ -100,12 +105,12 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
         let multiEtyMode = undefined;
 
 
-        for (;toplvl; toplvl=toplvl.nextSibling()) {
+        for (; toplvl; toplvl = toplvl.nextSibling()) {
             // console.log(toplvl);
-            if(toplvl.title().toLowerCase() === lang?.toLowerCase() || skiplang) {
-                
+            if (toplvl.title().toLowerCase() === lang?.toLowerCase() || skiplang) {
+
                 flag = true;
-                for (let lvl2=toplvl.sections()[0] as wtf.default.Section|null; lvl2; lvl2=lvl2.nextSibling()) {
+                for (let lvl2 = toplvl.sections()[0] as wtf.default.Section | null; lvl2; lvl2 = lvl2.nextSibling()) {
                     // console.log(lvl2);
                     if (/Etymology \d+/.test(lvl2.title())) {
                         multiEtyMode = true;
@@ -116,30 +121,28 @@ function gofetch(word: string, lang='', reconstr=false, callback?: (etys: EtyEnt
                             }
                         }
                         etylist.push(new EtyEntry(myDictEntries, lvl2, qy));
-                        
+
 
                     } else if (lvl2.title() === 'Etymology') {
                         assert(!multiEtyMode);
                         myety = lvl2;
                         multiEtyMode = false;
-                    } else if(PARTS_OF_SPEECH.indexOf(lvl2.title().toLowerCase()) >= 0) {
+                    } else if (PARTS_OF_SPEECH.indexOf(lvl2.title().toLowerCase()) >= 0) {
                         assert(!multiEtyMode);
                         dictEntries.push(parseDictEntry(lvl2));
                     }
-                        
+
                 }
             }
         }
         let etys = multiEtyMode ? etylist : [new EtyEntry(dictEntries, myety, qy)];
         assert(flag, "No section found or parsed?", false)
-        if (callback) callback(etys);
+        if (callback) callback(etys, doc);
         // let members = doc.get('etymology'); // doc.infobox().get('current members')
         // members.links().map((l) => l.page())
         //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
-    });
-
+    }
 }
-
 function parseDictEntry(sec: Section): DictEntry {
     let defn = sec;
     let derivs = [];
