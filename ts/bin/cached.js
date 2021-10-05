@@ -8,6 +8,7 @@ let wtffetch;
             switch (titleOrId) {
                 case 'ballena':
                     callback(undefined, wtf(BALLENA));
+                    return;
                 case 'cadeaux':
                     callback(undefined, wtf(CADEAUX));
                     return;
