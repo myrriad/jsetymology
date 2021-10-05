@@ -37,7 +37,10 @@ class Templated {
         // @ts-ignore
         if (typeof wtfobj === 'string')
             wtfobj = wtf(wtf_obj).templates()[0];
-        assert(wtfobj, 'remember to fix the template bug with {{cog}}!', false);
+        if (!wtfobj) {
+            console.error('remember to fix the template bug with {{cog}}!');
+            return undefined;
+        }
         let elem;
         let wtfdata = wtfobj.data;
         let did_list = undefined;

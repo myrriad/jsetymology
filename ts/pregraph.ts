@@ -44,7 +44,7 @@ class EtyEntry {
     }
 
 }
-function gofetch(word: string, lang = '', reconstr = false, callback?: (etys: EtyEntry[], doc: wtf.Document) => void, cachedresponse?: wtf.Document) {
+function fetchEtyEntry(word: string, lang = '', reconstr = false, callback?: (etys: EtyEntry[], doc: wtf.Document) => void, cachedresponse?: wtf.Document) {
     if (!word) throw "You didn't pass a word in to search!";
     let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
     
@@ -71,6 +71,7 @@ function gofetch(word: string, lang = '', reconstr = false, callback?: (etys: Et
             h.style('background-color', 'green');
             return;
         }
+        // friendlyInfo(`https://en.wiktionary.org/wiki/${qy}`, false);
         doc = doc as wtf.default.Document;
         // console.log(doc);
 
@@ -95,8 +96,8 @@ function gofetch(word: string, lang = '', reconstr = false, callback?: (etys: Et
                     $('#qlang').val(lang); // DUMBEST hack but it works I guess
                     // if there's only 1 lang, then we infer lang.
                 } else {
-
-                    friendlyError("More than 1 lang, cannot auto-infer!");
+                    let langs = doc.sections().filter(x => x.indentation() === 0).map(x => x.title());
+                    friendlyError(`More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
                     throw "More than 1 lang, cannot auto-infer!";
                 }
             }
@@ -157,25 +158,14 @@ function parseDictEntry(sec: Section): DictEntry {
     return new DictEntry(defn, derivs ? derivs[0] : undefined);
 }
 
-// function getIndices(sec: wtf.default.Section, temps?: wtf.default.Template[]) {
-//     if(!temps) temps = sec.templates();
-//     let i=0;
-//     let idxs = [];
-//     let str = sec.wikitext();
-//     for(let temp of temps) {
-//         let i2 = str.indexOf(temp.wikitext(), i);
-//         assert(i2 >= 0, 'template not found! ' + temp.wikitext(), false);
-//         if(i2 === -1) i2 = 0; 
-//         else i = i2;
-//         idxs.push(i);
-//     }
-//     return idxs;
-// }
 
-function plop(entry?: Section | EtyEntry, override=true) {
+function clearDiv() {
+    $('#closeinspect')[0].innerHTML = '';
+}
+function appendToDiv(entry?: Section | EtyEntry) {
     // TODO plop a link here for easy access
     if(!entry || entry instanceof EtyEntry && !entry.ety) {
-        $('#closeinspect')[0].innerHTML = `<i>No etymology found. (Perhaps it\'s lemmatized?)</i>`;
+        friendlyError(`<i>No etymology found. (Perhaps it\'s lemmatized?)</i>`, true);
         return false;
     }
     let sec = entry instanceof EtyEntry ? entry.ety! : entry;
@@ -190,12 +180,11 @@ function plop(entry?: Section | EtyEntry, override=true) {
 
     let start=0, end = 0;
     assert(idxs.length === idxs.length);
-    if(override) {
-        $('#closeinspect')[0].innerHTML = '';
-    } else {
-        $('#closeinspect')[0].appendChild(document.createElement('br'));
+    // if(override) {
+        // clearDiv();
+    // } else {
 
-    }
+    // }
     for(let i=0;i<idxs.length;i++) {
         let idx = idxs[i];
         end = idx;
@@ -217,6 +206,8 @@ function plop(entry?: Section | EtyEntry, override=true) {
         $('#closeinspect')[0].appendChild(template);
         start = end;
     }
+    friendlyBreak(false);
+
     return true;
 }
 

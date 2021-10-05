@@ -16,8 +16,8 @@ function _parse(...strs) {
         return ret[0];
     return ret;
 }
-function query(word, lang, target, downward) {
-    var _a, _b;
+function wlToTree(word, lang, target, downward) {
+    var _a;
     if (word === undefined)
         word = $('#qword').val();
     if (lang === undefined)
@@ -27,24 +27,21 @@ function query(word, lang, target, downward) {
     let [oword, olang] = _parse(word, lang);
     // TODO search for existing node in graph, to extract additional info like langcode, isRecon
     if (!target) {
-        target = cy().$(`node[id="${oword}, ${olang}"]`);
+        let targetarr = cy().$(`node[id="${oword}, ${olang}"]`);
+        if (targetarr && targetarr.length) {
+            target = targetarr[0];
+        }
     }
     let isRecon, langcode;
-    if (target && target.length) {
-        isRecon = target[0].data().isRecon;
-        langcode = target[0].data().langcode;
+    if (target) {
+        isRecon = target.data().isRecon;
+        langcode = target.data().langcode;
     }
     else {
         isRecon = isReconstructed(word, lang, langcode);
-        cy().add({
-            group: 'nodes',
-            data: {
-                id: `${oword}, ${olang}`,
-            }
-        });
+        // this fails in case olang is inferred
     }
-    assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length);
-    gofetch(word, lang, isRecon, function ondata(data2, doc) {
+    fetchEtyEntry(word, lang, isRecon, function onEtyEntry(data2, doc) {
         // alert(data);
         let idx;
         if (data2.length > 1) {
@@ -61,28 +58,40 @@ function query(word, lang, target, downward) {
             throw "No entries found!";
         let etyentry = data2[idx - 1]; // idx start at 0 instead of 1.
         // $('#target').text(data2);
-        if (!plop(etyentry.ety, true)) {
-            $('#closeinspect')[0].innerHTML += ` https://en.wiktionary.org/wiki/${etyentry.qy}`;
+        // if (!plop(etyentry.ety, true)) {
+        // $('#closeinspect')[0].innerHTML += 
+        // }
+        clearDiv();
+        let etyresult = appendToDiv(etyentry.ety);
+        friendlyBreak(true);
+        if (etyresult) {
+            friendlyInfo(`https://en.wiktionary.org/wiki/${etyentry.qy}`, false);
+        }
+        else {
+            friendlyError(`https://en.wiktionary.org/wiki/${etyentry.qy}`, false);
         }
         for (let defn of etyentry.defns)
-            plop(defn.defn, false);
-        createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+            appendToDiv(defn.defn);
+        let orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+        // success. save wikitext
+        // the node better exist
+        if (doc && doc.wikitext())
+            orig.data().wikitext = doc.wikitext();
         onCheckbox();
-    }, ((_b = target === null || target === void 0 ? void 0 : target.data) === null || _b === void 0 ? void 0 : _b.wikitext) ? wtf(target.data.wikitext) : undefined);
+    }, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined);
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     // var graph = ondata();
     // clickToQuery();
 }
-function createTree(oword, olang, doc) {
-    var _a, _b;
+function createTree(oword, olang) {
     // homebrew graph creation.
     // relies on second.ts
     // let origin = cy.$('node#origin');
     // target = 
     // assumes oword, olang are already parsed once.
-    if (!doc)
-        doc = wtf($('#closeinspect').text()); // TODO FIXME XSS
+    // returns the origin.
+    var _a, _b;
     if (!oword)
         oword = _parse($('#qword').val());
     if (!olang)
@@ -93,9 +102,6 @@ function createTree(oword, olang, doc) {
             group: 'nodes',
             data: {
                 id: `${oword}, ${olang}`,
-                // searched: true
-                // data: { weight: 75 },
-                // position: { x: 200, y: 200 }
             }
         });
     }
@@ -103,7 +109,6 @@ function createTree(oword, olang, doc) {
     assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
     if (origarr && origarr.length) {
         let orig = origarr[0];
-        orig.data().wikitext = doc.wikitext();
         orig.data().searched = true;
         orig.style('background-color', 'green');
     }
@@ -192,6 +197,9 @@ function createTree(oword, olang, doc) {
             }
         }
     }
+    let ret = cy().$(`node[id="${oword}, ${olang}"]`);
+    assert(ret === null || ret === void 0 ? void 0 : ret.length, "couldn't find node");
+    return ret[0];
 }
 function onCollector() {
     let clang = $("#clang").val();
@@ -228,7 +236,7 @@ function clickToQuery() {
             $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
             // it later reads this to deduce the origin. 
             // Cue dumb bugs from race conditions. 
-            query(as[0], as[1], target, undefined); // target.data().langcode, target.data().isRecon);
+            wlToTree(as[0], as[1], target, undefined); // target.data().langcode, target.data().isRecon);
         }
     });
     c.on('cxttap', "node", function (event) {
