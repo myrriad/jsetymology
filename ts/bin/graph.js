@@ -179,21 +179,27 @@ function createTree(oword, olang) {
                 let me = `${word}, ${lang}`;
                 lastConnector = me;
                 console.log(`edge ${me};  ${connector}`);
-                cy().add({
-                    group: 'edges',
-                    data: {
-                        id: `${_parse(temp.ttype)} || ${oword}, ${olang} || ${connector}; ${me} || ${i++}`,
-                        label: `${_parse(temp.ttype)}`,
-                        template: `${temp.orig_template}`,
-                        source: me,
-                        target: connector,
-                    }
-                });
-                relayout();
+                let id = `${_parse(temp.ttype)} || ${oword}, ${olang} || ${connector}; ${me}`;
+                if (cy().$(`node[id="${id}"]`).length) {
+                    console.log(`Cannot add edge ${connector}; ${me} again!`);
+                }
+                else {
+                    cy().add({
+                        group: 'edges',
+                        data: {
+                            id: id,
+                            label: `${_parse(temp.ttype)}`,
+                            template: `${temp.orig_template}`,
+                            source: me,
+                            target: connector,
+                        }
+                    });
+                    relayout();
+                }
             }
             catch (e) {
                 // soft fails. Usually because there is a duplicate edge.
-                console.log(e);
+                throw e;
             }
         }
     }

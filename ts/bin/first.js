@@ -35,7 +35,7 @@ function friendlyInfo(str, override = true, top = true, color = 'black;') {
         $('#closeinspect')[0].appendChild(span);
     }
 }
-function friendlyError(str, override = true, top = true) {
-    friendlyInfo(str, override, top, 'red;');
+function friendlyError(str, override = true, top = true, ital = false) {
+    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 }
 // let mw = wtf.default;

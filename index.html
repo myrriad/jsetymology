@@ -6,10 +6,21 @@
 
   <head>
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FD5BRBDKH3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+
+      gtag('config', 'G-FD5BRBDKH3');
+    </script>
   </head>
-  <div style="background-color: #333; color:white; padding:30px">
-    <!-- <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} -->
-    <h1>Cognates Visualization Tool</h1>
+  <div id='topheader' style="background-color: #333; color:white; padding:30px"><!--
+     <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} 
+    --><h1>Cognate Visualization Tool</h1>
   </div>
   
   <div id='scripts'>
@@ -45,8 +56,8 @@
   </div>
 
   <div id="biggest-div" style="padding:5px">
-
-    <p>Enter a word below.</p>
+    <p>A tool for viewing and exploring cognates, powered by data from Wiktionary.<br>
+    Enter a word below.</p>
 
     
     <form onsubmit="return false;">
@@ -66,7 +77,7 @@
     <!-- <summary>Text Output</summary> -->
     <!-- <div id="target">{{=quer}}</div> -->
     <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label
-      for="tb-toggle">Edit/toggle templates</label>
+      for="tb-toggle">Click on templates to toggle</label>
     <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()">
     <label for="downward-toggle">Add nodes downwards</label>
     <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()">
@@ -84,24 +95,24 @@
         <details>
           <summary>Help</summary>
           <span>
-            <br>
             Left click on node to add tree data.<br>
             Right click node to remove.<br>
             Green node = already processed.<br>
+                        <br>
           </span>
         </details>
         <div id='closeinspect'></div>
         <button onclick="createTree()">Add to graph</button>
       </div>
     </div>
-    <div id="collectordiv">
+    <!-- <div id="collectordiv">
       <form action="javascript:void(0);">
-        <label for="cquery">Filter results by language: </label>
+        <label for="cquery">Filter results by language: </label> 
         <input type="text" id="clang" name="qlang" value="English" />
         <input type="text" id="cword" name="qword" placeholder="Enter an optional word" />
         <input type="button" id="submitc" value="Filter" onclick="onCollector()" />
       </form>
-    </div>
+    </div>-->
 
   </div>
   <style>
@@ -128,11 +139,10 @@
   </script>
 
   <!-- /EDIT -->
-  <p>Cognatetool icon is <a href="https://thenounproject.com/search/?q=network+tree&i=1569724">Tree Network Topology by
-      Trevor Dsouza from the Noun Project</a></p>
 
 
-  <details>
+
+  <details style='display:none;'>
     <summary>Debug</summary>
     <div id="debug-target"></div>
     <details>
@@ -141,11 +151,14 @@
     </details>
 
   </details>
-  <div style="padding:50px">
+  <div id='footer' style="padding:10px">
     <a class="btn btn-primary" href=''>
       <!--"{{=URL('admin','default','index', scheme='https')}}">-->
       <i class="glyphicon glyphicon-cog"></i>
     </a>
+      <p>Fork me on  <a href="https://github.com/accyl/jsetymology">github!</a>
+        <br>Cognatetool icon is by <a href="https://thenounproject.com/search/?q=network+tree&i=1569724">
+          Trevor Dsouza from the Noun Project</a></p>
   </div>
 </body>
 

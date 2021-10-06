@@ -42,8 +42,8 @@ function friendlyInfo(str: string, override = true, top = true, color='black;') 
 
 }
 
-function friendlyError(str: string, override = true, top=true) {
-    friendlyInfo(str, override, top, 'red;')
+function friendlyError(str: string, override = true, top=true, ital=false) {
+    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`)
 
 }
 // let mw = wtf.default;

@@ -81,7 +81,7 @@ function initiable(obj, restyle = true) {
                 }
             },
             {
-                selector: 'edge[undirected=true]',
+                selector: 'edge[undirected]',
                 style: {
                     'width': 3,
                     'line-color': '#ccc',

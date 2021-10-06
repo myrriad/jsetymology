@@ -1,12 +1,34 @@
+body {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    margin-top: 0px; /*all of these used to be 8px*/
+    margin-left: 0px;
+    margin-right: 0px;
+}
+h1 {
+    font-size: 40px;
+    font-weight: 600;
+}
+/* h1 { */
+    /* font-family: "Open Sans","Helvetica",sans-serif,sans-serif; */
+/* } */
+#topheader {
+    margin-top: 0px;
+    display: flex;
+}
+#biggest-div {
+    margin-left: 13px;
+}
 #flexwrap {
     display: flex;
 }
 #inspector {
     flex: 0 0 15%; /*left. smaller = bigger left*/
+    margin-left: 23px;
 }
 #closeinspect {
     white-space: pre-wrap;
     flex: 1; /*right*/
+    font-family: 'Times New Roman', Times, serif;
 
 }
 

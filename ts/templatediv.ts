@@ -18,7 +18,7 @@ function clearDiv() {
 function appendToDiv(entry?: Section | EtyEntry) {
     // TODO plop a link here for easy access
     if(!entry || entry instanceof EtyEntry && !entry.ety) {
-        friendlyError(`<i>No etymology found. (Perhaps it\'s lemmatized?)</i>`, true);
+        friendlyError(`No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true);
         return false;
     }
     let sec = entry instanceof EtyEntry ? entry.ety! : entry;
