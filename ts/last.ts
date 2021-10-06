@@ -38,7 +38,7 @@ function clickToQuery() {
             wlToTree(as[0], as[1], target, undefined); // target.data().langcode, target.data().isRecon);
         }
     });
-    c.on('cxttap', "node", function (event) { // right click to remove
+    c.on('cxttap', "node, edge", function (event) { // right click to remove nodes and edges
         let target = event.target;
         c.remove(target);
 

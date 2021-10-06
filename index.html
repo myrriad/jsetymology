@@ -72,6 +72,8 @@
     <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()">
     <label for="upward-toggle">Add nodes upwards</label>
     <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="tb-toggle">Show edge labels</label>
+
+
     <div id='flexwrap'>
 
       <!-- </details> -->
@@ -79,6 +81,15 @@
         <div id="cy"></div>
       </div>
       <div id='inspector'>
+        <details>
+          <summary>Help</summary>
+          <span>
+            <br>
+            Left click on node to add tree data.<br>
+            Right click node to remove.<br>
+            Green node = already processed.<br>
+          </span>
+        </details>
         <div id='closeinspect'></div>
         <button onclick="createTree()">Add to graph</button>
       </div>

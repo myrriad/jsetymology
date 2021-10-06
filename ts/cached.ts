@@ -12,6 +12,7 @@ let wtffetch: (titleOrId: string | number | number[] | string[], options?: Recor
             switch(titleOrId) {
             case 'ballena':
                 callback(undefined, wtf(BALLENA));
+                return;
             case 'cadeaux':
                 callback(undefined, wtf(CADEAUX));
                 return;
