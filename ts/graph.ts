@@ -1,37 +1,22 @@
 // const { data } = require("jquery");
-declare function relayout(cy?: cytoscape.Core): void;
-function _parse(...strs: str[]) {
+declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 
-    let ret = new Array(strs.length);
-    for (let i = 0; i < strs.length; i++) {
-
-        let str = strs[i];
-        if (!str) {
-            ret[i] = '';
-            continue;
-        }
-        str = str.replace('"', 'quote');
-        str = str.replace('\\', 'backslash');
-        str = str.replace(',', 'comma');
-
-        ret[i] = str;
-    }
-    if (ret.length === 1) return ret[0];
-    return ret;
-}
-function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular, downward?: boolean) {
+let wlToTree = function(word?: str, lang?: str, target?: cytoscape.NodeSingular, downward?: boolean) {
     if (word === undefined) word = $('#qword').val() as string;
     if (lang === undefined) lang = $('#qlang').val() as string;
     if (downward === undefined) downward = false;
     let [oword, olang] = _parse(word, lang);
-    
+    if ((window as any).jsetymologyDebug) console.log(`DEBUG ${oword}; ${olang}`);
     // TODO search for existing node in graph, to extract additional info like langcode, isRecon
+
+
     if (!target) {
         let targetarr = cy().$(`node[id="${oword}, ${olang}"]`);
         if (targetarr && targetarr.length) {
             target = targetarr[0];
         }
     }
+
     let isRecon, langcode;
     if(target) {
         isRecon = target.data().isRecon;
@@ -98,13 +83,18 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
     if (!oword) oword = _parse($('#qword').val() as str);
     if (!olang) olang = _parse($('#qlang').val() as str);
     let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
+
+    let fromScratch = cy().$('node').length === 0;
+
     if (!(origarr && origarr.length)) {
-        cy().add({
+        let target = cy().add({
             group: 'nodes',
             data: {
                 id: `${oword}, ${olang}`,
             }
-        });
+        })[0];
+        cy().$('node[lastSearched]').forEach(x => x.data().lastSearched = undefined);
+        target.data().lastSearched = true;
     }
     origarr = cy().$(`node[id="${oword}, ${olang}"]`);
     assert(cy().$(`node[id="${oword}, ${olang}"]`)?.length, "couldn't find node");
@@ -165,6 +155,8 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                 // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
                     if(prev.previousSibling && prev.previousSibling.textContent?.startsWith('{{root')) {
                         // make an exception for the first thing being a root or ine-root
+                    } else if (temps.length >= 2) { // make an exception for if we're an affixal type. 
+                        
                     } else {
                         connector = lastConnector;
                     }
@@ -173,14 +165,16 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
             if (!connector) {
                 connector = `${oword}, ${olang}`
             }
-            try {
-                let me = `${word}, ${lang}`;
-                lastConnector = me;
-                console.log(`edge ${me};  ${connector}`)
-                let id = `${_parse(temp.ttype)} || ${oword}, ${olang} || ${connector}; ${me}`;
-                if(cy().$(`node[id="${id}"]`).length) {
-                    console.log(`Cannot add edge ${connector}; ${me} again!`);
-                } else {
+            let me = `${word}, ${lang}`;
+            lastConnector = me;
+            console.log(`edge ${me};  ${connector}`)
+            let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
+            
+            //  || ${oword}, ${olang}
+            if(cy().$(`edge[id="${id}"]`).length) {
+                console.log(`Duplicate edge: ${id}`);
+            } else {
+                try {
                     cy().add({
                         group: 'edges',
                         data: {
@@ -191,14 +185,19 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                             target: connector,
                         }
                     });
-                    relayout();
+                } catch (e) {
+                    if ((e as any).message.startsWith(`Can not create second element with ID \`${id}`)) {
+                        console.log(`Duplicate edge: ${id}`);
+                    } else {
+                    // soft fails. Usually because there is a duplicate edge.
+                        throw e;
+                    }
                 }
-            } catch (e) {
-                // soft fails. Usually because there is a duplicate edge.
-                throw e;
             }
         }
     }
+    relayout(undefined, fromScratch);
+
     let ret = cy().$(`node[id="${oword}, ${olang}"]`);
     assert(ret?.length, "couldn't find node");
     return ret[0];

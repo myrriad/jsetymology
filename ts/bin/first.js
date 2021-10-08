@@ -38,4 +38,24 @@ function friendlyInfo(str, override = true, top = true, color = 'black;') {
 function friendlyError(str, override = true, top = true, ital = false) {
     friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 }
+function _parse(...strs) {
+    let ret = new Array(strs.length);
+    for (let i = 0; i < strs.length; i++) {
+        let str = strs[i];
+        if (!str) {
+            ret[i] = '';
+            continue;
+        }
+        str = str.replace('"', 'quote');
+        str = str.replace('\\', 'backslash');
+        str = str.replace(',', 'comma');
+        ret[i] = str;
+    }
+    if (ret.length === 1)
+        return ret[0];
+    return ret;
+}
 // let mw = wtf.default;
+function a(obj) {
+    return [obj.x, obj.y];
+}

@@ -3,15 +3,15 @@
 Rewrite of pyetymology in js. 
 Extracts etymological data from Wiktioanry and displays it in a convenient tree graph.
 
-Now with a convenient document browser.
+Now with a convenient inline Wiktionary browser.
 
-Live demo is available at accyl.github.io/jsetymology
+Live demo is available at [accyl.github.io/jsetymology](accyl.github.io/jsetymology)
 
 Left click on node to query Wiktionary and add tree data.
 Right click node to remove.
 Green node = already processed.
 
-![Fun sample image: ](https://github.com/accyl/jsetymology/blob/master/ballena2.png?raw=true)
+![Sample image: ](https://github.com/accyl/jsetymology/blob/master/ballena2.png?raw=true)
 
 
 TODO
@@ -23,5 +23,7 @@ TODO
  - [ ] Support other language wiktionaries, not just english
  - [x] inh, der inheritances being properly chained (kind of)
  - [ ] The "form of" template parsing is horrendously broad and error-prone
- - [ ] Allownace to manually add in a custom node/edge.
+ - [ ] Allowance to manually add in a custom node/edge.
  - [ ] Save graphs via list of nodes which can be included in the url (as a parse string) for easy access
+ - [ ] Compound nodes, a la https://js.cytoscape.org/demos/compound-nodes/
+ - [ ] Requirejs

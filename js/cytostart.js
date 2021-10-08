@@ -75,9 +75,14 @@ function initiable(obj, restyle = true) {
                     'target-arrow-color': '#ccc',
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier',
-                    'label': 'data(label)', // maps to data.label
                     'font-size': '10px',
                     'color': '#FF0000'
+                }
+            },
+            {
+                selector: 'edge[label]',
+                style: {
+                    'label': 'data(label)' // maps to data.label
                 }
             },
             {
@@ -93,8 +98,9 @@ function initiable(obj, restyle = true) {
     obj.wheelSensitivity = 0.5;
     return obj;
 }
-function relayout(cy) {
+function relayout(cy, fromScratch) {
     if (!cy) cy = window.cytograph;
+    else window.cytograph = cy;
     let options = {
         name: 'dagre',
 
@@ -118,13 +124,73 @@ function relayout(cy) {
         stop: undefined, // callback on layoutstop
         transform: function (node, position) { return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
     };
-    let viewportAt = cy.viewport();
+    let zoomTo = cy.zoom();// we need to make a shallow copy
+    // the current pan location we know is the location of the mouse, which is where the 
+    // searched node used to be
+    let p1 = p();
+
+    let r1 = r();
+    let r2;
+    // HOLY CRAP IMPORTANT! renderedPosition() instead of position()
     var layout = cy.layout(options);
     layout.run();
-    cy.pan(viewportAt.pan());
-    cy.zoom(viewportAt.zoom());
+    cy.zoom(zoomTo); // VITAL!!!!!! put the zoom RIGHT AT THE BEGINNING or else ALL THE PANNING CALCS WILL MESS UP!!!
+
+    // we want to keep the moused node under the mouse throughout the transition to make it smooth.
+    // therefore, we want node.renderedPosition() to remain constant.
+    // to do this, we calculate change in renderedPosition()
+    // and pan the camera by an additional renderedPosition() to offset
+    // mouseAtOld - nodeAtOld = mouseAtNew - nodeAtNew
+
+        // assert(nodeOld.id() === nodeNew.id());
+        // cy.pan({ x: viewPanOld.x - nodeOldAt.x + nodeNewAt.x, y: viewPanOld.y - nodeOldAt.y + nodeNewAt.y});
+
+    if (fromScratch) { // they're all 0
+        cy.fit(undefined, 50);
+    } else {
+        cy.pan(p1)
+        r2 = r();
+        console.log('GOAL: ' + a(r1));
+        console.log('CURRENT: ' + a(r2));
+
+        // let dr = r2 - r1
+        // cy.pan(p1 - dr)
+        // let dr = { x: (r2.x - r1.x), y: (r2.y - r1.y)};
+        // panIncr(dr, cy);
+        cy.pan({ x: p1.x - (r2.x - r1.x), y: p1.y - (r2.y - r1.y)})
+        // cy.pan({ x: -P1.x + N1.x - N2.x, y: -P1.y + N1.y - N2.y  });
+        // console.log(`P1: ${a(P1)} N2: ${a(N2)} N1: ${a(N1)} P2: ${a(cy.pan())}`)
+    // it works if it's backwords. WWWWHYHWYHYHYHYHYYYYYYYYYY !?!?!?!?!?!??!?!?!?!?!?!?
+        console.log('CURRENT: ' + a(r()));
+
+    }
+    // console.log(`Old difference: ${nodeOldAt.x - viewPanOld.x} ${nodeOldAt.y - viewPanOld.y}`);
+    // console.log(`New difference: ${nodeNewAt.x - cy.pan().x} ${nodeNewAt.y - cy.pan().y}`);
+
+    // cy.pan(viewPanOld);
+
+
+    // get the location of the searched node. then pan over there
     // cy.viewport(viewportAt); // prevent the relayout from resetting viewport
 }
+function panIncr(plus, cy) {
+    if (!cy) cy = window.cytograph;
+    let now =  { ...cy.pan() }
+    cy.pan({x: now.x + plus.x, y: now.y + plus.y});
+}
+function p(cy) {
+    if (!cy) cy = window.cytograph;
+    return { ...cy.pan() }
+}
+function r(cy) {
+    if (!cy) cy = window.cytograph;
+    let arr = cy.$('node[lastSearched]');
+    if(!arr.length) return;
+    assert(arr.length === 1, "More than one selected?", false);
+    return {...arr[0].renderedPosition()} 
+}
+function s0() { cy().pan({ x: 0, y: 0 })}
+let p1, p2, r1, r2;
 function makePopper(ele) {
     let ref = ele.popperRef(); // used only for positioning
 
@@ -185,7 +251,7 @@ function createCyto(data, reLayout = false) {
         cy.add(elems); // add data
         // print(tograph = cy.json(), "posterior:");
 
-        if (!reLayout) relayout(cy);
+        if (!reLayout) relayout(cy, true);
         window.cytograph = cy;
         bindTooltips();
         return cy;
@@ -196,7 +262,7 @@ function createCyto(data, reLayout = false) {
         tograph = initiable(tograph, true);
         // print(tograph, "graphing:");
         cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
-        relayout(cy);
+        relayout(cy, true);
     }
 
     // the following only gets executed on initialization.
@@ -206,6 +272,7 @@ function createCyto(data, reLayout = false) {
     }
     clickToQuery();
     bindTooltips();
+    let nav = cy.panzoom();
     return cy;
 }
 window.createCyto = createCyto;

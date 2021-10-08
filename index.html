@@ -6,6 +6,9 @@
 
   <head>
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="cytoscape.js-panzoom.css">
+    <link href="font-awesome-4.0.3/css/font-awesome.css" rel="stylesheet" type="text/css" />
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
@@ -32,10 +35,17 @@
     <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
     <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
   
+    <!--cytoscape-panzoom-->
     <!-- dagre imports -->
     <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
     <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
   
+    <script src="https://unpkg.com/cytoscape-panzoom@2.5.3/cytoscape-panzoom.js"></script>
+    <!--https://github.com/cytoscape/cytoscape.js-navigator/blob/master/cytoscape.js-navigator.css-->
+    <!-- <script src="https://unpkg.com/cytoscape-navigator@2.0.1/cytoscape-navigator.js"></script> -->
+    <!-- <script src="https://cdn.rawgit.com/cytoscape/cytoscape-navigator/2.0.1/cytoscape-navigator.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/gh/cytoscape/cytoscape-navigator/dist/cytoscape-navigator.js"></script> -->
+
     <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
     <script src='js/wtf.min.js'></script>
     <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
@@ -52,6 +62,8 @@
     <script src='js/cytostart.js'></script>
     <script src='ts/bin/graph.js'></script>
     <script src='ts/bin/last.js'></script>
+
+    <script src='ts/bin/debugmode.js'></script>
 
   </div>
 

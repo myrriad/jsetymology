@@ -46,4 +46,27 @@ function friendlyError(str: string, override = true, top=true, ital=false) {
     friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`)
 
 }
+function _parse(...strs: str[]) {
+
+    let ret = new Array(strs.length);
+    for (let i = 0; i < strs.length; i++) {
+
+        let str = strs[i];
+        if (!str) {
+            ret[i] = '';
+            continue;
+        }
+        str = str.replace('"', 'quote');
+        str = str.replace('\\', 'backslash');
+        str = str.replace(',', 'comma');
+
+        ret[i] = str;
+    }
+    if (ret.length === 1) return ret[0];
+    return ret;
+}
 // let mw = wtf.default;
+
+function a(obj: {x: num, y:num}) {
+    return [obj.x, obj.y];
+}
