@@ -1,5 +1,5 @@
 "use strict";
-let wlToTree = function (word, lang, target, downward) {
+function wlToTree(word, lang, target, reLayout = true, downward) {
     var _a;
     if (word === undefined)
         word = $('#qword').val();
@@ -68,7 +68,7 @@ let wlToTree = function (word, lang, target, downward) {
     // Temporarily disable URL request for debugging.
     // var graph = ondata();
     // clickToQuery();
-};
+}
 function createTree(oword, olang) {
     // homebrew graph creation.
     // relies on second.ts
@@ -90,8 +90,6 @@ function createTree(oword, olang) {
                 id: `${oword}, ${olang}`,
             }
         })[0];
-        cy().$('node[lastSearched]').forEach(x => x.data().lastSearched = undefined);
-        target.data().lastSearched = true;
     }
     origarr = cy().$(`node[id="${oword}, ${olang}"]`);
     assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");

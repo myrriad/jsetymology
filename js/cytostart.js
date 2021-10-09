@@ -144,12 +144,11 @@ function relayout(cy, fromScratch) {
 
         // assert(nodeOld.id() === nodeNew.id());
         // cy.pan({ x: viewPanOld.x - nodeOldAt.x + nodeNewAt.x, y: viewPanOld.y - nodeOldAt.y + nodeNewAt.y});
-
-    if (fromScratch) { // they're all 0
+    r2 = r();
+    if (fromScratch || !r1 || !r2) { // they're all 0
         cy.fit(undefined, 50);
     } else {
         cy.pan(p1)
-        r2 = r();
         console.log('GOAL: ' + a(r1));
         console.log('CURRENT: ' + a(r2));
 
@@ -184,7 +183,7 @@ function p(cy) {
 }
 function r(cy) {
     if (!cy) cy = window.cytograph;
-    let arr = cy.$('node[lastSearched]');
+    let arr = cy.$('node[lastClicked]');
     if(!arr.length) return;
     assert(arr.length === 1, "More than one selected?", false);
     return {...arr[0].renderedPosition()} 

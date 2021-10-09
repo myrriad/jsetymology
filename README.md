@@ -5,13 +5,13 @@ Extracts etymological data from Wiktioanry and displays it in a convenient tree 
 
 Now with a convenient inline Wiktionary browser.
 
-Live demo is available at [accyl.github.io/jsetymology](accyl.github.io/jsetymology)
+Live demo is available at [myrriad.github.io/jsetymology](myrriad.github.io/jsetymology)
 
 Left click on node to query Wiktionary and add tree data.
 Right click node to remove.
 Green node = already processed.
 
-![Sample image: ](https://github.com/accyl/jsetymology/blob/master/ballena2.png?raw=true)
+![Sample image: ](https://github.com/myrriad/jsetymology/blob/master/ballena2.png?raw=true)
 
 
 TODO
@@ -27,3 +27,4 @@ TODO
  - [ ] Save graphs via list of nodes which can be included in the url (as a parse string) for easy access
  - [ ] Compound nodes, a la https://js.cytoscape.org/demos/compound-nodes/
  - [ ] Requirejs
+ - [ ] Use promises

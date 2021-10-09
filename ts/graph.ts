@@ -1,7 +1,7 @@
 // const { data } = require("jquery");
 declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 
-let wlToTree = function(word?: str, lang?: str, target?: cytoscape.NodeSingular, downward?: boolean) {
+function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLayout=true, downward?: boolean) {
     if (word === undefined) word = $('#qword').val() as string;
     if (lang === undefined) lang = $('#qlang').val() as string;
     if (downward === undefined) downward = false;
@@ -93,8 +93,6 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                 id: `${oword}, ${olang}`,
             }
         })[0];
-        cy().$('node[lastSearched]').forEach(x => x.data().lastSearched = undefined);
-        target.data().lastSearched = true;
     }
     origarr = cy().$(`node[id="${oword}, ${olang}"]`);
     assert(cy().$(`node[id="${oword}, ${olang}"]`)?.length, "couldn't find node");

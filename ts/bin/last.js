@@ -23,8 +23,8 @@ function clickToQuery() {
         }
         else {
             // is Node
-            cy().$('node[lastSearched]').forEach(x => x.data().lastSearched = undefined);
-            target.data().lastSearched = true;
+            cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
+            target.data().lastClicked = true;
             if (target && target.length)
                 target = target[0];
             let id = target.data().id;
@@ -33,11 +33,11 @@ function clickToQuery() {
             $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
             // it later reads this to deduce the origin. 
             // Cue dumb bugs from race conditions. 
-            // TODO. There is a simple solution. just call cy().$('node[lastSearched])' and use that to retrieve word/lang
+            // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang
             // TODO implement.
             // TODO shy away from using word/lang combos everywhere for id.
             // instead, store word and lang separately in cy().$('node').data()
-            wlToTree(as[0], as[1], target, undefined); // target.data().langcode, target.data().isRecon);
+            wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
         }
     });
     c.on('cxttap', "node, edge", function (event) {
@@ -55,7 +55,7 @@ const SAMPLE = function () {
     };
     return ret;
 }();
-$(document).ready(function () {
+window.addEventListener("load", function () {
     // let field = window.getElementById("qword");
     // field.value = r;
     let [w, l] = SAMPLE.random(); // populate sample
@@ -64,7 +64,8 @@ $(document).ready(function () {
     // let's look for url query params.
     let searchParams = new URLSearchParams(window.location.search);
     let i = 0;
-    let whitelist = [''];
+    let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient%20Greek'];
+    //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient%20Greek
     if (!whitelist.includes(window.location.search))
         return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
     for (let wl of searchParams.entries()) {
@@ -73,4 +74,5 @@ $(document).ready(function () {
             break;
         i++;
     }
+    cy().fit();
 });
