@@ -28,8 +28,12 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
         isRecon = isReconstructed(word, lang, langcode);
         // this fails in case olang is inferred
     }
-    fetchEtyEntry(word, lang, isRecon, function onEtyEntry(data2, doc) {
-        // alert(data);
+    fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
+        .then(function onEtyEntry(out) {
+        // data2: EtyEntry[], doc: wtf.Document) {
+        if (!out)
+            return;
+        let [data2, doc] = out;
         window.etyentries = data2;
         let idx;
         if (data2.length > 1) {
@@ -66,7 +70,7 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
         if (doc && doc.wikitext())
             orig.data().wikitext = doc.wikitext();
         onCheckbox();
-    }, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined);
+    });
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     // var graph = ondata();

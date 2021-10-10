@@ -64,7 +64,7 @@ const SAMPLE = function () {
         return [SAMPLE.words[r], SAMPLE.langs[r]];
     }
     return ret;
-}();
+}() as {words: str[], langs: str[], random: () => str};
 window.addEventListener("load", function () {
     // let field = window.getElementById("qword");
     // field.value = r;
@@ -76,7 +76,12 @@ window.addEventListener("load", function () {
     let searchParams = new URLSearchParams(window.location.search);
     let i=0;
 
-    let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];
+    $('#twhitelist').val(getCookie('twhitelist'));
+    $('#tblacklist').val(getCookie('tblacklist'));
+    updateCustomTemplateWhitelists();
+
+
+    // let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];
     //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek
     // if (!whitelist.includes(window.location.search)) return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
     for(let wl of searchParams.entries()) { 
@@ -86,9 +91,7 @@ window.addEventListener("load", function () {
     }
     cy().fit();
 
-    $('#twhitelist').val(getCookie('twhitelist'));
-    $('#tblacklist').val(getCookie('tblacklist'));
-    updateCustomTemplateWhitelists();
+
     
 
 });

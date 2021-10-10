@@ -1,38 +1,60 @@
 // cached stuff
-let wtffetch: (titleOrId: string | number | number[] | string[], options?: Record<string, any>, callback?: (error: unknown, result: null | wtf.Document | wtf.Document[]) => void) => Promise<null | wtf.Document | wtf.Document[]> | undefined;
+// let wtffetch: (titleOrId: string | number | number[] | string[], options?: Record<string, any>, callback?: (error: unknown, result: null | wtf.Document | wtf.Document[]) => void) => Promise<null | wtf.Document | wtf.Document[]>;
 // let wtffetch = typeof wtffetch;
-
+let wtffetch: (titleOrId: string | number | number[] | string[], options?: Record<string, any> | undefined, cachedresponse?: wtf.Document | undefined, callback?: ((error: unknown, result: null | wtf.Document | wtf.Document[]) => void) | undefined) => Promise<null | wtf.Document | wtf.Document[]>;
 (function() {
+    function _getCached(mystr: str): str | undefined {
+        switch (mystr) {
+            case 'ballena':
+                return BALLENA;
+            case 'cadeaux':
+                return CADEAUX;
+            case 'empezar':
+                return EMPEZAR;
+            case 'llegaron':
+                return LLEGARON;
+            case 'precio':
+                return PRECIO;
+            case 'tomar':
+                return TOMAR;
+            case 'vaca':
+                return VACA;
+        }
+        return undefined;
+    }
     wtffetch = function(
         titleOrId: string | number | number[] | string[], 
         options?: Record<string, any>, 
-        callback?: (error: unknown, result: null | wtf.Document | wtf.Document[]) => void): Promise<null | wtf.Document | wtf.Document[]> | undefined {
-            
-        if(callback) { // ONLY if special case
-            switch(titleOrId) {
-            case 'ballena':
-                callback(undefined, wtf(BALLENA));
-                return;
-            case 'cadeaux':
-                callback(undefined, wtf(CADEAUX));
-                return;
-            case 'empezar':
-                callback(undefined, wtf(EMPEZAR));
-                return;
-            case 'llegaron':
-                callback(undefined, wtf(LLEGARON));
-                return;
-            case 'precio':
-                callback(undefined, wtf(PRECIO));
-                return;
-            case 'tomar':
-                callback(undefined, wtf(TOMAR));
-                return;
-            case 'vaca':
-                callback(undefined, wtf(VACA));
-                return;
+        cachedresponse?: wtf.Document, 
+        callback?: (error: unknown, result: null | wtf.Document | wtf.Document[]) => void): Promise<null | wtf.Document | wtf.Document[]> {
+        
+        let prom = undefined;
+        // ONLY if we have a cached response
+        if (cachedresponse) {
+            prom = new Promise(function (resolve: (doc: wtf.Document | wtf.Document[] | null) => void, reject) {
+                resolve(cachedresponse);
+            }); // function hoisting
+        }
+        // ONLY if special case
+        if (typeof titleOrId === 'string') {
+            let val = _getCached(titleOrId);
+            if(val) {
+                prom = new Promise(function (resolve: (value: null | wtf.Document | wtf.Document[]) => void, reject) {
+                    resolve(wtf(val!));
+                });
             }
-        } // otherwise
+        }
+        if (callback && prom) {
+            prom.then((x) => {
+                callback(undefined, x);
+                return x;
+            }, (x) => {
+                callback(x, null);
+                return x;
+            });
+        }
+        if(prom) return prom;
+        // otherwise
         return wtf.fetch(titleOrId, options, callback);
     }
 

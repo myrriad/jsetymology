@@ -27,8 +27,12 @@ function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLa
 
     }
 
-    fetchEtyEntry(word, lang, isRecon, function onEtyEntry(data2: EtyEntry[], doc: wtf.Document) {
-        // alert(data);
+    fetchEtyEntry(word, lang, isRecon, 
+        target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
+    .then(function onEtyEntry(out) {
+        // data2: EtyEntry[], doc: wtf.Document) {
+        if(!out) return;
+        let [data2, doc] = out!;
         (window as any).etyentries = data2;
         let idx;
         if (data2.length > 1) {
@@ -61,7 +65,7 @@ function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLa
         if (doc && doc.wikitext()) orig.data().wikitext = doc.wikitext();
 
         onCheckbox();
-    }, target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined);
+    });
     // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
     

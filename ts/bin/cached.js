@@ -1,34 +1,57 @@
 "use strict";
 // cached stuff
-let wtffetch;
+// let wtffetch: (titleOrId: string | number | number[] | string[], options?: Record<string, any>, callback?: (error: unknown, result: null | wtf.Document | wtf.Document[]) => void) => Promise<null | wtf.Document | wtf.Document[]>;
 // let wtffetch = typeof wtffetch;
+let wtffetch;
 (function () {
-    wtffetch = function (titleOrId, options, callback) {
-        if (callback) { // ONLY if special case
-            switch (titleOrId) {
-                case 'ballena':
-                    callback(undefined, wtf(BALLENA));
-                    return;
-                case 'cadeaux':
-                    callback(undefined, wtf(CADEAUX));
-                    return;
-                case 'empezar':
-                    callback(undefined, wtf(EMPEZAR));
-                    return;
-                case 'llegaron':
-                    callback(undefined, wtf(LLEGARON));
-                    return;
-                case 'precio':
-                    callback(undefined, wtf(PRECIO));
-                    return;
-                case 'tomar':
-                    callback(undefined, wtf(TOMAR));
-                    return;
-                case 'vaca':
-                    callback(undefined, wtf(VACA));
-                    return;
+    function _getCached(mystr) {
+        switch (mystr) {
+            case 'ballena':
+                return BALLENA;
+            case 'cadeaux':
+                return CADEAUX;
+            case 'empezar':
+                return EMPEZAR;
+            case 'llegaron':
+                return LLEGARON;
+            case 'precio':
+                return PRECIO;
+            case 'tomar':
+                return TOMAR;
+            case 'vaca':
+                return VACA;
+        }
+        return undefined;
+    }
+    wtffetch = function (titleOrId, options, cachedresponse, callback) {
+        let prom = undefined;
+        // ONLY if we have a cached response
+        if (cachedresponse) {
+            prom = new Promise(function (resolve, reject) {
+                resolve(cachedresponse);
+            }); // function hoisting
+        }
+        // ONLY if special case
+        if (typeof titleOrId === 'string') {
+            let val = _getCached(titleOrId);
+            if (val) {
+                prom = new Promise(function (resolve, reject) {
+                    resolve(wtf(val));
+                });
             }
-        } // otherwise
+        }
+        if (callback && prom) {
+            prom.then((x) => {
+                callback(undefined, x);
+                return x;
+            }, (x) => {
+                callback(x, null);
+                return x;
+            });
+        }
+        if (prom)
+            return prom;
+        // otherwise
         return wtf.fetch(titleOrId, options, callback);
     };
     const BALLENA = '==Aragonese==\n\n===Etymology===\n{{rfe|an}}\n\n===Noun===\n{{an-noun|f|ballenas}}\n# [[whale]]\n\n===References===\n* {{R:DBLA}}\n\n\n\n==Asturian==\n{{wikipedia|lang=ast}}\n\n===Noun===\n{{ast-noun|f|ballenes}}\n\n# [[whale]]\n\n\n\n==Spanish==\n{{wikipedia|lang=es}}\n\n===Etymology===\nFrom {{inh|es|osp|ballena}}, from {{der|es|la|ballaena}}, variant of {{m|la|bālaena}} (compare {{cog|ca|balena}}, {{cog|fr|baleine}}, {{cog|gl|balea}}, {{cog|it|balena}}, {{cog|pt|baleia}}, {{cog|ro|balenă}}), from {{der|es|grc|φάλλαινα}}.\n\n===Pronunciation===\n{{es-IPA}}\n\n===Noun===\n{{es-noun|f}}\n\n# [[whale]]\n# [[baleen]], [[whalebone]]\n#: {{syn|es|barbas de ballena}}\n\n====Hypernyms====\n* {{sense|whale}} {{l|es|cetáceo}}\n\n====Derived terms====\n{{der3|es|ballena asesina|ballena azul|ballena de aletas|ballena de Groenlandia|ballena franca|ballena gris|ballena jorobada|ballenato|ballenero|barbas de ballena|esperma de ballena|llena como una ballena|tiburón ballena}}\n\n====Descendants====\n* {{desc|bor=1|ceb|balyena}}\n* {{desc|bor=1|huv|ballen}}\n* {{desc|bor=1|msb|balyena}}\n* {{desc|bor=1|tl|balyena}}\n\n===Further reading===\n* {{R:DRAE}}\n\n{{C|es|Cetaceans|Whales}}';
