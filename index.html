@@ -86,6 +86,7 @@
       <input type="button" value="clear graph" onclick="removeCyto();" />
       <input type="button" value="prune single nodes" onclick="pruneSinglets();" />
       <input type="button" value="relayout" onclick="relayout();" />
+      <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
 
     </form>
 
@@ -111,14 +112,30 @@
       </div>
       <div id='inspector'>
         <details>
-          <summary>Help</summary>
-          <span>
-            Left click on node to add tree data.<br>
-            Right click node to remove.<br>
-            Green node = already processed.<br>
-                        <br>
-          </span>
+          <summary>Additional Information</summary>
+          <div id='infobar'>
+            <h3>TREE (left side)</h3>
+            <p>
+              Left click on node to add tree data.<br>
+              Right click node to remove.<br>
+              Green node = already processed.<br>
+              If the graph is not visible, click relayout() and recenter().
+            </p>
+            <h3>TEMPLATES (right side)</h3>
+            <p>
+              Left click on templates to toggle visibility.<br>
+              <button onclick="createTree()">Add to graph</button> will take all of the nodes and add them to the graph.<br>
+              Note - the graph will add all of the templates by default. So removed templates will only take effect
+              after clearing the graph and regraphing the connections.
+            </p>
+            <input type="text" id="twhitelist" name="twhitelist" placeholder="Whitelisted templates, comma separated" />
+            <br><input type="text" id="tblacklist" name="tblacklist" placeholder="Blacklisted templates, Comma separated" />
+            <input type="submit" id="submitq" value="submit" onclick="updateCustomTemplateWhitelists()" />
+            
+          </div>
+          <br>
         </details>
+        <br> 
         <div id='closeinspect'></div>
         <button onclick="createTree()">Add to graph</button>
       </div>

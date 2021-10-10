@@ -85,6 +85,10 @@ window.addEventListener("load", function () {
         i++;
     }
     cy().fit();
+
+    $('#twhitelist').val(getCookie('twhitelist'));
+    $('#tblacklist').val(getCookie('tblacklist'));
+    updateCustomTemplateWhitelists();
     
 
 });

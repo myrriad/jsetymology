@@ -29,9 +29,31 @@ h1 {
     white-space: pre-wrap;
     flex: 1; /*right*/
     font-family: 'Times New Roman', Times, serif;
-
+    border: solid black 1px;
+    background-color: ghostwhite;
+    padding: 5px;
+    min-width: 400px;
+    margin-right: 15px;
+}
+#closeinspect:empty {
+    display: none
 }
 
+#infobar {
+    border: solid black 1px;
+    background-color: ghostwhite;
+    padding: 5px;
+    min-width: 400px;
+}
+#infobar * {
+    margin: 10px;
+}
+#infobar p {
+    margin-left: 15px;
+}
+#infobar p button {
+    margin: 0px;
+}
 .template {
     cursor: pointer;
 }

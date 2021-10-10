@@ -287,6 +287,15 @@ function isReconstructed(word: str, lang: str, langcode?: str) {
 function toggleCognates() {
     showCognates = !showCognates;
 }
+function updateCustomTemplateWhitelists() {
+    let whitestr = $('#twhitelist').val() as str;
+    twhitelist = whitestr.split(',').map(x => $.trim(x));
+    let blackstr = $('#tblacklist').val() as str;
+    tblacklist = blackstr.split(',').map(x => $.trim(x));
+    // whitestr = whitestr.replace()
+    setCookie('twhitelist', whitestr);
+    setCookie('tblacklist', blackstr);
+}
 function findRelevance(templatestr: str) {
     // this is what decides whether a template is green or grey in the sidebar
     // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
@@ -295,6 +304,10 @@ function findRelevance(templatestr: str) {
     let pipe = templatestr.indexOf('|');
     let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
     let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
+
+    // let user defined whitelist/ blacklist override.
+    if(twhitelist.includes(ttype)) return true;
+    if(tblacklist.includes(ttype)) return false;
 
     let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
         'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',

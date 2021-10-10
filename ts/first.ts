@@ -56,10 +56,10 @@ function _parse(...strs: str[]) {
             ret[i] = '';
             continue;
         }
-        str = str.replace('"', 'quote');
+        str = str.replace('"', 'quote'); // https://js.cytoscape.org/#selectors/notes-amp-caveats
         str = str.replace('\\', 'backslash');
         str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
+        str = str.replace('$', 'dsign');
         str = str.replace(',', 'comma');
         str = str.replace(',', 'comma');
         str = str.replace(',', 'comma');
@@ -76,3 +76,22 @@ function a(obj?: {x: num, y:num}) {
 }
 
 let showCognates: boolean = true;
+let twhitelist = [] as str[]; 
+let tblacklist = [] as str[]; 
+
+const setCookie = (name: str, value: str) => {//}, days = 7, path = '/') => { // https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie
+    // const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = name + '=' + encodeURIComponent(value) // expires on browser close+ '; expires=' + expires + '; path=' + path;
+}
+
+function getCookie (name: str) {
+    for(let v of document.cookie.split('; ')) {
+        const parts = v.split('=');
+        if(parts[0] === name) return decodeURIComponent(parts[1]);
+    }
+    return '';
+}
+
+// const deleteCookie = (name: str, path: str) => {
+    // setCookie(name, '', -1, path);
+// }

@@ -46,10 +46,10 @@ function _parse(...strs) {
             ret[i] = '';
             continue;
         }
-        str = str.replace('"', 'quote');
+        str = str.replace('"', 'quote'); // https://js.cytoscape.org/#selectors/notes-amp-caveats
         str = str.replace('\\', 'backslash');
         str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
+        str = str.replace('$', 'dsign');
         str = str.replace(',', 'comma');
         str = str.replace(',', 'comma');
         str = str.replace(',', 'comma');
@@ -64,3 +64,20 @@ function a(obj) {
     return obj ? [obj.x, obj.y] : [0, 0];
 }
 let showCognates = true;
+let twhitelist = [];
+let tblacklist = [];
+const setCookie = (name, value) => {
+    // const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = name + '=' + encodeURIComponent(value); // expires on browser close+ '; expires=' + expires + '; path=' + path;
+};
+function getCookie(name) {
+    for (let v of document.cookie.split('; ')) {
+        const parts = v.split('=');
+        if (parts[0] === name)
+            return decodeURIComponent(parts[1]);
+    }
+    return '';
+}
+// const deleteCookie = (name: str, path: str) => {
+// setCookie(name, '', -1, path);
+// }
