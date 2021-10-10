@@ -63,3 +63,4 @@ function _parse(...strs) {
 function a(obj) {
     return obj ? [obj.x, obj.y] : [0, 0];
 }
+let showCognates = true;

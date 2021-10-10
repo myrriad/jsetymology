@@ -74,3 +74,5 @@ function _parse(...strs: str[]) {
 function a(obj?: {x: num, y:num}) {
     return obj ? [obj.x, obj.y] : [0, 0];
 }
+
+let showCognates: boolean = true;

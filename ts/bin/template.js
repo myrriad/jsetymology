@@ -205,8 +205,8 @@ class Templated {
                     case 'suf':
                     case 'suffix':
                         m = multiParamTemplateParse(wtfobj, 1, [2, 3]);
-                        if (!m[0].word.startsWith('-'))
-                            m[0].word = '-' + m[0].word;
+                        if (!m[m.length - 1].word.startsWith('-'))
+                            m[m.length - 1].word = '-' + m[m.length - 1].word;
                         return m;
                     case 'affix':
                     case 'af':
@@ -294,7 +294,11 @@ function isReconstructed(word, lang, langcode) {
     } //
     return false;
 }
+function toggleCognates() {
+    showCognates = !showCognates;
+}
 function findRelevance(templatestr) {
+    // this is what decides whether a template is green or grey in the sidebar
     // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
     // makes a Mediawiki parser emulator
     assert(templatestr.indexOf('}}') >= 0);
@@ -304,9 +308,14 @@ function findRelevance(templatestr) {
     let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
         'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
         'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
-        'psm', 'mention', 'm', 'cognate', 'cog', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
+        'psm', 'mention', 'm', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
     if (etys.includes(ttype))
         return true; // Whitelist.
+    if (['cognate', 'cog'].includes(ttype)) {
+        if (showCognates)
+            return true;
+        return false;
+    }
     if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
         'IPA', 'rfap', 'rfp', 'Q'].includes(ttype))
