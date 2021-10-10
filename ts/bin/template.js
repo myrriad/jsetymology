@@ -1,17 +1,51 @@
 "use strict";
 // <reference path='js/langcodes/gencodes.js'/>
 let decodeTemplate;
+function twordRemoveAngleTknr(inp, startidx) {
+    let built = '';
+    let levels = 0;
+    let captureStart = startidx;
+    let i = startidx;
+    for (; i < inp.length; i++) {
+        let charAt = inp[i];
+        if (charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
+            if (levels === 0) {
+                // we were capturing. now we entered a dead zone
+                built += inp.substring(captureStart, i);
+            }
+            levels++;
+        }
+        else if (charAt === '>') {
+            levels--;
+            if (levels === 0) {
+                // we were ignoring. now we must capture again.
+                captureStart = i + 1;
+            }
+        }
+    }
+    if (levels === 0) {
+        // if we are in capture mode at the end, then we must add the remainder
+        built += inp.substring(captureStart);
+    }
+    return built;
+}
 class Templated {
     constructor(ttype, word, langcode, self_lang, orig_template) {
         this.ttype = ttype;
-        this.word = word;
         this.langcode = langcode;
+        this.word = word;
         // @ts-ignore
         this.lang = LANGCODES.name(langcode);
         if (!this.lang)
             this.lang = this.langcode;
         this.self_lang = self_lang;
         this.orig_template = orig_template;
+    }
+    static make(ttype, word, langcode, self_lang, orig_template) {
+        if (!word || word === '-')
+            return undefined;
+        let word2 = word.includes('<') || word.includes('>') ? twordRemoveAngleTknr(word, 0) : word;
+        return new Templated(ttype, word2, langcode, self_lang, orig_template);
     }
     get isRecon() {
         if (this._is_recon === undefined) {
@@ -54,12 +88,17 @@ class Templated {
             if (make_temps_idx) {
                 for (let idx of make_temps_idx) {
                     let word = parts[idx];
-                    ret.push(new Templated(ttype, word, elem, undefined, strin)); // In this case the elem is the lang
+                    if (word) { // only push if we actually have a word
+                        ret.push(Templated.make(ttype, word, elem, undefined, strin)); // In this case the elem is the lang
+                    }
                 }
             }
             else {
                 for (let i = 1; i < parts.length; i++) {
-                    ret.push(new Templated(ttype, parts[i], elem, undefined, strin)); // In this case the elem is the lang
+                    let word = parts[i];
+                    if (word) {
+                        ret.push(Templated.make(ttype, word, elem, undefined, strin)); // In this case the elem is the lang
+                    }
                 }
             }
             return undefined;
@@ -88,14 +127,18 @@ class Templated {
         if (did_list) {
             let words = wtfdata.list.slice(key - 1 + 1); // list only contains unindexed params
             for (let wd of words) {
-                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wikitext())); // In this case the elem is the lang
+                let t = Templated.make(wtfdata.template, wd, lang, undefined, wtfobj.wikitext());
+                if (t)
+                    ret.push(t); // In this case the elem is the lang
             }
         }
         else {
             for (let idx of make_temps_idx) {
                 assert((idx + '') in wtfdata);
                 let wd = wtfdata[(idx + '')];
-                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wikitext())); // In this case the elem is the lang
+                let t = Templated.make(wtfdata.template, wd, lang, undefined, wtfobj.wikitext()); // In this case the elem is the lang
+                if (t)
+                    ret.push(t);
             }
         }
         return ret;
@@ -205,8 +248,10 @@ class Templated {
                     case 'suf':
                     case 'suffix':
                         m = multiParamTemplateParse(wtfobj, 1, [2, 3]);
-                        if (!m[m.length - 1].word.startsWith('-'))
-                            m[m.length - 1].word = '-' + m[m.length - 1].word;
+                        let temp = m[m.length - 1];
+                        // if(temp.word == )
+                        if (!temp.word.startsWith('-'))
+                            temp.word = '-' + temp.word;
                         return m;
                     case 'affix':
                     case 'af':
@@ -243,7 +288,7 @@ class Templated {
             }
         }
         if (lang && word) {
-            return new Templated(ttype, word, lang, self_lang, orig_str);
+            return Templated.make(ttype, word, lang, self_lang, orig_str);
         }
         return undefined;
         // return [word, lang]; //`${lang}, ${word}`;
@@ -330,7 +375,8 @@ function findRelevance(templatestr) {
             return true;
         return false;
     }
-    if (['syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
+    if (['senseid',
+        'syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
         'IPA', 'rfap', 'rfp', 'Q'].includes(ttype))
         return false;
@@ -352,14 +398,19 @@ function findRelevance(templatestr) {
     for (let pos of templPOS)
         if (frag.endsWith('-' + pos))
             return true; // actually these seem not to be useful
-    if (ttype.endsWith(' of'))
-        return true; // many POSs end with ' of'.
+    if (ttype.endsWith(' of')) {
+        // many POSs end with ' of'.
+        return templatestr.includes('|'); // but only report as useful if we actually have arguments. 
+        // return true; 
+    }
     // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
     if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
         'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype))
         return false;
-    if (templatestr.includes('-'))
-        return true; // if it has a hyphen, there's a pretty good chance it's a lemma
+    if (templatestr.includes('-')) {
+        // return true; // if it has a hyphen, there's a pretty good chance it's a lemma
+        return templatestr.includes('|'); // only report as useful if we actually have arguments. 
+    }
     // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
     return false;
 }
