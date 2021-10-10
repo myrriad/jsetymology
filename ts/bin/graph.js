@@ -1,4 +1,6 @@
 "use strict";
+// const { data } = require("jquery");
+// declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 function wlToTree(word, lang, target, reLayout = true, downward) {
     var _a;
     if (word === undefined)

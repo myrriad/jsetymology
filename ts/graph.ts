@@ -1,5 +1,5 @@
 // const { data } = require("jquery");
-declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
+// declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 
 function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLayout=true, downward?: boolean) {
     if (word === undefined) word = $('#qword').val() as string;

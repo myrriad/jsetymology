@@ -61,5 +61,5 @@ function _parse(...strs) {
 }
 // let mw = wtf.default;
 function a(obj) {
-    return [obj.x, obj.y];
+    return obj ? [obj.x, obj.y] : [0, 0];
 }
