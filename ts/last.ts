@@ -52,6 +52,9 @@ function clickToQuery() {
     });
 
 }
+function pruneSinglets() {
+    cy().filter(function (element, i) {return element.isNode() && element.degree(false) < 1}).remove();
+}
 const SAMPLE = function () {
     let ret = {} as any;
     ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];

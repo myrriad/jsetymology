@@ -12,6 +12,7 @@ Right click node to remove.
 Green node = already processed.
 
 ![Sample image: ](https://github.com/myrriad/jsetymology/blob/master/ballena2.png?raw=true)
+![Sample image: ](https://github.com/myrriad/jsetymology/blob/master/course.png?raw=true)
 
 
 TODO

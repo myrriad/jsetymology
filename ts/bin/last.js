@@ -45,6 +45,9 @@ function clickToQuery() {
         c.remove(target);
     });
 }
+function pruneSinglets() {
+    cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove();
+}
 const SAMPLE = function () {
     let ret = {};
     ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
