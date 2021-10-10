@@ -154,9 +154,9 @@ function relayout(cy, fromScratch) {
 
         // let dr = r2 - r1
         // cy.pan(p1 - dr)
-        // let dr = { x: (r2.x - r1.x), y: (r2.y - r1.y)};
-        // panIncr(dr, cy);
-        cy.pan({ x: p1.x - (r2.x - r1.x), y: p1.y - (r2.y - r1.y)})
+        let dr = { x: (r2.x - r1.x), y: (r2.y - r1.y)};
+        panIncr(dr, cy);
+        // cy.pan({ x: p1.x - (r2.x - r1.x), y: p1.y - (r2.y - r1.y)})
         // cy.pan({ x: -P1.x + N1.x - N2.x, y: -P1.y + N1.y - N2.y  });
         // console.log(`P1: ${a(P1)} N2: ${a(N2)} N1: ${a(N1)} P2: ${a(cy.pan())}`)
     // it works if it's backwords. WWWWHYHWYHYHYHYHYYYYYYYYYY !?!?!?!?!?!??!?!?!?!?!?!?
@@ -175,7 +175,11 @@ function relayout(cy, fromScratch) {
 function panIncr(plus, cy) {
     if (!cy) cy = window.cytograph;
     let now =  { ...cy.pan() }
-    cy.pan({x: now.x + plus.x, y: now.y + plus.y});
+    if(cy[0]) {
+        cy.pan({ x: now.x + plus[0], y: now.y + plus[1] });
+    } else {
+        cy.pan({x: now.x + plus.x, y: now.y + plus.y});
+    }
 }
 function p(cy) {
     if (!cy) cy = window.cytograph;
@@ -197,7 +201,7 @@ function makePopper(ele) {
         content: () => {
             let content = document.createElement('div');
 
-            content.innerHTML = ele.data("value"); // .id()
+            content.textContent = ele.data("value"); // .id()
 
             return content;
         },

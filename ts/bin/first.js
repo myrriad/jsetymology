@@ -49,6 +49,10 @@ function _parse(...strs) {
         str = str.replace('"', 'quote');
         str = str.replace('\\', 'backslash');
         str = str.replace(',', 'comma');
+        str = str.replace(',', 'comma');
+        str = str.replace(',', 'comma');
+        str = str.replace(',', 'comma');
+        str = str.replace(',', 'comma');
         ret[i] = str;
     }
     if (ret.length === 1)

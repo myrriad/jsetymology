@@ -171,6 +171,9 @@ function createTree(oword, olang) {
             if (cy().$(`edge[id="${id}"]`).length) {
                 console.log(`Duplicate edge: ${id}`);
             }
+            else if (temp.ttype == 'cog') {
+                // make an exception for cognates. dont' add edges
+            }
             else {
                 try {
                     cy().add({

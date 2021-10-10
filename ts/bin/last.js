@@ -66,8 +66,7 @@ window.addEventListener("load", function () {
     let i = 0;
     let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];
     //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek
-    if (!whitelist.includes(window.location.search))
-        return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
+    // if (!whitelist.includes(window.location.search)) return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
     for (let wl of searchParams.entries()) {
         wlToTree(wl[0], wl[1]);
         if (i > 10)

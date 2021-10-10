@@ -24,7 +24,10 @@ TODO
  - [x] inh, der inheritances being properly chained (kind of)
  - [ ] The "form of" template parsing is horrendously broad and error-prone
  - [ ] Allowance to manually add in a custom node/edge.
- - [ ] Save graphs via list of nodes which can be included in the url (as a parse string) for easy access
+ - [x] Save graphs via list of nodes which can be included in the url (as a parse string) for easy access
  - [ ] Compound nodes, a la https://js.cytoscape.org/demos/compound-nodes/
  - [ ] Requirejs
  - [ ] Use promises
+ - [ ] {{m|gem-pro|*[[nehw]] [[ainaz]]||nor one}}
+ - [ ] {{de-verb|brauchen<brauchte,gebraucht,brauchte[prescribed]:bräuchte[used exclusively in speech, common in writing]>}}
+ - [ ]

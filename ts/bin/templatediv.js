@@ -61,9 +61,13 @@ function templTknr(inp, startidx, nests) {
         if (c === '{') {
             if (inp[i + 1] && inp[i + 1] === '{') {
                 let [segm, newidx] = templTknr(inp, i, nests);
-                assert(segm, "bad template!");
-                nests.push(segm);
-                i = newidx;
+                if (segm) {
+                    nests.push(segm);
+                    i = newidx;
+                }
+                else {
+                    console.warn(`bad template! ${inp.substring(startidx, Math.min(inp.length, startidx + 20))}`, false);
+                }
             }
             else
                 continue;

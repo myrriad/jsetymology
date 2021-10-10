@@ -27,11 +27,11 @@ class Templated {
     }
 }
 (function() {
-    function getFromKey(templ: any | str, key: num): str | undefined{
+    function getFromKey(templ: wtf.Template | str, key: num): str | undefined{
         // @ts-ignore
         return _multiGetKeyFunc(templ, key, false, [], false) as str;
     }
-    function multiParamTemplateParse(templ: any | str, key: num, make_temps_idx: num[] = []): Templated[] {
+    function multiParamTemplateParse(templ: wtf.Template | str, key: num, make_temps_idx: num[] = []): Templated[] {
         return _multiGetKeyFunc(templ, key, true, make_temps_idx, true) as Templated[];
     }
     /**
@@ -39,15 +39,36 @@ class Templated {
      * @param wtfdata wtf(x).templates()[0]
      * @param key In terms of Wiktionary indices: ie. 1-indexed.
      */
-    function _multiGetKeyFunc(wtfobj: any | str, key: num, make_temps = false, make_temps_idx: num[] =[], error=true): str | Templated[] | undefined{
-        // @ts-ignore
-        if (typeof wtfobj === 'string') wtfobj = wtf(wtf_obj).templates()[0];
+    function _multiGetKeyFunc(objin: wtf.Template | str, key: num, make_temps = false, make_temps_idx: num[] =[], error=true): str | Templated[] | undefined{
+        let wtfobj;
+        if (typeof objin === 'string') {
+            wtfobj = wtf(objin).templates()[0];
+        } else wtfobj = objin;
+        let elem;
+        let ret = [];
+
         if(!wtfobj) {
-            console.error('remember to fix the template bug with {{cog}}!');
+            // console.error('remember to fix the template bug with {{cog}}!');
+            let strin = objin as str;
+            let wkstr = strin.substring(strin.indexOf('{{') + 2, strin.lastIndexOf('}}'));
+            let parts = wkstr.split('|');
+            let ttype = parts[0];
+            elem = parts[key];
+            if (!make_temps) return elem;
+            if (make_temps_idx) {
+                for (let idx of make_temps_idx) {
+                    let word = parts[idx];
+                    ret.push(new Templated(ttype, word, elem, undefined, strin)); // In this case the elem is the lang
+                }
+            } else {
+                for (let i=1;i<parts.length;i++) {
+                    ret.push(new Templated(ttype, parts[i], elem, undefined, strin)); // In this case the elem is the lang
+                }
+            }
+            
             return undefined;
         }
-        let elem;
-        let wtfdata = wtfobj.data;
+        let wtfdata = wtfobj.json() as any; // {list: str[], template: str} & str[];
         let did_list = undefined;
         if (wtfdata && wtfdata.list && key - 1 < wtfdata.list.length) {
             elem = wtfdata.list[key - 1];
@@ -64,36 +85,36 @@ class Templated {
         if (!make_temps) return elem;
 
         let lang = elem;
-        let ret = [];
 
         if(did_list) {
             let words = wtfdata.list.slice(key - 1 + 1); // list only contains unindexed params
             for (let wd of words) {
-                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wiki)); // In this case the elem is the lang
+                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wikitext())); // In this case the elem is the lang
             }
         } else {
             for(let idx of make_temps_idx) {
                 assert((idx + '') in wtfdata);
                 let wd = wtfdata[(idx + '')];
-                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wiki)); // In this case the elem is the lang
+                ret.push(new Templated(wtfdata.template, wd, lang, undefined, wtfobj.wikitext())); // In this case the elem is the lang
             }
         }
         return ret;
     }
-    function _templSwitch(ttype: str, orig: any | str): Templated | Templated[] | undefined {
+    function _templSwitch(ttype: str, orig: wtf.Document | str): Templated | Templated[] | undefined {
         let lang;
         let word;
         let self_lang;
         let templ;
         let orig_str;
+        let wtfobj: wtf.Template | str;
         if (typeof orig === 'string') {
             orig_str = orig;
-            // @ts-ignore
             templ = wtf(orig).templates()[0];
         } else {
             templ = orig.templates()[0];
-            orig_str = templ.wiki;
+            orig_str = templ.wikitext();
         }
+        wtfobj = templ ? templ : orig_str;
 
         switch(ttype) { // Again I hardcode the values. It's just easier to implement than a dynamic behavior-changing system
             case 'derived':
@@ -114,9 +135,9 @@ class Templated {
             case 'phono-semantic matching':
             case 'psm':
                 // self_lang = rest[0]; // |1=
-                self_lang = getFromKey(templ, 1);
-                lang = getFromKey(templ, 2); // |2=
-                word = getFromKey(templ, 3); // |3=
+                self_lang = getFromKey(wtfobj, 1);
+                lang = getFromKey(wtfobj, 2); // |2=
+                word = getFromKey(wtfobj, 3); // |3=
                 break;
             case 'clipping':
             case 'short for':
@@ -132,16 +153,16 @@ class Templated {
             case 'ncog':
             case 'nc':
             case 'l':
-                lang = getFromKey(templ, 1); // this is all according to spec. TODO apply flexible, as shown below as impl. in "form of"
-                word = getFromKey(templ, 2);
+                lang = getFromKey(wtfobj, 1); // this is all according to spec. TODO apply flexible, as shown below as impl. in "form of"
+                word = getFromKey(wtfobj, 2);
                 break;
             // TODO: multi-term templates: root, affix, blend, doublet
             // TODO: onom, named-after
             case 'form of':
                 // weird one
-                lang = getFromKey(templ, 1);
-                let formof = getFromKey(templ, 2);
-                word = getFromKey(templ, 3);
+                lang = getFromKey(wtfobj, 1);
+                let formof = getFromKey(wtfobj, 2);
+                word = getFromKey(wtfobj, 3);
                 break;
             default:
                 lang = '';
@@ -150,8 +171,8 @@ class Templated {
         };
         if(!lang && !word) {
             if(ttype.endsWith(' of')) {
-                let a = getFromKey(templ, 1);
-                let b = getFromKey(templ, 2);
+                let a = getFromKey(wtfobj, 1);
+                let b = getFromKey(wtfobj, 2);
                 if(b) {
                     lang = a; // flexible assignment. TODO apply flexible to the above
                     word = b;
@@ -161,34 +182,34 @@ class Templated {
 
                 }
             } else if(ttype.endsWith('-form')) {
-                word = getFromKey(templ, 1); // la-verb-form
+                word = getFromKey(wtfobj, 1); // la-verb-form
             } else {
                 let m;
                 switch(ttype) {
 
                     case 'blend':
                     case 'doublet':
-                        return multiParamTemplateParse(templ, 1);// in 1-indexed (wiktionary) terms
+                        return multiParamTemplateParse(wtfobj, 1);// in 1-indexed (wiktionary) terms
                     case 'root':
-                        return multiParamTemplateParse(templ, 2);
+                        return multiParamTemplateParse(wtfobj, 2);
 
                     case 'compound':
-                        return multiParamTemplateParse(templ, 1, [2, 3]);
+                        return multiParamTemplateParse(wtfobj, 1, [2, 3]);
                     case 'prefix':
                     case 'pre':
-                        m = multiParamTemplateParse(templ, 1, [2, 3]);
+                        m = multiParamTemplateParse(wtfobj, 1, [2, 3]);
                         if (!m[0].word.endsWith('-')) m[0].word = m[0].word + '-';
                         return m;
                     case 'suf':
                     case 'suffix':
-                        m = multiParamTemplateParse(templ, 1, [2, 3]);
+                        m = multiParamTemplateParse(wtfobj, 1, [2, 3]);
                         if (!m[0].word.startsWith('-')) m[0].word = '-' + m[0].word;
                         return m;
                     case 'affix':
                     case 'af':
                     case 'univerbation':
                     case 'univ':
-                        m = multiParamTemplateParse(templ, 1); // , [2, 3]);
+                        m = multiParamTemplateParse(wtfobj, 1); // , [2, 3]);
                         return m;
                 }
                 let flag = false;
@@ -199,8 +220,8 @@ class Templated {
                     }
                 }
                 if(flag) {
-                    let a = getFromKey(templ, 1); // this category is horrendously messy.
-                    let b = getFromKey(templ, 2); // TODO improve this 
+                    let a = getFromKey(wtfobj, 1); // this category is horrendously messy.
+                    let b = getFromKey(wtfobj, 2); // TODO improve this
                     if(a && b && a.length <= 2 && b.length > a.length) word = b;
                     else word = a;
                     if(word && word.length === 1) {
@@ -232,7 +253,6 @@ class Templated {
         // if(result) {
             // return new Templated(ttype, result[0], result[1]);
         // }
-        return undefined;
     }
 }());
 function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
