@@ -29,6 +29,7 @@ function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLa
 
     fetchEtyEntry(word, lang, isRecon, function onEtyEntry(data2: EtyEntry[], doc: wtf.Document) {
         // alert(data);
+        (window as any).etyentries = data2;
         let idx;
         if (data2.length > 1) {
             let str = prompt(`${data2.length} different etymologies found! Pick one: `, '1');
@@ -58,7 +59,6 @@ function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLa
         // success. save wikitext
         // the node better exist
         if (doc && doc.wikitext()) orig.data().wikitext = doc.wikitext();
-
 
         onCheckbox();
     }, target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined);
@@ -165,7 +165,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
             }
             let me = `${word}, ${lang}`;
             lastConnector = me;
-            console.log(`edge ${me};  ${connector}`)
+            // console.log(`edge ${me};  ${connector}`)
             let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
             
             //  || ${oword}, ${olang}

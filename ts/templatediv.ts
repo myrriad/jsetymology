@@ -15,6 +15,13 @@
 function clearDiv() {
     $('#closeinspect')[0].innerHTML = '';
 }
+function _appendText(text: str) {
+    let node = document.createTextNode(text);
+    let textbox = document.createElement('span');
+    textbox.appendChild(node);
+    $('#closeinspect')[0].appendChild(textbox);
+    return textbox;
+}
 function appendToDiv(entry?: Section | EtyEntry) {
     // TODO plop a link here for easy access
     if(!entry || entry instanceof EtyEntry && !entry.ety) {
@@ -41,24 +48,23 @@ function appendToDiv(entry?: Section | EtyEntry) {
     for(let i=0;i<idxs.length;i++) {
         let idx = idxs[i];
         end = idx;
-        let text = document.createTextNode(t.slice(start, end));
-        let textbox = document.createElement('span');
-        textbox.appendChild(text);
-        $('#closeinspect')[0].appendChild(textbox);
+        _appendText(t.slice(start, end));
 
         start = end;
         end = start + lens[i];
         let ttext = t.slice(start, end);
-        let ttextNode = document.createTextNode(ttext);
-        let template = document.createElement('span');
+        // let ttextNode = document.createTextNode(ttext);
+        // let template = document.createElement('span');
         // template.setAttribute('style', 'background-color: #FF000022;');
-        template.appendChild(ttextNode);
+        // template.appendChild(ttextNode);
+        let template = _appendText(ttext);
         template.classList.add('template');
         template.classList.add(findRelevance(ttext) ? 't-active' : 't-inactive'); // requires a dependency on template.ts
         template.onclick = () => onTemplateClicked(template);
         $('#closeinspect')[0].appendChild(template);
         start = end;
     }
+    _appendText(t.slice(start)); // don't forget to add the rest of the text
     friendlyBreak(false);
 
     return true;

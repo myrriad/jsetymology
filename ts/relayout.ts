@@ -14,7 +14,7 @@ function relayout(cy?: cytoscape.Core, fromScratch=true) {
         condense: false, // uses all available space on false, uses minimal space on true
         rows: undefined, // force num of rows in the grid
         cols: undefined, // force num of columns in the grid
-        position: function (node: cytoscape.NodeSingular) { }, // returns { row, col } for element
+        position: function (node: cytoscape.NodeSingular) {if(node.neighborhood('node').length == 0) return {row:1, col:undefined}; }, // returns { row, col } for element
         sort: undefined, // a sorting function to order the nodes; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
         animate: false, // whether to transition the node positions
         animationDuration: 500, // duration of animation in ms if enabled
@@ -53,14 +53,14 @@ function relayout(cy?: cytoscape.Core, fromScratch=true) {
             let r1a = a(r1);
             let r2a = a(r2);
             // let p2 = p();
-            console.log('GOAL: ' + r1a);
-            console.log('CURRENT: ' + r2a);
+            // console.log('GOAL: ' + r1a);
+            // console.log('CURRENT: ' + r2a);
             let diff = r2a.map((x, i) => r1a[i] - x);
             // let dr = r2 - r1
-            console.log(`DIFF: ` + diff);
+            // console.log(`DIFF: ` + diff);
             // HOLY SH*T. THIS GETS F*CKED UP BECAUSE OF A RACE CONDITION
             cy.panBy({x: diff[0], y: diff[1]});
-            console.log('CURRENT: ' + a(r()));
+            // console.log('CURRENT: ' + a(r()));
         }
     });
     layout.run(); // this is ASYNCHRONOUS!!!! Tough bugs because of RACE CONDITIONS!!!

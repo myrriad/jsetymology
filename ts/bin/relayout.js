@@ -16,7 +16,8 @@ function relayout(cy, fromScratch = true) {
         condense: false,
         rows: undefined,
         cols: undefined,
-        position: function (node) { },
+        position: function (node) { if (node.neighborhood('node').length == 0)
+            return { row: 1, col: undefined }; },
         sort: undefined,
         animate: false,
         animationDuration: 500,
@@ -54,14 +55,14 @@ function relayout(cy, fromScratch = true) {
             let r1a = a(r1);
             let r2a = a(r2);
             // let p2 = p();
-            console.log('GOAL: ' + r1a);
-            console.log('CURRENT: ' + r2a);
+            // console.log('GOAL: ' + r1a);
+            // console.log('CURRENT: ' + r2a);
             let diff = r2a.map((x, i) => r1a[i] - x);
             // let dr = r2 - r1
-            console.log(`DIFF: ` + diff);
+            // console.log(`DIFF: ` + diff);
             // HOLY SH*T. THIS GETS F*CKED UP BECAUSE OF A RACE CONDITION
             cy.panBy({ x: diff[0], y: diff[1] });
-            console.log('CURRENT: ' + a(r()));
+            // console.log('CURRENT: ' + a(r()));
         }
     });
     layout.run(); // this is ASYNCHRONOUS!!!! Tough bugs because of RACE CONDITIONS!!!

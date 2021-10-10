@@ -30,6 +30,7 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
     }
     fetchEtyEntry(word, lang, isRecon, function onEtyEntry(data2, doc) {
         // alert(data);
+        window.etyentries = data2;
         let idx;
         if (data2.length > 1) {
             let str = prompt(`${data2.length} different etymologies found! Pick one: `, '1');
@@ -167,7 +168,7 @@ function createTree(oword, olang) {
             }
             let me = `${word}, ${lang}`;
             lastConnector = me;
-            console.log(`edge ${me};  ${connector}`);
+            // console.log(`edge ${me};  ${connector}`)
             let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
             //  || ${oword}, ${olang}
             if (cy().$(`edge[id="${id}"]`).length) {
