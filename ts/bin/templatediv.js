@@ -3,11 +3,6 @@
 // import wtf from 'https://unpkg.com/wtf_wikipedia';
 // / <reference path='https://unpkg.com/wtf_wikipedia'/>
 // https://unpkg.com/wtf_wikipedia@9.0.1/builds/wtf_wikipedia-client.min.js
-// @ts-ignore
-// let wth = wtf as typeof wtt.default; // HOLY SH*T THIS ONE LINE IS SO F*CKING OBNOXIOUS
-// wtf.extend(require('wtf-plugin-html'))
-// @ts-ignore
-// wtf.extend(wtfHtml);
 function clearDiv() {
     $('#closeinspect')[0].innerHTML = '';
 }
