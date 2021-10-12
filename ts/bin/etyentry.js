@@ -31,7 +31,7 @@ function ondoc(doc2, word, lang, qy) {
     // let doc3 = doc2[0];
     let doc = doc2 instanceof Array ? doc2[0] : doc2;
     if (!doc) {
-        friendlyError(`Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
+        friendlyError($('#closeinspect')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
         let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
         h.data().searched = true;
         h.style('background-color', 'green');
@@ -61,7 +61,7 @@ function ondoc(doc2, word, lang, qy) {
             }
             else {
                 let langs = doc.sections().filter(x => x.indentation() === 0).map(x => x.title());
-                friendlyError(`More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
+                friendlyError($('#closeinspect')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
                 throw "More than 1 lang, cannot auto-infer!";
             }
         }

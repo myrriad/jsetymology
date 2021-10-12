@@ -57,20 +57,23 @@ function pruneSinglets() {
 }
 const SAMPLE = function () {
     let ret = {} as any;
-    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
-    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French'];
+    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux']; //, 'board'];
+    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French']; // , 'English'];
     ret.random = function () {
         let r = Math.floor(Math.random() * ret.words.length);
         return [SAMPLE.words[r], SAMPLE.langs[r]];
     }
     return ret;
 }() as {words: str[], langs: str[], random: () => str};
-window.addEventListener("load", function () {
-    // let field = window.getElementById("qword");
-    // field.value = r;
+function loadRandom() {
     let [w, l] = SAMPLE.random(); // populate sample
     $("#qword").val(w);
     $("#qlang").val(l);
+}
+window.addEventListener("load", function () {
+    // let field = window.getElementById("qword");
+    // field.value = r;
+    loadRandom();
     // let's look for url query params.
 
     let searchParams = new URLSearchParams(window.location.search);

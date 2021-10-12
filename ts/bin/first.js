@@ -12,31 +12,36 @@ function assert(x, message = '', hard = true) {
         else
             console.warn(message);
 }
-function friendlyBreak(top = true) {
-    let br = document.createElement('br');
+function clearDiv() {
+    $('#closeinspect')[0].innerHTML = '';
+}
+function friendlyElement(div, htmltype, str, top = false, color) {
+    if (!div)
+        div = $('#closeinspect div').last()[0];
+    let span = document.createElement(htmltype);
+    if (str) {
+        let txt = document.createTextNode(str);
+        span.appendChild(txt);
+    }
+    if (color)
+        span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
     if (top) {
-        $('#closeinspect')[0].prepend(br); // put as first child
+        div.prepend(span); // put as first child
     }
     else {
-        $('#closeinspect')[0].appendChild(br);
+        div.appendChild(span);
     }
 }
-function friendlyInfo(str, override = true, top = true, color = 'black;') {
+function friendlyBreak(div, top = false) {
+    friendlyElement(div, 'br', undefined, top);
+}
+function friendlyInfo(div, str, override = false, top = false, color = 'black;') {
     if (override)
-        $('#closeinspect')[0].innerHTML = '';
-    let txt = document.createTextNode(str);
-    let span = document.createElement('span');
-    span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
-    span.appendChild(txt);
-    if (top) {
-        $('#closeinspect')[0].prepend(span); // put as first child
-    }
-    else {
-        $('#closeinspect')[0].appendChild(span);
-    }
+        clearDiv();
+    friendlyElement(div, 'span', str, top, color);
 }
-function friendlyError(str, override = true, top = true, ital = false) {
-    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
+function friendlyError(div, str, override = true, top = true, ital = false, newline = false) {
+    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 }
 function _parse(...strs) {
     let ret = new Array(strs.length);
