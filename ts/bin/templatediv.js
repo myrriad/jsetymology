@@ -3,14 +3,18 @@
 // import wtf from 'https://unpkg.com/wtf_wikipedia';
 // / <reference path='https://unpkg.com/wtf_wikipedia'/>
 // https://unpkg.com/wtf_wikipedia@9.0.1/builds/wtf_wikipedia-client.min.js
-function _appendText(text) {
+function _appendText(text, div) {
+    if (!div)
+        div = $('#closeinspect div').last()[0];
     let node = document.createTextNode(text);
     let textbox = document.createElement('span');
     textbox.appendChild(node);
-    $('#closeinspect')[0].appendChild(textbox);
+    div.appendChild(textbox);
     return textbox;
 }
-function plopSectionToDiv(entry) {
+function plopSectionToDiv(entry, div) {
+    if (!div)
+        div = $('#closeinspect div').last()[0];
     // TODO plop a link here for easy access
     let sec = entry; // instanceof EtyEntry ? entry.ety! : entry;
     let t = sec.wikitext();
@@ -23,19 +27,19 @@ function plopSectionToDiv(entry) {
     for (let i = 0; i < idxs.length; i++) {
         let idx = idxs[i];
         end = idx;
-        _appendText(t.slice(start, end));
+        _appendText(t.slice(start, end), div);
         start = end;
         end = start + lens[i];
         let ttext = t.slice(start, end);
-        let template = _appendText(ttext);
+        let template = _appendText(ttext, div);
         template.classList.add('template');
         template.classList.add(findRelevance(ttext) ? 't-active' : 't-inactive'); // requires a dependency on template.ts
         template.onclick = () => onTemplateClicked(template);
-        $('#closeinspect')[0].appendChild(template);
+        div.appendChild(template);
         start = end;
     }
-    _appendText(t.slice(start)); // don't forget to add the rest of the text
-    friendlyBreak(false);
+    _appendText(t.slice(start), div); // don't forget to add the rest of the text
+    friendlyBreak(div, false);
     return true;
 }
 function templTknr(inp, startidx, nests) {

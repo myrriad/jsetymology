@@ -57,8 +57,8 @@ function pruneSinglets() {
 }
 const SAMPLE = function () {
     let ret = {} as any;
-    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux'];
-    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French'];
+    ret.words = ["llegaron", "precio", "vaca", "tomar", "empezar", "ballena", 'cadeaux']; //, 'board'];
+    ret.langs = ["", "", "Spanish", "Spanish", "Spanish", "Spanish", 'French']; // , 'English'];
     ret.random = function () {
         let r = Math.floor(Math.random() * ret.words.length);
         return [SAMPLE.words[r], SAMPLE.langs[r]];

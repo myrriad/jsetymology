@@ -15,7 +15,9 @@ function assert(x, message = '', hard = true) {
 function clearDiv() {
     $('#closeinspect')[0].innerHTML = '';
 }
-function friendlyElement(htmltype, str, top = false, color) {
+function friendlyElement(div, htmltype, str, top = false, color) {
+    if (!div)
+        div = $('#closeinspect div').last()[0];
     let span = document.createElement(htmltype);
     if (str) {
         let txt = document.createTextNode(str);
@@ -24,22 +26,22 @@ function friendlyElement(htmltype, str, top = false, color) {
     if (color)
         span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
     if (top) {
-        $('#closeinspect')[0].prepend(span); // put as first child
+        div.prepend(span); // put as first child
     }
     else {
-        $('#closeinspect')[0].appendChild(span);
+        div.appendChild(span);
     }
 }
-function friendlyBreak(top = false) {
-    friendlyElement('br', undefined, top);
+function friendlyBreak(div, top = false) {
+    friendlyElement(div, 'br', undefined, top);
 }
-function friendlyInfo(str, override = false, top = false, color = 'black;') {
+function friendlyInfo(div, str, override = false, top = false, color = 'black;') {
     if (override)
         clearDiv();
-    friendlyElement('span', str, top, color);
+    friendlyElement(div, 'span', str, top, color);
 }
-function friendlyError(str, override = true, top = true, ital = false, newline = false) {
-    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
+function friendlyError(div, str, override = true, top = true, ital = false, newline = false) {
+    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 }
 function _parse(...strs) {
     let ret = new Array(strs.length);
