@@ -31,4 +31,5 @@ TODO
  - [x] Use promises
  - [ ] {{m|gem-pro|*[[nehw]] [[ainaz]]||nor one}}
  - [ ] {{de-verb|brauchen<brauchte,gebraucht,brauchte[prescribed]:bräuchte[used exclusively in speech, common in writing]>}}
- - [ ] When multiple etymologies are found, display them all at the same time
+ - [x] When multiple etymologies are found, display them all at the same time
+ - [ ] Fix conenction when crossing between different numbered etymologies

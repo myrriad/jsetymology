@@ -12,22 +12,17 @@ function assert(x, message = '', hard = true) {
         else
             console.warn(message);
 }
-function friendlyBreak(top = true) {
-    let br = document.createElement('br');
-    if (top) {
-        $('#closeinspect')[0].prepend(br); // put as first child
-    }
-    else {
-        $('#closeinspect')[0].appendChild(br);
-    }
+function clearDiv() {
+    $('#closeinspect')[0].innerHTML = '';
 }
-function friendlyInfo(str, override = true, top = true, color = 'black;') {
-    if (override)
-        $('#closeinspect')[0].innerHTML = '';
-    let txt = document.createTextNode(str);
-    let span = document.createElement('span');
-    span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
-    span.appendChild(txt);
+function friendlyElement(htmltype, str, top = false, color) {
+    let span = document.createElement(htmltype);
+    if (str) {
+        let txt = document.createTextNode(str);
+        span.appendChild(txt);
+    }
+    if (color)
+        span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
     if (top) {
         $('#closeinspect')[0].prepend(span); // put as first child
     }
@@ -35,7 +30,15 @@ function friendlyInfo(str, override = true, top = true, color = 'black;') {
         $('#closeinspect')[0].appendChild(span);
     }
 }
-function friendlyError(str, override = true, top = true, ital = false) {
+function friendlyBreak(top = false) {
+    friendlyElement('br', undefined, top);
+}
+function friendlyInfo(str, override = false, top = false, color = 'black;') {
+    if (override)
+        clearDiv();
+    friendlyElement('span', str, top, color);
+}
+function friendlyError(str, override = true, top = true, ital = false, newline = false) {
     friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 }
 function _parse(...strs) {

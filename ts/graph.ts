@@ -30,49 +30,35 @@ function wlToTree (word?: str, lang?: str, target?: cytoscape.NodeSingular, reLa
     fetchEtyEntry(word, lang, isRecon, 
         target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
     .then(function onEtyEntry(out) {
-        // data2: EtyEntry[], doc: wtf.Document) {
         if(!out) return;
         let [data2, doc] = out!;
         (window as any).etyentries = data2;
-        let idx;
-        if (data2.length > 1) {
-            let str = prompt(`${data2.length} different etymologies found! Pick one: `, '1');
-            str = str ? str : '1';
-            idx = parseInt(str);
-            idx = isNaN(idx) ? 1 : idx;
-            idx = Math.max(1, Math.min(idx, data2.length));
-        } else if (data2.length === 1) {
-            idx = 1;
-        } else throw "No entries found!";
-        let etyentry = data2[idx - 1]; // idx start at 0 instead of 1.
-        // $('#target').text(data2);
-        // if (!plop(etyentry.ety, true)) {
-            // $('#closeinspect')[0].innerHTML += 
-        // }
+        if(!data2 || data2.length === 0) throw "No entries found!";
         clearDiv();
-        let etyresult = appendToDiv(etyentry.ety);
-        friendlyBreak(true);
-        if(etyresult) {
-            friendlyInfo(`https://en.wiktionary.org/wiki/${etyentry.qy}`, false);
-        } else {
-            friendlyError(`https://en.wiktionary.org/wiki/${etyentry.qy}`, false);
+        let orig: cytoscape.NodeSingular;
+        for(let i=0;i<data2.length;i++) {
+            let etyentry = data2[i];
+            if(data2.length > 1) {
+                friendlyElement('h3', `Etymology ${i + 1}:`); // 1-index
+            }
+            friendlyInfo(`https://en.wiktionary.org/wiki/${etyentry.qy}`);
+            friendlyBreak();
+            if(etyentry.ety) {
+                plopSectionToDiv(etyentry.ety);
+            } else {
+                friendlyError(`No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true);
+                friendlyBreak();
+            }
+            for (let defn of etyentry.defns) plopSectionToDiv(defn.defn);
+            orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+            // onCheckbox();
         }
-        for (let defn of etyentry.defns) appendToDiv(defn.defn);
-        let orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
-
         // success. save wikitext
         // the node better exist
-        if (doc && doc.wikitext()) orig.data().wikitext = doc.wikitext();
-
-        onCheckbox();
+        if (doc && doc.wikitext()) orig!.data().wikitext = doc.wikitext();
+        
     });
-    // alert($('#q1')[0]);
     // Temporarily disable URL request for debugging.
-    
-
-    // var graph = ondata();
-    // clickToQuery();
-
 }
 
 
@@ -109,7 +95,10 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
     let i = 1;
     let lastConnector;
 
-    for (let temptxt of $('span.template.t-active')) {
+    // dumb code for multi etymologies
+    let headers = $('#closeinspect h3');
+    
+    for (let temptxt of $('#closeinspect span.template.t-active')) {
         // if(temp)
         
         let txt = temptxt.textContent;
@@ -152,6 +141,10 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
             let prev = temptxt.previousSibling;
             let connector;
             if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
+                if(prev.nodeName === 'H3') {
+                    connector = `${oword}, ${olang}`; // reset origin when crossing etymologies.
+                    // Edit: TODO doesn't work
+                }
                 if(prev.textContent.toLowerCase().includes('from') // from
                 || prev.textContent === ', ') {
                 // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
@@ -159,7 +152,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                         // make an exception for the first thing being a root or ine-root
                     } else if (temps.length >= 2) { // make an exception for if we're an affixal type. 
                         
-                    } else {
+                    } else{
                         connector = lastConnector;
                     }
                 }

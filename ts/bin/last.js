@@ -58,12 +58,15 @@ const SAMPLE = function () {
     };
     return ret;
 }();
-window.addEventListener("load", function () {
-    // let field = window.getElementById("qword");
-    // field.value = r;
+function loadRandom() {
     let [w, l] = SAMPLE.random(); // populate sample
     $("#qword").val(w);
     $("#qlang").val(l);
+}
+window.addEventListener("load", function () {
+    // let field = window.getElementById("qword");
+    // field.value = r;
+    loadRandom();
     // let's look for url query params.
     let searchParams = new URLSearchParams(window.location.search);
     let i = 0;

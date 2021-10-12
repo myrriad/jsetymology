@@ -19,21 +19,18 @@ function assert(x: any, message = '', hard = true) {
     if (!x) if (hard) throw TypeError(message); else console.warn(message);
 }
 
-function friendlyBreak(top = true) {
-    let br = document.createElement('br');
-    if (top) {
-        $('#closeinspect')[0].prepend(br); // put as first child
-    } else {
-        $('#closeinspect')[0].appendChild(br);
-    }
+function clearDiv() {
+    $('#closeinspect')[0].innerHTML = '';
 }
-function friendlyInfo(str: string, override = true, top = true, color='black;') {
-    if (override) $('#closeinspect')[0].innerHTML = '';
+function friendlyElement(htmltype: str, str?: string, top = false, color?: str): void {
 
-    let txt = document.createTextNode(str);
-    let span = document.createElement('span');
-    span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
-    span.appendChild(txt);
+    let span = document.createElement(htmltype);
+
+    if(str) {
+        let txt = document.createTextNode(str);
+        span.appendChild(txt);
+    }
+    if(color) span.setAttribute(`style`, `color: ${color}`); // font-style: italic; 
     if (top) {
         $('#closeinspect')[0].prepend(span); // put as first child
     } else {
@@ -41,9 +38,17 @@ function friendlyInfo(str: string, override = true, top = true, color='black;') 
     }
 
 }
+function friendlyBreak(top = false) {
+    friendlyElement('br', undefined, top);
+}
+function friendlyInfo(str: string, override = false, top = false, color = 'black;'): void {
+    if (override) clearDiv();
+    friendlyElement('span', str, top, color);
 
-function friendlyError(str: string, override = true, top=true, ital=false) {
-    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`)
+}
+
+function friendlyError(str: string, override = true, top=true, ital=false, newline=false) {
+    friendlyInfo(str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
 
 }
 function _parse(...strs: str[]) {
