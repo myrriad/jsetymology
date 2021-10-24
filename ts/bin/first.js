@@ -35,13 +35,17 @@ function friendlyElement(div, htmltype, str, top = false, color) {
 function friendlyBreak(div, top = false) {
     friendlyElement(div, 'br', undefined, top);
 }
-function friendlyInfo(div, str, override = false, top = false, color = 'black;') {
+function friendlyInfo(div, str, override = false, top = false, color = 'black;', newline = true) {
     if (override)
         clearDiv();
+    if (top && newline)
+        friendlyBreak(div, true);
     friendlyElement(div, 'span', str, top, color);
+    if (!top && newline)
+        friendlyBreak(div, false);
 }
-function friendlyError(div, str, override = true, top = true, ital = false, newline = false) {
-    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
+function friendlyError(div, str, override = true, top = true, ital = false, newline = true) {
+    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs) {
     let ret = new Array(strs.length);

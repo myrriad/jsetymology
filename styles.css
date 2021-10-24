@@ -45,7 +45,7 @@ h1 {
     padding: 5px;
     min-width: 400px;
 }
-#infobar * {
+#infobar > * {
     margin: 10px;
 }
 #infobar p {

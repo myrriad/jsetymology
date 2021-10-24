@@ -49,8 +49,7 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular, reLay
             if(etyentry.ety) {
                 plopSectionToDiv(etyentry.ety, newdiv);
             } else {
-                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true);
-                friendlyBreak(newdiv);
+                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
             }
             for (let defn of etyentry.defns) plopSectionToDiv(defn.defn, newdiv);
             // onCheckbox();
