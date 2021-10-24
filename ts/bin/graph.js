@@ -51,8 +51,7 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
                 plopSectionToDiv(etyentry.ety, newdiv);
             }
             else {
-                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true);
-                friendlyBreak(newdiv);
+                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
             }
             for (let defn of etyentry.defns)
                 plopSectionToDiv(defn.defn, newdiv);

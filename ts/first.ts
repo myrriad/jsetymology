@@ -42,13 +42,16 @@ function friendlyElement(div: ParentNode | undefined, htmltype: str, str?: strin
 function friendlyBreak(div: ParentNode | undefined, top = false) {
     friendlyElement(div, 'br', undefined, top);
 }
-function friendlyInfo(div: ParentNode | undefined, str: string, override = false, top = false, color = 'black;'): void {
+function friendlyInfo(div: ParentNode | undefined, str: string, override = false, top = false, color = 'black;', newline=true): void {
     if (override) clearDiv();
+    if(top && newline) friendlyBreak(div, true);
     friendlyElement(div, 'span', str, top, color);
+    if (!top && newline) friendlyBreak(div, false);
+
 }
 
-function friendlyError(div: ParentNode | undefined, str: string, override = true, top=true, ital=false, newline=false) {
-    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`);
+function friendlyError(div: ParentNode | undefined, str: string, override = true, top=true, ital=false, newline=true) {
+    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs: str[]) {
 
