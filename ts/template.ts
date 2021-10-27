@@ -29,6 +29,9 @@ function twordRemoveAngleTknr(inp: str, startidx: num): str {
     }
     return built;
 }
+function twordExtractMultiTknr() {
+    
+}
 class Templated {
     ttype: str;
     langcode: string;

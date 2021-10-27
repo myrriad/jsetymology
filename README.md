@@ -30,4 +30,13 @@ TODO
  - [ ] {{m|gem-pro|*[[nehw]] [[ainaz]]||nor one}}
  - [ ] {{de-verb|brauchen<brauchte,gebraucht,brauchte[prescribed]:bräuchte[used exclusively in speech, common in writing]>}}
  - [x] When multiple etymologies are found, display them all at the same time (Fix conenction when crossing between different numbered etymologies)
+ - [ ] multiple etymologies need multiple distinct nodes?
  - [ ] Create tests
+ - [ ] acorn bug
+ - [ ] iframe in the wiktionary entry
+ - [ ] unabbreviate the edge labels
+ - [ ] button to automatically click nodes
+ - [ ] undo button
+ - [ ] audience: etymology, foreign language learners
+ - [ ] macron
+ 

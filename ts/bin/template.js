@@ -29,6 +29,8 @@ function twordRemoveAngleTknr(inp, startidx) {
     }
     return built;
 }
+function twordExtractMultiTknr() {
+}
 class Templated {
     constructor(ttype, word, langcode, self_lang, orig_template) {
         this.ttype = ttype;
