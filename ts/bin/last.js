@@ -85,3 +85,7 @@ window.addEventListener("load", function () {
     }
     cy().fit();
 });
+function shareResults() {
+    $('#myModal')[0].style.display = 'block';
+    $('#shareurl').text(`${window.location.href}${wls._wlstrcache}`);
+}

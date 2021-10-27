@@ -88,9 +88,18 @@
       <input type="button" value="relayout" onclick="relayout();" />
       <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
       <input type="button" value="load random" onclick="loadRandom();" />
-
+  <!-- Trigger/Open The Modal -->
+      <input type="button" value="Share Results" id="share" onclick="shareResults();">
     </form>
+<div id="myModal" class="modal">
 
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close" onclick="$('#myModal')[0].style.display = 'none';">&times;</span>
+    <p id="shareurl">Some text in the Modal..</p>
+  </div>
+
+</div>
 
     <!-- <details> -->
     <!-- <summary>Text Output</summary> -->
@@ -179,6 +188,7 @@
   <script type="module">
   </script>
 
+  </div>
   <!-- /EDIT -->
 
 
