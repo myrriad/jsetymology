@@ -54,7 +54,7 @@ function templTknr(inp, startidx, nests) {
                     i = newidx;
                 }
                 else {
-                    console.warn(`bad template! ${inp.substring(startidx, Math.min(inp.length, startidx + 20))}`, false);
+                    console.warn(`bad template! ${inp.substring(startidx, Math.min(inp.length, startidx + 20))}`);
                 }
             }
             else

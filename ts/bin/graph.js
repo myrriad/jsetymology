@@ -78,6 +78,7 @@ function createTree(oword, olang) {
         oword = _parse($('#qword').val());
     if (!olang)
         olang = _parse($('#qlang').val());
+    wls.addwl(oword, olang);
     let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
     let fromScratch = cy().$('node').length === 0;
     if (!(origarr && origarr.length)) {

@@ -109,3 +109,30 @@ function getCookie (name: str) {
 // const deleteCookie = (name: str, path: str) => {
     // setCookie(name, '', -1, path);
 // }
+let wls = [] as unknown as [str, str][] & {addwl: (word: str, lang: str) => void, toURLQuery: () => str, _wlstrcache: str};
+wls._wlstrcache = '?';
+wls.addwl = function(word: str, lang: str) {
+    for(let wl of wls) {
+        if(wl[0] === word && wl[1] === lang) {
+            // OH MY GOD it's a race condition ;-;
+            // actually nvm it isn't
+            return;
+        }
+    }
+    if (wls.length >= 1) {
+        wls._wlstrcache += '&';
+    }
+    wls._wlstrcache += `${word}=${lang}`;
+    wls.push([word, lang]);
+}
+wls.toURLQuery = function() {
+    let ret = '?';
+    for(let i=0;i<wls.length-1;i++) {
+        let wl = wls[i];
+        ret = ret + `${wl[0]}=${wl[1]}&`;
+    }
+    let wl = wls[wls.length-1];
+    ret = ret + `${wl[0]}=${wl[1]}`;
+    wls._wlstrcache = ret;
+    return ret;
+}

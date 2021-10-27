@@ -76,6 +76,8 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
 
     if (!oword) oword = _parse($('#qword').val() as str);
     if (!olang) olang = _parse($('#qlang').val() as str);
+    wls.addwl(oword, olang);
+
     let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
 
     let fromScratch = cy().$('node').length === 0;
