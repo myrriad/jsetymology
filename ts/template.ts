@@ -30,7 +30,7 @@ function twordRemoveAngleTknr(inp: str, startidx: num): str {
     return built;
 }
 function twordExtractMultiTknr() {
-    
+
 }
 class Templated {
     ttype: str;
@@ -136,7 +136,10 @@ class Templated {
             }
         } else {
             for(let idx of make_temps_idx) {
-                assert((idx + '') in wtfdata);
+                if(!((idx + '') in wtfdata)) {
+                    assert(false, 'template-matching failed, given indices didn\'t match!', false);
+                    return undefined;
+                }
                 let wd = wtfdata[(idx + '')];
                 let t = Templated.make(wtfdata.template, wd, lang, undefined, wtfobj.wikitext()); // In this case the elem is the lang
                 if (t) ret.push(t);
@@ -290,7 +293,7 @@ class Templated {
         // return undefined;
     }
     decodeTemplate = function(templstr: str) {
-        assert(templstr.startsWith('{{') && templstr.endsWith('}}'));
+        assert(templstr.startsWith('{{') && templstr.endsWith('}}'), `messed up template ${templstr}`);
         let ttxt = templstr.slice(2, -2);
         let parts = ttxt.trim().split('|');
         let ttype = parts[0];
@@ -346,7 +349,7 @@ function findRelevance(templatestr: str) {
     // this is what decides whether a template is green or grey in the sidebar
     // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
     // makes a Mediawiki parser emulator
-    assert(templatestr.indexOf('}}') >= 0);
+    assert(templatestr.indexOf('}}') >= 0, `messed up template ${templatestr}`);
     let pipe = templatestr.indexOf('|');
     let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
     let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);

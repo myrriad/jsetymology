@@ -5,12 +5,18 @@ window.doc = undefined;
 //     if (str) console.log(str);
 //     if (obj) console.log(obj);
 // }
-function assert(x, message = '', hard = true) {
+function assert(x, message = '', hard = true, hardest = false) {
     if (!x)
-        if (hard)
-            throw TypeError(message);
-        else
-            console.warn(message);
+        if (hard || hardest) {
+            let er = new TypeError(message);
+            alert(message + "\n\n " + er.stack);
+            console.trace(message);
+            if (hardest)
+                throw er;
+        }
+        else {
+            console.trace(message);
+        }
 }
 function clearDiv() {
     $('#closeinspect')[0].innerHTML = '';

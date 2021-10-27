@@ -62,8 +62,7 @@ function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str,
     // auto-inferral
     while (toplvl && toplvl?.title() === '') toplvl = toplvl.nextSibling(); // skip the {{also|preció}} template-only stuff.
     if (toplvl) {
-        // @ts-ignore
-        assert(toplvl.depth() === 0);
+        assert(toplvl.indentation() === 0);
         if (!lang) {
             if (!toplvl.nextSibling()) {
                 skiplang = true;
@@ -100,11 +99,12 @@ function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str,
 
 
                 } else if (lvl2.title() === 'Etymology') {
-                    assert(!multiEtyMode);
+                    assert(!multiEtyMode, 'very strange situation where we both numbered and unnumbered etymologies');
                     myety = lvl2;
                     multiEtyMode = false;
                 } else if (PARTS_OF_SPEECH.indexOf(lvl2.title().toLowerCase()) >= 0) {
-                    assert(!multiEtyMode);
+                    assert(!multiEtyMode, 'strange situation where we have multiple numbered etymologies but also a definition', false);
+
                     dictEntries.push(parseDictEntry(lvl2));
                 }
 
@@ -112,7 +112,8 @@ function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str,
         }
     }
     let etys = multiEtyMode ? etylist : [new EtyEntry(dictEntries, myety, qy)];
-    assert(flag, "No section found or parsed?", false)
+    assert(flag, "No section found or parsed?", false);
+    // if(flag) console.warn("No section found or parsed?")
     // if (callback) callback(etys, doc);
     return [etys, doc];
     // let members = doc.get('etymology'); // doc.infobox().get('current members')

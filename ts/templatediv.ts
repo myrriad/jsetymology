@@ -24,7 +24,6 @@ function plopSectionToDiv(entry: Section, div?: ParentNode) {
     let [idxs, lens] = getTemplates(t);
 
     let start=0, end = 0;
-    assert(idxs.length === idxs.length);
     for(let i=0;i<idxs.length;i++) {
         let idx = idxs[i];
         end = idx;
@@ -48,7 +47,7 @@ function plopSectionToDiv(entry: Section, div?: ParentNode) {
 
 function templTknr(inp: string, startidx: number, nests: string[]): [str, num] {
     // TODO reuse this to recognize cogs
-    assert(inp[startidx] === '{' && inp[startidx + 1] === '{');
+    assert(inp[startidx] === '{' && inp[startidx + 1] === '{', `messed up template!`);
     for(let i=startidx+2;i<inp.length;i++) {
         let c = inp[i];
         if(c === '{') {

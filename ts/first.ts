@@ -15,8 +15,15 @@ type Section = wtf.default.Section;
 //     if (str) console.log(str);
 //     if (obj) console.log(obj);
 // }
-function assert(x: any, message = '', hard = true) {
-    if (!x) if (hard) throw TypeError(message); else console.warn(message);
+function assert(x: any, message = '', hard = true, hardest = false) {
+    if (!x) if (hard || hardest) {
+        let er = new TypeError(message);
+        alert(message + "\n\n " + er.stack);
+        console.trace(message);
+        if(hardest) throw er;
+    }else {
+        console.trace(message);
+    }
 }
 
 function clearDiv() {
