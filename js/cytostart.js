@@ -80,7 +80,7 @@ function initiable(obj, restyle = true) {
                 }
             },
             {
-                selector: 'edge[label]',
+                selector: 'edge[label].showLabel',
                 style: {
                     'label': 'data(label)' // maps to data.label
                 }

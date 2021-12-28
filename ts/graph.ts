@@ -181,15 +181,18 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                     // make an exception for cognates. dont' add edges
                 } else {
                     try {
+                        let classes = config.showEdgeLabels ? 'showLabel' : '';
                         cy().add({
                             group: 'edges',
                             data: {
                                 id: id, // || ${i++}`,
+                                // displaylabel: (document.getElementById('edges-toggle') as HTMLInputElement).checked,
                                 label: `${_parse(temp.ttype)}`,
                                 template: `${temp.orig_template}`, // FIXME unparsed. But afaik this is ok???
                                 source: me,
                                 target: connector,
-                            }
+                            },
+                            classes: classes
                         });
                     } catch (e) {
                         if ((e as any).message.startsWith(`Can not create second element with ID \`${id}`)) {

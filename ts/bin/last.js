@@ -12,6 +12,21 @@ function onCollector() {
         });
     }
 }
+function toggleEdges(on) {
+    // let edges = cy().edges();
+    // if(on === undefined) on = (document.getElementById('edges-toggle') as HTMLInputElement).checked;
+    let val = config.showEdgeLabels;
+    config.showEdgeLabels = !val;
+    cy().edges().toggleClass('showLabel');
+    // @ts-ignore
+    // for(let edge of edges) {
+    //     if(on) {
+    //         edge.data().displaylabel = true;
+    //     } else {
+    //         edge.data().displaylabel = false;
+    //     }
+    // }
+}
 function onTap(event) {
     // TODO: query
     let target = event.target;
@@ -87,5 +102,5 @@ window.addEventListener("load", function () {
 });
 function shareResults() {
     $('#myModal')[0].style.display = 'block';
-    $('#shareurl').text(`${window.location.href}${wls._wlstrcache}`);
+    $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
 }

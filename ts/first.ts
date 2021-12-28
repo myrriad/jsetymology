@@ -11,10 +11,11 @@ type bool = boolean;
 
 type Section = wtf.default.Section;
 
-// function print(obj: any, str = '') {
-//     if (str) console.log(str);
-//     if (obj) console.log(obj);
-// }
+const config = {
+    showEdgeLabels: true
+};
+
+
 function assert(x: any, message = '', hard = true, hardest = false) {
     if (!x) if (hard || hardest) {
         let er = new TypeError(message);

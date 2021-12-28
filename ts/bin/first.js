@@ -1,10 +1,9 @@
 "use strict";
 window.universe = { batchIndex: 0 };
 window.doc = undefined;
-// function print(obj: any, str = '') {
-//     if (str) console.log(str);
-//     if (obj) console.log(obj);
-// }
+const config = {
+    showEdgeLabels: true
+};
 function assert(x, message = '', hard = true, hardest = false) {
     if (!x)
         if (hard || hardest) {

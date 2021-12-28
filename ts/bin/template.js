@@ -383,7 +383,7 @@ function findRelevance(templatestr) {
     if (['senseid',
         'syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
-        'IPA', 'rfap', 'rfp', 'Q'].includes(ttype))
+        'IPA', 'rfap', 'rfp', 'Q', 'sup'].includes(ttype))
         return false;
     for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
         if (ttype.startsWith(comb))

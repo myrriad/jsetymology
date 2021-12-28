@@ -55,13 +55,20 @@ function ondoc(doc2, word, lang, qy) {
             if (!toplvl.nextSibling()) {
                 skiplang = true;
                 let lang = toplvl.title();
-                $('#qlang').val(lang); // DUMBEST hack but it works I guess
+                $('#qlang').val(lang);
+                // DUMBEST hack but it works I guess
                 // if there's only 1 lang, then we infer lang.
             }
             else {
                 let langs = doc.sections().filter(x => x.indentation() === 0).map(x => x.title());
-                friendlyError($('#closeinspect')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
-                throw "More than 1 lang, cannot auto-infer!";
+                if (langs.includes('English')) {
+                    lang = 'English';
+                    $('#qlang').val(lang); // auto-infer English
+                }
+                else {
+                    friendlyError($('#closeinspect')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
+                    throw "More than 1 lang, cannot auto-infer!";
+                }
             }
         }
     }

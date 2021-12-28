@@ -1,118 +1,121 @@
 <!-- {{extend 'layout.html'}} -->
 <!-- {{block header}} -->
 <html>
+<head>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="stylesheet" type="text/css" href="cytoscape.js-panzoom.css">
+  <link href="font-awesome-4.0.3/css/font-awesome.css" rel="stylesheet" type="text/css" />
+  <title>etygraph.com: Etymology Tool</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XF94WS05DE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-XF94WS05DE');
+  </script>
+  <script src='js/cytoscape.min.js'></script>
+  <!--https://unpkg.com/cytoscape/dist/cytoscape.min.js-->
+  <script src='js/jquery.js'></script>
+
+  <!-- popper import imports -->
+  <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
+  <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
+
+  <!--cytoscape-panzoom-->
+  <!-- dagre imports -->
+  <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+  <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+  <!-- <script src="https://unpkg.com/cytoscape-panzoom@2.5.3/cytoscape-panzoom.js"></script> -->
+  <script src='js/cytoscape-panzoom.js'></script>
+  <!-- <script src='https://cdn.jsdelivr.net/gh/bdparrish/cytoscape.js-toolbar@latest/cytoscape-toolbar.js' /> -->
+  </script>
+  <!--https://github.com/cytoscape/cytoscape.js-navigator/blob/master/cytoscape.js-navigator.css-->
+  <!-- <script src="https://unpkg.com/cytoscape-navigator@2.0.1/cytoscape-navigator.js"></script> -->
+  <!-- <script src="https://cdn.rawgit.com/cytoscape/cytoscape-navigator/2.0.1/cytoscape-navigator.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/cytoscape/cytoscape-navigator/dist/cytoscape-navigator.js"></script> -->
+
+  <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
+  <script src='js/wtf.min.js'></script>
+  <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
+
+  <script src='js/langcodes/gencodes.js'></script> <!-- 200kb-->
+  <script src='js/langcodes/etycodes.js'></script> <!-- 86kb-->
+
+  <script src='ts/bin/first.js'></script>
+  <script src='ts/bin/cached.js' charset='utf-8'></script>
+  <script src='ts/bin/template.js' charset='utf-8'></script>
+
+  <script src='ts/bin/etyentry.js'></script>
+  <script src='ts/bin/templatediv.js'></script>
+
+  <script src='ts/bin/relayout.js'></script>
+  <script src='js/cytostart.js'></script>
+  <script src='ts/bin/graph.js'></script>
+  <script src='ts/bin/last.js'></script>
+
+  <script src='ts/bin/debugmode.js'></script>
+
+</head>
 <body>
 
-  <head>
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <link rel="stylesheet" type="text/css" href="cytoscape.js-panzoom.css">
-    <link href="font-awesome-4.0.3/css/font-awesome.css" rel="stylesheet" type="text/css" />
-    <title>Etymology Tool</title>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?" />
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XF94WS05DE"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag('js', new Date());
-
-      gtag('config', 'G-XF94WS05DE');
-    </script>
-  </head>
+  
   <div id='topheader' style="background-color: #333; color:white; padding:30px"><!--
      <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} 
-    --><h1>Cognate Visualization Tool</h1>
+    --><h1>etygraph.com</h1>
   </div>
   
-  <div id='scripts'>
-    <script src='js/cytoscape.min.js'></script> <!--https://unpkg.com/cytoscape/dist/cytoscape.min.js-->
-    <script src='js/jquery.js'></script>
   
-    <!-- popper import imports -->
-    <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
-    <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
-  
-    <!--cytoscape-panzoom-->
-    <!-- dagre imports -->
-    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
-  
-    <script src="https://unpkg.com/cytoscape-panzoom@2.5.3/cytoscape-panzoom.js"></script>
-    <!--https://github.com/cytoscape/cytoscape.js-navigator/blob/master/cytoscape.js-navigator.css-->
-    <!-- <script src="https://unpkg.com/cytoscape-navigator@2.0.1/cytoscape-navigator.js"></script> -->
-    <!-- <script src="https://cdn.rawgit.com/cytoscape/cytoscape-navigator/2.0.1/cytoscape-navigator.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/gh/cytoscape/cytoscape-navigator/dist/cytoscape-navigator.js"></script> -->
-
-    <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
-    <script src='js/wtf.min.js'></script>
-    <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
-  
-    <script src='js/langcodes/gencodes.js'></script> <!-- 200kb-->
-    <script src='js/langcodes/etycodes.js'></script> <!-- 86kb-->
-
-    <script src='ts/bin/first.js'></script>
-    <script src='ts/bin/cached.js' charset='utf-8'></script>
-    <script src='ts/bin/template.js' charset='utf-8'></script>
-
-    <script src='ts/bin/etyentry.js'></script>
-    <script src='ts/bin/templatediv.js'></script>
-
-    <script src='ts/bin/relayout.js'></script>
-    <script src='js/cytostart.js'></script>
-    <script src='ts/bin/graph.js'></script>
-    <script src='ts/bin/last.js'></script>
-
-    <script src='ts/bin/debugmode.js'></script>
-
-  </div>
 
   <div id="biggest-div" style="padding:5px">
     <p>A tool for viewing and exploring cognates, powered by data from Wiktionary.<br>
     Enter a word below. Click on nodes to expand the tree. More info on the right sidebar.</p>
 
-    
-    <form onsubmit="return false;">
-      <input type="text" id="qword" name="qword" value="" />
-      <!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
-      <!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
-      <input type="text" id="qlang" name="qlang" placeholder="Insert Target Language" />
-      <input type="submit" id="submitq" value="submit" onclick="wlToTree()" />
+    <div class="form-div">
+      <form onsubmit="return false;">
+        <input type="text" id="qword" name="qword" value="" />
+        <!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
+        <!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
+        <input type="text" id="qlang" name="qlang" placeholder="Insert Target Language" />
+        <input type="submit" id="submitq" value="submit" onclick="wlToTree()" />
 
-      <br>
-      <input type="button" value="clear graph" onclick="removeCyto();" />
-      <input type="button" value="prune single nodes" onclick="pruneSinglets();" />
-      <input type="button" value="relayout" onclick="relayout();" />
-      <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
-      <input type="button" value="load random" onclick="loadRandom();" />
-  <!-- Trigger/Open The Modal -->
-      <input type="button" value="Share Results" id="share" onclick="shareResults();">
-    </form>
-<div id="myModal" class="modal">
+        <br>
+        <input type="button" value="clear graph" onclick="removeCyto();" />
+        <input type="button" value="prune single nodes" onclick="pruneSinglets();" />
+        <input type="button" value="relayout" onclick="relayout();" />
+        <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
+        <input type="button" value="load random" onclick="loadRandom();" />
+    <!-- Trigger/Open The Modal -->
+        <input type="button" value="Share Results" id="share" onclick="shareResults();">
+      </form>
+      <div id="myModal" class="modal">
 
-  <!-- Modal content -->
-  <div class="modal-content">
-    <span class="close" onclick="$('#myModal')[0].style.display = 'none';">&times;</span>
-    <p id="shareurl">Some text in the Modal..</p>
-  </div>
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close" onclick="$('#myModal')[0].style.display = 'none';">&times;</span>
+          <p id="shareurl">Some text in the Modal..</p>
+        </div>
 
-</div>
+      </div>
 
-    <!-- <details> -->
-    <!-- <summary>Text Output</summary> -->
-    <!-- <div id="target">{{=quer}}</div> -->
-    <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label
-      for="tb-toggle">Click on templates to toggle</label>
-    <input type="checkbox" id="tb-toggle" name="scales" checked onchange="toggleCognates()"><label for="tb-toggle">Show cognates</label>
-    <!-- <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()"> -->
-    <!-- <label for="downward-toggle">Add nodes downwards</label> -->
-    <!-- <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()"> -->
-    <!-- <label for="upward-toggle">Add nodes upwards</label> -->
-    <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="tb-toggle">Show edge labels</label>
-
+      <!-- <details> -->
+      <!-- <summary>Text Output</summary> -->
+      <!-- <div id="target">{{=quer}}</div> -->
+      <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label
+        for="tb-toggle">Click on templates to toggle</label>
+      <input type="checkbox" id="tb-toggle" name="scales" checked onchange="toggleCognates()"><label for="tb-toggle">Show cognates</label>
+      <!-- <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()"> -->
+      <!-- <label for="downward-toggle">Add nodes downwards</label> -->
+      <!-- <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()"> -->
+      <!-- <label for="upward-toggle">Add nodes upwards</label> -->
+      <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="tb-toggle">Show edge labels</label>
+    </div>
 
     <div id='flexwrap'>
 

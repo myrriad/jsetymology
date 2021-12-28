@@ -182,15 +182,18 @@ function createTree(oword, olang) {
                 }
                 else {
                     try {
+                        let classes = config.showEdgeLabels ? 'showLabel' : '';
                         cy().add({
                             group: 'edges',
                             data: {
                                 id: id,
+                                // displaylabel: (document.getElementById('edges-toggle') as HTMLInputElement).checked,
                                 label: `${_parse(temp.ttype)}`,
                                 template: `${temp.orig_template}`,
                                 source: me,
                                 target: connector,
-                            }
+                            },
+                            classes: classes
                         });
                     }
                     catch (e) {

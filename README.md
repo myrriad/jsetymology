@@ -57,5 +57,9 @@ bin/cytostart.js, relayout.ts, last.ts: contains a bunch of cytoscape stuff. Cyt
  - [ ] audience: etymology, foreign language learners
  - [ ] macron
 
- - [ ] !! SHARE BUTTON!
+ - [x] !! SHARE BUTTON! (kinda)
+ - [ ] !! RANDOM BUTTON! https://en.wiktionary.org/wiki/Wiktionary:Random_page
+ - [ ] "Don't show again" tour dialog box
 
+ alchemy, Tagalog
+http://jsfiddle.net/AndreaLigios/jtLbpy62/2281/
