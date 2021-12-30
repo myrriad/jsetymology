@@ -7,7 +7,8 @@ const cognatus = {
     toolbar: {
         mode: 'explore',
         updown: 'up'
-    }
+    },
+    aggressiveTemplateInclusion: false
 };
 ;
 function assert(x, message = '', hard = true, hardest = false) {

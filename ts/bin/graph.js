@@ -183,7 +183,7 @@ function createTree(oword, olang) {
                 let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
                 //  || ${oword}, ${olang}
                 if (cy().$(`edge[id="${id}"]`).length) {
-                    console.log(`Duplicate edge: ${id}`);
+                    // console.log(`Duplicate edge: ${id}`);
                 }
                 else if (temp.ttype == 'cog') {
                     // make an exception for cognates. dont' add edges
@@ -206,7 +206,7 @@ function createTree(oword, olang) {
                     }
                     catch (e) {
                         if (e.message.startsWith(`Can not create second element with ID \`${id}`)) {
-                            console.log(`Duplicate edge: ${id}`);
+                            // console.log(`Duplicate edge: ${id}`);
                         }
                         else {
                             // soft fails. Usually because there is a duplicate edge.

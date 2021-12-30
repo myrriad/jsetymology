@@ -19,7 +19,8 @@ const cognatus = {
     toolbar: {
         mode: 'explore' as ToolbarMode,
         updown: 'up' as ToolbarUpdownMode
-    }
+    },
+    aggressiveTemplateInclusion: false
 };
 
 declare namespace LANGCODES {

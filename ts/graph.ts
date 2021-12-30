@@ -181,7 +181,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                 
                 //  || ${oword}, ${olang}
                 if(cy().$(`edge[id="${id}"]`).length) {
-                    console.log(`Duplicate edge: ${id}`);
+                    // console.log(`Duplicate edge: ${id}`);
                 } else if(temp.ttype == 'cog') {
                     // make an exception for cognates. dont' add edges
                 } else {
@@ -201,7 +201,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                         });
                     } catch (e) {
                         if ((e as any).message.startsWith(`Can not create second element with ID \`${id}`)) {
-                            console.log(`Duplicate edge: ${id}`);
+                            // console.log(`Duplicate edge: ${id}`);
                         } else {
                         // soft fails. Usually because there is a duplicate edge.
                             throw e;

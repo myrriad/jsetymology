@@ -163,7 +163,9 @@ class Templated {
         wtfobj = templ ? templ : orig_str;
 
         switch(ttype) { // Again I hardcode the values. It's just easier to implement than a dynamic behavior-changing system
-
+            case 'unk':
+            case 'onom':
+                return undefined;
             case 'derived':
             case 'der':
             case 'inherited':
@@ -288,10 +290,9 @@ class Templated {
                     if (a) { // assume that a is required before b
                         // let the shorter one be the langcode and the longer one the word, with some leniency to the first one.
                         // if(a)
-                        let isAllL3=true;
-                        a.split('-').forEach(x => { if (!(2 <= x.length && x.length <= 3)) isAllL3 = false});
                         
-                        if(isAllL3 && LANGCODES.name(a)) {
+                        if (a.split('-').every(x => 2 <= x.length && x.length <= 3) // all sections are between 2 and 3 letters = right format
+                        && LANGCODES.name(a)) { // search for lang
                             // then we know that a corresponds to a langcode. good.
                             lang = a;
                             if(b) {
@@ -303,15 +304,22 @@ class Templated {
 
                             // test b for a language.
                             if(b) {
-                                isAllL3 = true;
-                                b.split('-').forEach(x => { if (!(2 <= x.length && x.length <= 3)) isAllL3 = false });
-                                if(isAllL3 && LANGCODES.name(b)) {
+                                if (b.split('-').every(x => 2 <= x.length && x.length <= 3) // all sections are between 2 and 3 letters = right format
+                                    && LANGCODES.name(b)) { // search for lang
                                     lang = b;
                                 }
                             }
                         }
                     }
-
+                    if(word && !lang && cognatus.aggressiveTemplateInclusion) {
+                        // look for a lang in the templateform
+                        let langtest = ttype.slice(0, ttype.indexOf('-'));
+                        if (langtest.split('-').every(x => 2 <= x.length && x.length <= 3)
+                                && LANGCODES.name(langtest)) {
+                            // great!!
+                            lang = langtest;
+                        }
+                    }
                 }
             }
         }
