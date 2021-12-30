@@ -553,32 +553,45 @@ SOFTWARE.
             return false;
           });
           // !!!!ADD!!!!
+
           var $toolbar = $('<div class="cy-toolbar cy-toolbar-container"></div>');
           $panzoom.append($toolbar);
-
-
-
-          var $tMove = $('<div tooltip="Move" class="cy-toolbar-move cy-toolbar-mode"><span class="icon fa fa-arrows-alt"></span><div>');
+          function $tElement(html) {
+            let $out = $(html);
+            $toolbar.append($out);
+            return $out;
+          }
+          function $tMode(toolbarmode, html) {
+            var $out = $(html);
+            // http://jsfiddle.net/zAFND/2/
+            $out.toolbarMode = toolbarmode;
+            $toolbar.append($out);
+            return $out
+          }
+          var $tExplore = $tMode('explore', '<div tooltip="Explore" class="cy-toolbar-search cy-toolbar-mode active"><span class="icon fa fa-arrows-alt"></span><div>');
           // http://jsfiddle.net/zAFND/2/
-          $toolbar.append($tMove);
 
-          var $tEdge = $('<div tooltip="Create edges" class="cy-toolbar-edge cy-toolbar-mode"><span class="icon fa fa-exchange"></span><div>');
+          var $tMove = $tMode('move', '<div tooltip="Extra Info" class="cy-toolbar-move cy-toolbar-mode"><span class="icon fa fa-search"></span><div>');
+
+          var $tEdge = $tMode('edge', '<div tooltip="Create edges" class="cy-toolbar-edge cy-toolbar-mode"><span class="icon fa fa-exchange"></span><div>');
+
+          $tElement('<div class="divider"></div>');
+
+          var $tUp = $tMode('up', '<div tooltip="Up (Search for ancestors)" class="cy-toolbar-up cy-toolbar-mode active"><span class="icon fa fa-long-arrow-up"></span><div>');
+
+          var $tDown = $tMode('down', '<div tooltip="Down (Search for descendants)" class="cy-toolbar-down cy-toolbar-mode"><span class="icon fa fa-long-arrow-down"></span><div>');
+
+          var $tUpDown = $tMode('updown', '<div tooltip="Up & Down" class="cy-toolbar-updown cy-toolbar-mode"><span class="icon fa fa-arrows-v"></span><div>');
+
+          $tElement('<div class="divider"></div>');
+          
+          var $tUndo = $tElement('<div tooltip="Undo" class="cy-toolbar-undo cy-toolbar-button"><span class="icon fa fa-undo"></span><div>');
           // http://jsfiddle.net/zAFND/2/
-          $toolbar.append($tEdge);
 
-          var $tDivider = $('<div class="divider"></div>');
-          $toolbar.append($tDivider);
-
-          var $tUndo = $('<div tooltip="Undo" class="cy-toolbar-undo cy-toolbar-button"><span class="icon fa fa-undo"></span><div>');
+          var $tRedo = $tElement('<div tooltip="Redo" class="cy-toolbar-redo cy-toolbar-button"><span class="icon fa fa-repeat"></span><div>');
           // http://jsfiddle.net/zAFND/2/
-          $toolbar.append($tUndo);
 
-          var $tRedo = $('<div tooltip="Redo" class="cy-toolbar-redo cy-toolbar-button"><span class="icon fa fa-repeat"></span><div>');
-          // http://jsfiddle.net/zAFND/2/
-          $toolbar.append($tRedo);
-
-          var $tEye = $('<div tooltip="Toggle edge label visibility" class="cy-toolbar-eye cy-toolbar-button"><span class="icon fa fa-eye"></span><div>');
-          $toolbar.append($tEye);
+          var $tEye = $tElement('<div tooltip="Toggle edge label visibility" class="cy-toolbar-eye cy-toolbar-button"><span class="icon fa fa-eye"></span><div>');
 
           $tEye.bind("mousedown", function(e) {
             if (e.button != 0) {
@@ -600,22 +613,30 @@ SOFTWARE.
             return false; // WIP
           });
 
-          let modes = [$tMove, $tEdge]; //$('.cy-toolbar-mode'); // [$tMove, $tEdge]
-          for(let mode of modes) {
-            mode.bind("mousedown", function (e) {
-              if (e.button != 0) {
-                return;
-              }
-              for(let others of modes) {
-                if(others === mode) continue; // skip the current one
-                others.removeClass('active'); // disable them all.
-              }
-              mode.toggleClass('active'); // toggle the current one
+          function registerModes(modename, modes) {
+            for (let mode of modes) {
+              mode.bind("mousedown", function (e) {
+                if (e.button != 0) {
+                  return;
+                }
+                for (let others of modes) {
+                  if (others === mode) continue; // skip the current one
+                  others.removeClass('active'); // disable them all.
+                }
+                mode.toggleClass('active'); // toggle the current one
+                if (mode.hasClass('active')) {
+                  cognatus.toolbar[modename] = mode.toolbarMode;
+                } else {
+                  cognatus.toolbar[modename] = '';
+                }
 
-
-              return false; // prevent propogation, like the reset button
-            });
+                return false; // prevent propogation, like the reset button
+              });
+            }
           }
+           //$('.cy-toolbar-mode'); // [$tMove, $tEdge]
+          registerModes('modes', [$tExplore, $tMove, $tEdge]);
+          registerModes('updown', [$tUp, $tDown, $tUpDown]);
           // !!!!END!!!!
 
         });

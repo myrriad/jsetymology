@@ -15,8 +15,8 @@ function onCollector() {
 function toggleEdges(on) {
     // let edges = cy().edges();
     // if(on === undefined) on = (document.getElementById('edges-toggle') as HTMLInputElement).checked;
-    let val = config.showEdgeLabels;
-    config.showEdgeLabels = !val;
+    let val = cognatus.showEdgeLabels;
+    cognatus.showEdgeLabels = !val;
     cy().edges().toggleClass('showLabel');
     // @ts-ignore
     // for(let edge of edges) {
@@ -27,39 +27,44 @@ function toggleEdges(on) {
     //     }
     // }
 }
-function onTap(event) {
+function onLeftClick(event) {
     // TODO: query
-    let target = event.target;
-    if (target.isEdge()) {
-        target.style('line-color', 'green');
+    if (cognatus.toolbar.mode === 'explore') {
+        let target = event.target;
+        if (target.isEdge()) {
+            target.style('line-color', 'green');
+        }
+        else {
+            // is Node
+            cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
+            target.data().lastClicked = true;
+            if (target && target.length)
+                target = target[0];
+            let id = target.data().id;
+            let as = id.split(", ");
+            $('#qword').val(as[0]);
+            $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
+            // it later reads this to deduce the origin. 
+            // Cue dumb bugs from race conditions. 
+            // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang
+            // TODO implement.
+            // TODO shy away from using word/lang combos everywhere for id.
+            // instead, store word and lang separately in cy().$('node').data()
+            wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+        }
     }
-    else {
-        // is Node
-        cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
-        target.data().lastClicked = true;
-        if (target && target.length)
-            target = target[0];
-        let id = target.data().id;
-        let as = id.split(", ");
-        $('#qword').val(as[0]);
-        $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
-        // it later reads this to deduce the origin. 
-        // Cue dumb bugs from race conditions. 
-        // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang
-        // TODO implement.
-        // TODO shy away from using word/lang combos everywhere for id.
-        // instead, store word and lang separately in cy().$('node').data()
-        wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+}
+function onRightClick(event) {
+    if (cognatus.toolbar.mode === 'explore') {
+        let target = event.target;
+        cy().remove(target);
     }
 }
 function clickToQuery() {
     let c = cy();
     c.unbind('click'); // unbind before binding an event to prevent binding it twice/multiple times
-    c.bind('tap', 'node, edge', onTap); // tap is a combined click and touchstart that works with both mouse and touchscreen
-    c.on('cxttap', "node, edge", function (event) {
-        let target = event.target;
-        c.remove(target);
-    });
+    c.bind('tap', 'node, edge', onLeftClick); // tap is a combined click and touchstart that works with both mouse and touchscreen
+    c.on('cxttap', "node, edge", onRightClick); // right click to remove nodes and edges
 }
 function pruneSinglets() {
     cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove();

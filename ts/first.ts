@@ -10,11 +10,16 @@ type str = string;
 type bool = boolean;
 
 type Section = wtf.default.Section;
-
-const config = {
-    showEdgeLabels: true
+type ToolbarMode = '' | 'explore' | 'move' | 'edge';
+type ToolbarUpdownMode = '' | 'up' | 'down' | 'updown';
+const cognatus = {
+    showEdgeLabels: true,
+    // mode: 'explore', // 'explore', 'move', 'edge'
+    toolbar: {
+        mode: '' as ToolbarMode,
+        updown: '' as ToolbarUpdownMode
+    }
 };
-
 
 function assert(x: any, message = '', hard = true, hardest = false) {
     if (!x) if (hard || hardest) {

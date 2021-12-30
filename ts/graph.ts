@@ -181,7 +181,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
                     // make an exception for cognates. dont' add edges
                 } else {
                     try {
-                        let classes = config.showEdgeLabels ? 'showLabel' : '';
+                        let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
                         cy().add({
                             group: 'edges',
                             data: {

@@ -1,8 +1,13 @@
 "use strict";
 window.universe = { batchIndex: 0 };
 window.doc = undefined;
-const config = {
-    showEdgeLabels: true
+const cognatus = {
+    showEdgeLabels: true,
+    // mode: 'explore', // 'explore', 'move', 'edge'
+    toolbar: {
+        mode: '',
+        updown: ''
+    }
 };
 function assert(x, message = '', hard = true, hardest = false) {
     if (!x)

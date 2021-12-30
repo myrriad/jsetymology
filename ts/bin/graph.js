@@ -182,7 +182,7 @@ function createTree(oword, olang) {
                 }
                 else {
                     try {
-                        let classes = config.showEdgeLabels ? 'showLabel' : '';
+                        let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
                         cy().add({
                             group: 'edges',
                             data: {
