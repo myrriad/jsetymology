@@ -5,6 +5,7 @@
 declare function cy(): cytoscape.Core;
 
 
+
 type num = number;
 type str = string;
 type bool = boolean;
@@ -16,9 +17,14 @@ const cognatus = {
     showEdgeLabels: true,
     // mode: 'explore', // 'explore', 'move', 'edge'
     toolbar: {
-        mode: '' as ToolbarMode,
-        updown: '' as ToolbarUpdownMode
+        mode: 'explore' as ToolbarMode,
+        updown: 'up' as ToolbarUpdownMode
     }
+};
+
+declare namespace LANGCODES {
+    function name(langcode: str, ety?:bool): string;
+    let etycodes: {};
 };
 
 function assert(x: any, message = '', hard = true, hardest = false) {

@@ -33,6 +33,7 @@ considered for inclusion. The function that makes this decision is findRelevance
 bin/cytostart.js, relayout.ts, last.ts: contains a bunch of cytoscape stuff. Cytoscape is the graph drawing library.
 
 ## TODO
+ - [ ] TRANSLITERATION
  - [x] Note - wtf_wikipedia doesn't recognize the {{cog}} template. Therefore, TODO move towards reimplementing custom template parser. Done (kinda)
  - [ ] Capture downwards vs capture upwards
  - [ ] dagre rewrite (sideways, specify exact layer). KEY: "position: function (node: any) { }, // returns { row, col } for element"

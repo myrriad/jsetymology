@@ -36,7 +36,6 @@ class Templated {
         this.ttype = ttype;
         this.langcode = langcode;
         this.word = word;
-        // @ts-ignore
         this.lang = LANGCODES.name(langcode);
         if (!this.lang)
             this.lang = this.langcode;
@@ -149,6 +148,7 @@ class Templated {
         return ret;
     }
     function _templSwitch(ttype, orig) {
+        var _a, _b;
         let lang;
         let word;
         let self_lang;
@@ -288,7 +288,37 @@ class Templated {
                     }
                 }
                 else {
-                    console.log(`Unprepared template type ${ttype}!`);
+                    console.log(`Unknown template ${ttype}! Guessing...`);
+                    // try to make a general filler
+                    let a = (_a = getFromKey(wtfobj, 1)) === null || _a === void 0 ? void 0 : _a.trim(); // this category is horrendously messy.
+                    let b = (_b = getFromKey(wtfobj, 2)) === null || _b === void 0 ? void 0 : _b.trim(); // TODO improve this
+                    if (a) { // assume that a is required before b
+                        // let the shorter one be the langcode and the longer one the word, with some leniency to the first one.
+                        // if(a)
+                        let isAllL3 = true;
+                        a.split('-').forEach(x => { if (!(2 <= x.length && x.length <= 3))
+                            isAllL3 = false; });
+                        if (isAllL3 && LANGCODES.name(a)) {
+                            // then we know that a corresponds to a langcode. good.
+                            lang = a;
+                            if (b) {
+                                word = b;
+                            }
+                        }
+                        else {
+                            // a does not correspond to a language, so assume it's a word
+                            word = a;
+                            // test b for a language.
+                            if (b) {
+                                isAllL3 = true;
+                                b.split('-').forEach(x => { if (!(2 <= x.length && x.length <= 3))
+                                    isAllL3 = false; });
+                                if (isAllL3 && LANGCODES.name(b)) {
+                                    lang = b;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -383,7 +413,7 @@ function findRelevance(templatestr) {
     if (['senseid',
         'syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
-        'IPA', 'rfap', 'rfp', 'Q', 'sup'].includes(ttype))
+        'IPA', 'rfap', 'rfp', 'Q', 'sup', 'topics'].includes(ttype))
         return false;
     for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
         if (ttype.startsWith(comb))

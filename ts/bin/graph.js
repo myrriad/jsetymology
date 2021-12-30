@@ -97,13 +97,21 @@ function createTree(oword, olang) {
         orig.style('background-color', 'green');
     }
     let i = 1;
-    // dumb code for multi etymologies
     // let headers = $('#closeinspect h3');
-    let divlets = $('#closeinspect div');
-    for (let etydiv of divlets) {
+    let divlets = $('#closeinspect div.ety');
+    for (let etydiv of divlets) { // code for multi etymologies
         let lastConnector;
-        for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-            // if(temp)
+        let $etydiv = $(etydiv);
+        // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
+        // if(temp)
+        for (let anything of $etydiv.children('span')) {
+            let temptxt;
+            if (anything.matches('.template.t-active')) {
+                temptxt = anything; // here is a template
+            }
+            else {
+                continue; // here is text
+            }
             let txt = temptxt.textContent;
             if (!txt)
                 continue;

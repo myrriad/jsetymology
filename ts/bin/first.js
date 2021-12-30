@@ -5,10 +5,11 @@ const cognatus = {
     showEdgeLabels: true,
     // mode: 'explore', // 'explore', 'move', 'edge'
     toolbar: {
-        mode: '',
-        updown: ''
+        mode: 'explore',
+        updown: 'up'
     }
 };
+;
 function assert(x, message = '', hard = true, hardest = false) {
     if (!x)
         if (hard || hardest) {
