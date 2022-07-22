@@ -25,7 +25,7 @@ Green node = already processed.
 5. Templates are found again and are either highlighted grey or green. Grey templates are ignored; green templates are
 considered for inclusion. The function that makes this decision is findRelevance() in template.ts and is hardcoded.
 5b. A non-hardcoded, user-configurable method to decide template inclusion is in the works. It involves a whitelist and blacklist stored as a cookie.
-6. When "Add to graph" is clicked, all of the green templates are added to the graph (wlToTree(), createTree() in graph.ts)
+6. When "Add to graph" is clicked, all of the green templates are added to the graph (Graph.wlToTree(), Graph.createTree() in graph.ts)
 7. (6b) Each template (stored as a string) is converted to a Templated object. (decodeTemplate in template.ts, called in createTree())
 8. (6c) These Templated objects know which word, lang combination to connect to because of another hardcoded function: _templSwitch() in template.ts (there really isn't an alternative because templates are arbitrary and user defined and the alternative is web scraping the wiktionary template definitions page.)
 9. NB: When the button "Submit" is clicked, steps 1 through 6 are automatically called, so the data is added to the graph automatically.

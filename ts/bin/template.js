@@ -1,7 +1,37 @@
 "use strict";
 // <reference path='js/langcodes/gencodes.js'/>
+class Templated {
+    constructor(ttype, word, langcode, self_lang, orig_template) {
+        this.ttype = ttype;
+        this.langcode = langcode;
+        this.word = word;
+        this.lang = LANGCODES.name(langcode);
+        if (!this.lang)
+            this.lang = this.langcode;
+        this.self_lang = self_lang;
+        this.orig_template = orig_template;
+    }
+    static make(ttype, word, langcode, self_lang, orig_template) {
+        if (!word || word === '-')
+            return undefined;
+        let word2 = word.includes('<') || word.includes('>') ? Templates.twordRemoveAngleTknr(word, 0) : word;
+        return new Templated(ttype, word2, langcode, self_lang, orig_template);
+    }
+    get isRecon() {
+        if (this._is_recon === undefined) {
+            this._is_recon = Templates.isReconstructed(this.word, this.lang, this.langcode);
+        }
+        return this._is_recon;
+    }
+}
 var Templates;
 (function (Templates) {
+    Templates.templatesPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
+    Templates.RELATIONS = [
+        "synonyms", "antonyms", "hypernyms", "hyponyms",
+        "meronyms", "holonyms", "troponyms", "related terms",
+        "coordinate terms",
+    ];
     function twordRemoveAngleTknr(inp, startidx) {
         let built = '';
         let levels = 0;
@@ -31,34 +61,6 @@ var Templates;
         return built;
     }
     Templates.twordRemoveAngleTknr = twordRemoveAngleTknr;
-})(Templates || (Templates = {}));
-function twordExtractMultiTknr() {
-}
-class Templated {
-    constructor(ttype, word, langcode, self_lang, orig_template) {
-        this.ttype = ttype;
-        this.langcode = langcode;
-        this.word = word;
-        this.lang = LANGCODES.name(langcode);
-        if (!this.lang)
-            this.lang = this.langcode;
-        this.self_lang = self_lang;
-        this.orig_template = orig_template;
-    }
-    static make(ttype, word, langcode, self_lang, orig_template) {
-        if (!word || word === '-')
-            return undefined;
-        let word2 = word.includes('<') || word.includes('>') ? Templates.twordRemoveAngleTknr(word, 0) : word;
-        return new Templated(ttype, word2, langcode, self_lang, orig_template);
-    }
-    get isRecon() {
-        if (this._is_recon === undefined) {
-            this._is_recon = Templates.isReconstructed(this.word, this.lang, this.langcode);
-        }
-        return this._is_recon;
-    }
-}
-(function (Templates) {
     function getFromKey(templ, key) {
         // @ts-ignore
         return _multiGetKeyFunc(templ, key, false, [], false);
@@ -272,7 +274,7 @@ class Templated {
                         return m;
                 }
                 let flag = false;
-                for (let pos of Etymology.templPOS) {
+                for (let pos of Templates.templatesPOS) {
                     if (ttype.endsWith('-' + pos)) {
                         flag = true;
                         break;
@@ -447,7 +449,7 @@ class Templated {
             // pretty likely
             console.log('Candidate: ' + ttype);
         }
-        for (let pos of Etymology.templPOS)
+        for (let pos of Templates.templatesPOS)
             if (frag.endsWith('-' + pos))
                 return true; // actually these seem not to be useful
         if (ttype.endsWith(' of')) {

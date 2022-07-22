@@ -54,7 +54,7 @@
     <script src='ts/bin/cached.js' charset='utf-8'></script>
     <script src='ts/bin/template.js' charset='utf-8'></script>
 
-    <script src='ts/bin/etyentry.js'></script>
+    <script src='ts/bin/wiktionary.js'></script>
     <script src='ts/bin/sidebar.js'></script>
 
     <script src='ts/bin/relayout.js'></script>
@@ -87,7 +87,7 @@
                 <!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
                 <!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
                 <input type="text" id="qlang" name="qlang" placeholder="Insert Target Language" />
-                <input type="submit" id="submitq" value="submit" onclick="wlToTree()" />
+                <input type="submit" id="submitq" value="submit" onclick="Graph.wlToTree()" />
 
                 <br>
                 <input type="button" value="clear graph" onclick="removeCyto();" />
@@ -141,8 +141,8 @@
                         <h3>TEMPLATES (right side)</h3>
                         <p>
                             Left click on templates to toggle visibility.<br>
-                            <button onclick="createTree()">Add to graph</button> will take all of the nodes and add them to the graph.<br> Note - the graph will add all of the templates by default. So removed templates will only take effect after clearing
-                            the graph and regraphing the connections.
+                            <button onclick="Graph.createTree()">Add to graph</button> will take all of the nodes and add them to the graph.<br> Note - the graph will add all of the templates by default. So removed templates will only take effect after
+                            clearing the graph and regraphing the connections.
                         </p>
                         <input type="text" id="twhitelist" name="twhitelist" placeholder="Whitelisted templates, comma separated" />
                         <br><input type="text" id="tblacklist" name="tblacklist" placeholder="Blacklisted templates, Comma separated" />
@@ -153,7 +153,7 @@
                 </details>
                 <br>
                 <div id='sidebar'></div>
-                <button onclick="createTree()">Add to graph</button>
+                <button onclick="Graph.createTree()">Add to graph</button>
             </div>
         </div>
         <!-- <div id="collectordiv">

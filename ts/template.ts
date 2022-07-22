@@ -1,38 +1,5 @@
 // <reference path='js/langcodes/gencodes.js'/>
 
-namespace Templates {
-    export function twordRemoveAngleTknr(inp: str, startidx: num): str {
-        let built = '';
-        let levels = 0;
-        let captureStart = startidx;
-        let i = startidx;
-        for(;i<inp.length;i++) {
-            let charAt = inp[i];
-            if(charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
-
-                if(levels === 0) {
-                    // we were capturing. now we entered a dead zone
-                    built += inp.substring(captureStart, i);
-                }
-                levels++;
-            } else if(charAt === '>') {
-                levels--;
-                if(levels === 0) {
-                    // we were ignoring. now we must capture again.
-                    captureStart = i+1;
-                }
-            }
-        }
-        if(levels === 0) {
-            // if we are in capture mode at the end, then we must add the remainder
-            built += inp.substring(captureStart);
-        }
-        return built;
-    }
-}
-function twordExtractMultiTknr() {
-
-}
 class Templated {
     ttype: str;
     langcode: string;
@@ -64,6 +31,43 @@ class Templated {
     }
 }
 namespace Templates {
+
+    export const templatesPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
+
+    export const RELATIONS = [
+        "synonyms", "antonyms", "hypernyms", "hyponyms",
+        "meronyms", "holonyms", "troponyms", "related terms",
+        "coordinate terms",
+    ]
+
+    export function twordRemoveAngleTknr(inp: str, startidx: num): str {
+        let built = '';
+        let levels = 0;
+        let captureStart = startidx;
+        let i = startidx;
+        for (; i < inp.length; i++) {
+            let charAt = inp[i];
+            if (charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
+
+                if (levels === 0) {
+                    // we were capturing. now we entered a dead zone
+                    built += inp.substring(captureStart, i);
+                }
+                levels++;
+            } else if (charAt === '>') {
+                levels--;
+                if (levels === 0) {
+                    // we were ignoring. now we must capture again.
+                    captureStart = i + 1;
+                }
+            }
+        }
+        if (levels === 0) {
+            // if we are in capture mode at the end, then we must add the remainder
+            built += inp.substring(captureStart);
+        }
+        return built;
+    }
 
     function getFromKey(templ: wtf.Template | str, key: num): str | undefined{
         // @ts-ignore
@@ -266,7 +270,7 @@ namespace Templates {
                         return m;
                 }
                 let flag = false;
-                for(let pos of Etymology.templPOS) {
+                for(let pos of templatesPOS) {
                     if(ttype.endsWith('-' + pos)) {
                         flag = true;
                         break;
@@ -431,7 +435,7 @@ export function findRelevance(templatestr: str) {
         // pretty likely
         console.log('Candidate: ' + ttype);
     }
-    for (let pos of Etymology.templPOS) if (frag.endsWith('-' + pos)) return true; // actually these seem not to be useful
+    for (let pos of templatesPOS) if (frag.endsWith('-' + pos)) return true; // actually these seem not to be useful
 
     if (ttype.endsWith(' of')) {
         // many POSs end with ' of'.

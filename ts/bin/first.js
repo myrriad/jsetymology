@@ -56,7 +56,7 @@ function displayInfo(div, str, override = false, top = false, color = 'black;', 
     if (!top && newline)
         displayBreak(div, false);
 }
-function friendlyError(div, str, override = true, top = true, ital = false, newline = true) {
+function displayError(div, str, override = true, top = true, ital = false, newline = true) {
     displayInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs) {

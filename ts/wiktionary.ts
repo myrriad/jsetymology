@@ -1,86 +1,88 @@
-"use strict";
 class DictEntry {
-    constructor(defn, deriv) {
+    defn;
+    deriv;
+    constructor(defn: Section, deriv?: Section) {
         this.defn = defn;
         this.deriv = deriv;
     }
 }
 class EtyEntry {
-    constructor(defns, ety, url) {
+    defns; ety; qy;
+    constructor(defns: DictEntry[], ety?: Section, url?: str) {
         this.defns = defns;
         this.ety = ety;
         this.qy = url;
     }
+
 }
-var Wiktionary;
-(function (Wiktionary) {
-    Wiktionary.PARTS_OF_SPEECH = [
+
+namespace Wiktionary {
+    export const WIKTIONARY_POS = [
         "noun", "verb", "adjective", "adverb", "determiner",
         "article", "preposition", "conjunction", "proper noun",
-        "letter", "character", "phrase", "proverb", "idiom",
+        "letter", "character", "phrase", "proverb", "idiom", // add particle
         "symbol", "syllable", "numeral", "initialism", "interjection",
         "definitions", "pronoun",
         "particle", "root" // These POS were found in P-I-E articles
     ];
-    function fetchEtyEntry(word, lang = '', reconstr = false, cachedresponse, callback) {
-        if (!word)
-            throw "You didn't pass a word in to search!";
+
+    export function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedDoc?: wtf.Document, 
+            callback?: (etys: EtyEntry[], doc: wtf.Document) => void) {
+        if (!word) throw "You didn't pass a word in to search!";
         let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${Templates.decodeWord(word, lang)}` : Templates.decodeWord(word, lang); // anti-macron here and nowhere else
+
         return wtffetch(qy, {
             lang: 'en',
             wiki: 'wiktionary'
-        }, cachedresponse).then((doc) => {
+        }, cachedDoc).then((doc) => {
             let ret = ondoc(doc, word, lang, qy);
             if (ret) {
                 let [etys, doc] = ret;
                 if (callback)
                     callback(etys, doc);
                 return ret;
+            } else {
+                // there is no document
+                displayError($('#sidebar')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
+                return undefined;
             }
             return undefined;
-        }); // function hoisting
+        }); 
     }
-    Wiktionary.fetchEtyEntry = fetchEtyEntry;
-    function ondoc(doc2, word, lang, qy) {
-        // doc.
+    function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): [etys: EtyEntry[], doc: wtf.Document] | undefined { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
         // let doc3 = doc2[0];
-        let doc = doc2 instanceof Array ? doc2[0] : doc2;
+        let doc = (doc2 instanceof Array ? doc2[0] : doc2) as wtf.default.Document;
         if (!doc) {
-            displayError($('#sidebar')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
-            let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
-            h.data().searched = true;
-            h.style('background-color', 'green');
-            return;
+            return undefined;
         }
         // friendlyInfo(`https://en.wiktionary.org/wiki/${qy}`, false);
-        doc = doc;
-        // console.log(doc);
-        window.doc = doc;
+
+        (window as any).doc = doc;
         let myety = undefined;
         let etylist = [];
         let dictEntries = [];
-        let toplvl = doc.sections()[0];
+
+
+        let toplvl = doc.sections()[0] as wtf.default.Section | null;
+
         let skiplang = false;
         // auto-inferral
-        while (toplvl && (toplvl === null || toplvl === void 0 ? void 0 : toplvl.title()) === '')
-            toplvl = toplvl.nextSibling(); // skip the {{also|preció}} template-only stuff.
+        while (toplvl && toplvl?.title() === '') toplvl = toplvl.nextSibling(); // skip the {{also|preció}} template-only stuff.
         if (toplvl) {
             assert(toplvl.indentation() === 0);
             if (!lang) {
                 if (!toplvl.nextSibling()) {
                     skiplang = true;
-                    let lang = toplvl.title();
+                    let lang = toplvl.title()
                     $('#qlang').val(lang);
                     // DUMBEST hack but it works I guess
                     // if there's only 1 lang, then we infer lang.
-                }
-                else {
+                } else {
                     let langs = doc.sections().filter(x => x.indentation() === 0).map(x => x.title());
                     if (langs.includes('English')) {
                         lang = 'English';
                         $('#qlang').val(lang); // auto-infer English
-                    }
-                    else {
+                    } else {
                         displayError($('#sidebar')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
                         throw "More than 1 lang, cannot auto-infer!";
                     }
@@ -89,31 +91,36 @@ var Wiktionary;
         }
         let flag = false;
         let multiEtyMode = undefined;
+
+
         for (; toplvl; toplvl = toplvl.nextSibling()) {
             // console.log(toplvl);
-            if (toplvl.title().toLowerCase() === (lang === null || lang === void 0 ? void 0 : lang.toLowerCase()) || skiplang) {
+            if (toplvl.title().toLowerCase() === lang?.toLowerCase() || skiplang) {
+
                 flag = true;
-                for (let lvl2 = toplvl.sections()[0]; lvl2; lvl2 = lvl2.nextSibling()) {
+                for (let lvl2 = toplvl.sections()[0] as wtf.default.Section | null; lvl2; lvl2 = lvl2.nextSibling()) {
                     // console.log(lvl2);
                     if (/Etymology \d+/.test(lvl2.title())) {
                         multiEtyMode = true;
                         let myDictEntries = [];
-                        for (let lvl3 = lvl2.sections()[0]; lvl3; lvl3 = lvl3.nextSibling()) {
-                            if (Wiktionary.PARTS_OF_SPEECH.indexOf(lvl3.title().toLowerCase()) >= 0) {
+                        for (let lvl3 = lvl2.sections()[0] as wtf.default.Section | null; lvl3; lvl3 = lvl3.nextSibling()) {
+                            if (WIKTIONARY_POS.indexOf(lvl3.title().toLowerCase()) >= 0) {
                                 myDictEntries.push(parseDictEntry(lvl3));
                             }
                         }
                         etylist.push(new EtyEntry(myDictEntries, lvl2, qy));
-                    }
-                    else if (lvl2.title() === 'Etymology') {
+
+
+                    } else if (lvl2.title() === 'Etymology') {
                         assert(!multiEtyMode, 'very strange situation where we both numbered and unnumbered etymologies');
                         myety = lvl2;
                         multiEtyMode = false;
-                    }
-                    else if (Wiktionary.PARTS_OF_SPEECH.indexOf(lvl2.title().toLowerCase()) >= 0) {
+                    } else if (WIKTIONARY_POS.indexOf(lvl2.title().toLowerCase()) >= 0) {
                         assert(!multiEtyMode, 'strange situation where we have multiple numbered etymologies but also a definition', false);
+
                         dictEntries.push(parseDictEntry(lvl2));
                     }
+
                 }
             }
         }
@@ -126,17 +133,18 @@ var Wiktionary;
         // members.links().map((l) => l.page())
         //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
     }
-    Wiktionary.ondoc = ondoc;
-    function parseDictEntry(sec) {
+
+    function parseDictEntry(sec: Section): DictEntry {
         let defn = sec;
         let derivs = [];
-        for (let sec2 = sec.sections()[0]; sec2; sec2 = sec2.nextSibling()) {
+        for (let sec2 = sec.sections()[0] as wtf.default.Section | null; sec2; sec2 = sec2.nextSibling()) {
             if (sec2.title() === 'Derived terms') {
                 derivs.push(sec2);
             }
+
         }
         assert(derivs.length <= 1, 'more than 1 deriv? ' + derivs, false);
+
         return new DictEntry(defn, derivs ? derivs[0] : undefined);
     }
-    Wiktionary.parseDictEntry = parseDictEntry;
-})(Wiktionary || (Wiktionary = {}));
+}

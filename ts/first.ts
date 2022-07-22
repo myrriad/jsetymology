@@ -70,7 +70,7 @@ function displayInfo(div: ParentNode | undefined, str: string, override = false,
 
 }
 
-function friendlyError(div: ParentNode | undefined, str: string, override = true, top=true, ital=false, newline=true) {
+function displayError(div: ParentNode | undefined, str: string, override = true, top=true, ital=false, newline=true) {
     displayInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs: str[]) {

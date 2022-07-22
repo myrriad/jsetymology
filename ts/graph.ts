@@ -1,7 +1,9 @@
 // const { data } = require("jquery");
 // declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 
-function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
+namespace Graph {
+
+export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
     if (word === undefined) word = $('#qword').val() as string;
     if (lang === undefined) lang = $('#qlang').val() as string;
     let [oword, olang] = _parse(word, lang);
@@ -26,10 +28,18 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
 
     }
 
-    Etymology.fetchEtyEntry(word, lang, isRecon, 
+    Wiktionary.fetchEtyEntry(word, lang, isRecon, 
         target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
     .then(function onEtyEntry(out) {
-        if(!out) return;
+        if(!out) {
+            // there is no document
+
+            // we still must mark the node
+            let h = cy().$(`node[id="${_parse(word!)}, ${_parse(lang ? lang : '')}"]`)[0];
+            h.data().searched = true;
+            h.style('background-color', 'green');
+            return;
+        }
         let [data2, doc] = out!;
         (window as any).etyentries = data2;
         if(!data2 || data2.length === 0) throw "No entries found!";
@@ -48,13 +58,13 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
             if(etyentry.ety) {
                 Sidebar.transferToSidebar(etyentry.ety, newdiv);
             } else {
-                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+                displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
             }
             for (let defn of etyentry.defns) Sidebar.transferToSidebar(defn.defn, newdiv);
             // onCheckbox();
             $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
 
-            orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+            orig = Graph.createTree(oword, olang); // this has createGraph() logic so we must create node in here too
         }
         // success. save wikitext
         // the node better exist
@@ -65,7 +75,7 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
 }
 
 
-function createTree(oword: str, olang: str): cytoscape.NodeSingular {
+export function createTree(oword: str, olang: str): cytoscape.NodeSingular {
     // homebrew graph creation.
     // relies on second.ts
     // let origin = cy.$('node#origin');
@@ -216,6 +226,8 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
     let ret = cy().$(`node[id="${oword}, ${olang}"]`);
     assert(ret?.length, "couldn't find node");
     return ret[0];
+
+}
 
 }
 

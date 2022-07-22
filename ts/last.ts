@@ -53,7 +53,7 @@ function onLeftClick(event: cytoscape.EventObject) {
             // TODO shy away from using word/lang combos everywhere for id.
             // instead, store word and lang separately in cy().$('node').data()
 
-            wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+            Graph.wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
         } else if (cognatus.toolbar.mode === 'edge') {
             
         }
@@ -112,7 +112,7 @@ window.addEventListener("load", function () {
     //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek
     // if (!whitelist.includes(window.location.search)) return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
     for(let wl of searchParams.entries()) { 
-        wlToTree(wl[0], wl[1]);
+        Graph.wlToTree(wl[0], wl[1]);
         if(i>10) break;
         i++;
     }
