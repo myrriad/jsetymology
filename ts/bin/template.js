@@ -291,7 +291,7 @@ class Templated {
                     }
                 }
                 else {
-                    console.log(`Unknown template ${ttype}! Guessing...`);
+                    console.log(`Guessing ${ttype}...`);
                     // try to make a general filler
                     let a = (_a = getFromKey(wtfobj, 1)) === null || _a === void 0 ? void 0 : _a.trim(); // this category is horrendously messy.
                     let b = (_b = getFromKey(wtfobj, 2)) === null || _b === void 0 ? void 0 : _b.trim(); // TODO improve this

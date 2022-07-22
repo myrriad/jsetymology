@@ -40,7 +40,7 @@ function plopSectionToDiv(entry: Section, div?: ParentNode) {
         start = end;
     }
     _appendText(t.slice(start), div); // don't forget to add the rest of the text
-    friendlyBreak(div, false);
+    displayBreak(div, false);
 
     return true;
 }

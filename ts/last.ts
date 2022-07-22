@@ -30,33 +30,32 @@ function toggleEdges(on?:bool) {
 }
 function onLeftClick(event: cytoscape.EventObject) {
     // TODO: query
-    if(cognatus.toolbar.mode === 'explore') {
-        let target = event.target;
-        if (target.isEdge()) {
+    let target = event.target;
+    if (target.isEdge()) {
 
-            target.style('line-color', 'green');
-        } else {
-            // is Node
-            cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
-            target.data().lastClicked = true;
+        target.style('line-color', 'green');
+    } else {
+        // is Node
+        cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
+        target.data().lastClicked = true;
+        if (cognatus.toolbar.mode === 'explore') {
 
             if (target && target.length) target = target[0];
             let id = target.data().id;
             let as = id.split(", ");
-
-
 
             $('#qword').val(as[0]);
             $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
             // it later reads this to deduce the origin. 
             // Cue dumb bugs from race conditions. 
 
-            // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang
-            // TODO implement.
+            // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang. implement.
             // TODO shy away from using word/lang combos everywhere for id.
             // instead, store word and lang separately in cy().$('node').data()
 
             wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+        } else if (cognatus.toolbar.mode === 'edge') {
+            
         }
     }
 } 
@@ -102,8 +101,10 @@ window.addEventListener("load", function () {
     let searchParams = new URLSearchParams(window.location.search);
     let i=0;
 
-    $('#twhitelist').val(getCookie('twhitelist'));
-    $('#tblacklist').val(getCookie('tblacklist'));
+    let twhitelist = localStorage.getItem('twhitelist');
+    if (twhitelist) $('#twhitelist').val(twhitelist);
+    let tblacklist = localStorage.getItem('tblacklist');
+    if (tblacklist) $('#tblacklist').val(tblacklist);
     updateCustomTemplateWhitelists();
 
 

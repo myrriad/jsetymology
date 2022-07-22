@@ -1,10 +1,9 @@
 // const { data } = require("jquery");
 // declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
 
-function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular, reLayout=true, downward?: boolean) {
+function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
     if (word === undefined) word = $('#qword').val() as string;
     if (lang === undefined) lang = $('#qlang').val() as string;
-    if (downward === undefined) downward = false;
     let [oword, olang] = _parse(word, lang);
     if ((window as any).jsetymologyDebug) console.log(`DEBUG ${oword}; ${olang}`);
     // TODO search for existing node in graph, to extract additional info like langcode, isRecon
@@ -42,10 +41,10 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular, reLay
             let newdiv = document.createElement('div');
             newdiv.classList.add('ety'); 
             if(data2.length > 1) {
-                friendlyElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
+                displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
             }
-            friendlyInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
-            friendlyBreak(newdiv);
+            displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
+            displayBreak(newdiv);
             if(etyentry.ety) {
                 plopSectionToDiv(etyentry.ety, newdiv);
             } else {

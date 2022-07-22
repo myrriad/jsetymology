@@ -566,7 +566,7 @@ SOFTWARE.
             // http://jsfiddle.net/zAFND/2/
             $out.toolbarMode = toolbarmode;
             $toolbar.append($out);
-            return $out
+            return $out;
           }
           var $tExplore = $tMode('explore', '<div tooltip="Explore" class="cy-toolbar-mode active"><span class="icon fa fa-arrows-alt"></span><div>');
           // http://jsfiddle.net/zAFND/2/
@@ -640,7 +640,7 @@ SOFTWARE.
             }
           }
            //$('.cy-toolbar-mode'); // [$tMove, $tEdge]
-          registerModes('modes', [$tExplore, $tMove, $tEdge]);
+          registerModes('mode', [$tExplore, $tMove, $tEdge]);
           registerModes('updown', [$tUp, $tDown, $tUpDown]);
           // !!!!END!!!!
 

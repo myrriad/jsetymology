@@ -42,7 +42,7 @@ function assert(x: any, message = '', hard = true, hardest = false) {
 function clearDiv() {
     $('#closeinspect')[0].innerHTML = '';
 }
-function friendlyElement(div: ParentNode | undefined, htmltype: str, str?: string, top = false, color?: str): void {
+function displayElement(div: ParentNode | undefined, htmltype: str, str?: string, top = false, color?: str): void {
 
     if (!div) div = $('#closeinspect div').last()[0];
     let span = document.createElement(htmltype);
@@ -59,19 +59,19 @@ function friendlyElement(div: ParentNode | undefined, htmltype: str, str?: strin
     }
 
 }
-function friendlyBreak(div: ParentNode | undefined, top = false) {
-    friendlyElement(div, 'br', undefined, top);
+function displayBreak(div: ParentNode | undefined, top = false) {
+    displayElement(div, 'br', undefined, top);
 }
-function friendlyInfo(div: ParentNode | undefined, str: string, override = false, top = false, color = 'black;', newline=true): void {
+function displayInfo(div: ParentNode | undefined, str: string, override = false, top = false, color = 'black;', newline=true): void {
     if (override) clearDiv();
-    if(top && newline) friendlyBreak(div, true);
-    friendlyElement(div, 'span', str, top, color);
-    if (!top && newline) friendlyBreak(div, false);
+    if(top && newline) displayBreak(div, true);
+    displayElement(div, 'span', str, top, color);
+    if (!top && newline) displayBreak(div, false);
 
 }
 
 function friendlyError(div: ParentNode | undefined, str: string, override = true, top=true, ital=false, newline=true) {
-    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
+    displayInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs: str[]) {
 
@@ -105,19 +105,6 @@ function a(obj?: {x: num, y:num}) {
 let showCognates: boolean = true;
 let twhitelist = [] as str[]; 
 let tblacklist = [] as str[]; 
-
-const setCookie = (name: str, value: str) => {//}, days = 7, path = '/') => { // https://stackoverflow.com/questions/4825683/how-do-i-create-and-read-a-value-from-cookie
-    // const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = name + '=' + encodeURIComponent(value) // expires on browser close+ '; expires=' + expires + '; path=' + path;
-}
-
-function getCookie (name: str) {
-    for(let v of document.cookie.split('; ')) {
-        const parts = v.split('=');
-        if(parts[0] === name) return decodeURIComponent(parts[1]);
-    }
-    return '';
-}
 
 // const deleteCookie = (name: str, path: str) => {
     // setCookie(name, '', -1, path);

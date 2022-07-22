@@ -283,7 +283,7 @@ class Templated {
                     }
                     
                 } else {
-                    console.log(`Unknown template ${ttype}! Guessing...`);
+                    console.log(`Guessing ${ttype}...`);
                     // try to make a general filler
                     let a = getFromKey(wtfobj, 1)?.trim(); // this category is horrendously messy.
                     let b = getFromKey(wtfobj, 2)?.trim(); // TODO improve this
@@ -380,8 +380,8 @@ function updateCustomTemplateWhitelists() {
     let blackstr = $('#tblacklist').val() as str;
     tblacklist = blackstr.split(',').map(x => $.trim(x));
     // whitestr = whitestr.replace()
-    setCookie('twhitelist', whitestr);
-    setCookie('tblacklist', blackstr);
+    localStorage.setItem('twhitelist', whitestr);
+    localStorage.setItem('tblacklist', blackstr);
 }
 function findRelevance(templatestr: str) {
     // this is what decides whether a template is green or grey in the sidebar

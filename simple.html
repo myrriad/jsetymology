@@ -1,0 +1,215 @@
+<!-- {{extend 'layout.html'}} -->
+<!-- {{block header}} -->
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="stylesheet" type="text/css" href="cytoscape.js-toolbar.css">
+  <link href="font-awesome-4.0.3/css/font-awesome.css" rel="stylesheet" type="text/css" />
+  <title>etygraph.com: Etymology Tool</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XF94WS05DE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-XF94WS05DE');
+  </script>
+  <script src='js/cytoscape.min.js'></script>
+  <!--https://unpkg.com/cytoscape/dist/cytoscape.min.js-->
+  <script src='js/jquery.js'></script>
+
+  <!-- popper import imports -->
+  <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
+  <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
+
+  <!--cytoscape-panzoom-->
+  <!-- dagre imports -->
+  <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+  <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+  <!-- <script src="https://unpkg.com/cytoscape-panzoom@2.5.3/cytoscape-panzoom.js"></script> -->
+  <script src='js/cytoscape-panzoom.js'></script>
+  </script>
+  <!-- <script src="https://cdn.jsdelivr.net/gh/cytoscape/cytoscape-navigator/@2.0.1/cytoscape-navigator.js"></script> -->
+
+  <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
+  <script src='js/wtf.min.js'></script>
+  <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
+
+  <script src='js/langcodes/gencodes.js'></script> <!-- 200kb-->
+  <script src='js/langcodes/etycodes.js'></script> <!-- 86kb-->
+
+  <script src='ts/bin/first.js'></script>
+  <script src='ts/bin/cached.js' charset='utf-8'></script>
+  <script src='ts/bin/template.js' charset='utf-8'></script>
+
+  <script src='ts/bin/etyentry.js'></script>
+  <script src='ts/bin/templatediv.js'></script>
+
+  <script src='ts/bin/relayout.js'></script>
+  <script src='js/cytostart.js'></script>
+  <script src='ts/bin/graph.js'></script>
+  <script src='ts/bin/last.js'></script>
+
+  <script src='ts/bin/debugmode.js'></script>
+
+</head>
+<body>
+
+  
+  <div id='topheader' style="background-color: #333; color:white; padding:30px"><!--
+     <h1>/{{=request.application}}/{{=request.controller}}/{{=request.function}} 
+    --><h1>etygraph.com</h1>
+  </div>
+  
+  
+
+  <div id="biggest-div" style="padding:5px">
+    <p>A tool for viewing and exploring cognates, powered by data from Wiktionary.<br>
+    Enter a word below. Click on nodes to expand the tree. More info on the right sidebar.</p>
+
+    <div class="form-div">
+      <form onsubmit="return false;">
+        <input type="text" id="qword" name="qword" value="" />
+        <!--<INPUT type="text" id="q2" name="q2" value="llegar#Spanish"/>-->
+        <!--<INPUT type="text" id="q3" name="q3" value="plico#Latin"/>-->
+        <input type="text" id="qlang" name="qlang" placeholder="Insert Target Language" />
+        <input type="submit" id="submitq" value="submit" onclick="wlToTree()" />
+
+        <br>
+        <input type="button" value="clear graph" onclick="removeCyto();" />
+        <input type="button" value="prune single nodes" onclick="pruneSinglets();" />
+        <input type="button" value="relayout" onclick="relayout();" />
+        <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
+        <input type="button" value="load random" onclick="loadRandom();" />
+    <!-- Trigger/Open The Modal -->
+        <input type="button" value="Share Results" id="share" onclick="shareResults();">
+      </form>
+      <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close" onclick="$('#myModal')[0].style.display = 'none';">&times;</span>
+          <p id="shareurl">Some text in the Modal..</p>
+        </div>
+
+      </div>
+
+      <!-- <details> -->
+      <!-- <summary>Text Output</summary> -->
+      <!-- <div id="target">{{=quer}}</div> -->
+      <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label
+        for="tb-toggle">Click on templates to toggle</label>
+      <input type="checkbox" id="tb-toggle" name="scales" checked onchange="toggleCognates()"><label for="tb-toggle">Show cognates</label>
+      <!-- <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()"> -->
+      <!-- <label for="downward-toggle">Add nodes downwards</label> -->
+      <!-- <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()"> -->
+      <!-- <label for="upward-toggle">Add nodes upwards</label> -->
+      <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="tb-toggle">Show edge labels</label>
+    </div>
+
+    <div id='flexwrap'>
+
+      <!-- </details> -->
+      <div id="cycontainer">
+        <div id="cy"></div>
+      </div>
+      <div id='inspector'>
+        <details>
+          <summary>Additional Information</summary>
+          <div id='infobar'>
+            <p>
+            1. Information from Wiktionary is pasted into the <b>template view (right sidebar)</b>.
+            <br>2. Templates are transferred from the <b>template view (right sidebar)</b>
+            into the <b>graph view (left side)</b>. Click on templates and use filters to change which words are included.
+            </p>
+            <h3>TREE (left side)</h3>
+            <p>
+              Left click on node to add tree data.<br>
+              Right click node to remove.<br>
+              Green node = already processed.<br>
+              If the graph is not visible, click relayout() and recenter().
+            </p>
+            <h3>TEMPLATES (right side)</h3>
+            <p>
+              Left click on templates to toggle visibility.<br>
+              <button onclick="createTree()">Add to graph</button> will take all of the nodes and add them to the graph.<br>
+              Note - the graph will add all of the templates by default. So removed templates will only take effect
+              after clearing the graph and regraphing the connections.
+            </p>
+            <input type="text" id="twhitelist" name="twhitelist" placeholder="Whitelisted templates, comma separated" />
+            <br><input type="text" id="tblacklist" name="tblacklist" placeholder="Blacklisted templates, Comma separated" />
+            <input type="submit" id="submitq" value="submit" onclick="updateCustomTemplateWhitelists()" />
+            
+          </div>
+          <br>
+        </details>
+        <br> 
+        <div id='closeinspect'></div>
+        <button onclick="createTree()">Add to graph</button>
+      </div>
+    </div>
+    <!-- <div id="collectordiv">
+      <form action="javascript:void(0);">
+        <label for="cquery">Filter results by language: </label> 
+        <input type="text" id="clang" name="qlang" value="English" />
+        <input type="text" id="cword" name="qword" placeholder="Enter an optional word" />
+        <input type="button" id="submitc" value="Filter" onclick="onCollector()" />
+      </form>
+    </div>-->
+
+  </div>
+  <style>
+    #cy {
+      width: 100%;
+      height: 100%;
+      /*margin-top: 100px;*/
+      /*top: 100px;*/
+      /*left: 100px;*/
+    }
+
+    #cycontainer {
+      width: 60%;
+      height: 500px;
+      border: 1px solid black;
+    }
+  </style>
+
+
+
+
+  <!--script type="module"-->
+  <script type="module">
+  </script>
+
+  </div>
+  <!-- /EDIT -->
+
+
+
+  <details style='display:none;'>
+    <summary>Debug</summary>
+    <div id="debug-target"></div>
+    <details>
+      <ol>
+      </ol>
+    </details>
+
+  </details>
+  <div id='footer' style="padding:10px">
+    <a class="btn btn-primary" href=''>
+      <!--"{{=URL('admin','default','index', scheme='https')}}">-->
+      <i class="glyphicon glyphicon-cog"></i>
+    </a>
+      <p>Fork me on  <a href="https://github.com/myrriad/jsetymology">github!</a>
+        <br>Cognatetool icon is by <a href="https://thenounproject.com/search/?q=network+tree&i=1569724">
+          Trevor Dsouza from the Noun Project</a></p>
+  </div>
+</body>
+
+</html>
