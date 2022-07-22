@@ -57,7 +57,7 @@
     <script src='ts/bin/wiktionary.js'></script>
     <script src='ts/bin/sidebar.js'></script>
 
-    <script src='ts/bin/relayout.js'></script>
+    <!-- <script src='ts/bin/relayout.js'></script> -->
     <script src='js/cytostart.js'></script>
     <script src='ts/bin/graph.js'></script>
     <script src='ts/bin/last.js'></script>
@@ -92,7 +92,7 @@
                 <br>
                 <input type="button" value="clear graph" onclick="removeCyto();" />
                 <input type="button" value="prune single nodes" onclick="pruneSinglets();" />
-                <input type="button" value="relayout" onclick="relayout();" />
+                <input type="button" value="relayout" onclick="Graph.relayout();" />
                 <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
                 <input type="button" value="load random" onclick="loadRandom();" />
                 <!-- Trigger/Open The Modal -->

@@ -16,11 +16,11 @@ function defaultGraph() {
         ]
     };
 }
+
 function testGraph(node_count) {
     var obj = {
         "elements": {
-            "nodes": [
-                {
+            "nodes": [{
                     "data": { "id": "a" },
                     "position": { "x": 64.833336, "y": 249 }
                 },
@@ -29,12 +29,10 @@ function testGraph(node_count) {
                     "position": { "x": 194.5, "y": 249 }
                 }
             ],
-            "edges": [
-                {
-                    "data": { "id": "ab", "source": "a", "target": "b" },
-                    "position": { "x": 0, "y": 0 },
-                }
-            ]
+            "edges": [{
+                "data": { "id": "ab", "source": "a", "target": "b" },
+                "position": { "x": 0, "y": 0 },
+            }]
         },
         "data": []
     };
@@ -52,6 +50,7 @@ function testGraph(node_count) {
     // cy.json(obj);
     return obj;
 }
+
 function initiable(obj, restyle = true) {
     if (!obj.hasOwnProperty("container")) {
         obj["container"] = document.getElementById('cy'); // container to render in
@@ -113,13 +112,14 @@ function makePopper(ele) {
         trigger: 'manual' // probably want manual mode
     });
 }
+
 function bindTooltips() {
     // https://stackoverflow.com/questions/54352041/how-can-i-change-the-color-an-individual-node-in-a-grid-of-cytoscape-js
     // https://stackoverflow.com/questions/54547927/show-and-hide-node-info-on-mouseover-in-cytoscape/54556015
 
     var cy = window.cy();
     // cy.ready(function() {
-    cy.elements().forEach(function (ele) {
+    cy.elements().forEach(function(ele) {
         makePopper(ele);
     });
     // });
@@ -159,7 +159,7 @@ function createCyto(data, reLayout = false) {
         cy.add(elems); // add data
         // print(tograph = cy.json(), "posterior:");
 
-        if (!reLayout) relayout(cy, true);
+        if (!reLayout) Graph.relayout(cy, true);
         window.cytograph = cy;
         bindTooltips();
         return cy;
@@ -170,12 +170,12 @@ function createCyto(data, reLayout = false) {
         tograph = initiable(tograph, true);
         // print(tograph, "graphing:");
         cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
-        relayout(cy, true);
+        Graph.relayout(cy, true);
     }
 
     // the following only gets executed on initialization.
     window.cytograph = cy; // endpoint for modules. TODO: explore alternatives to global state
-    window.cy = function () {
+    window.cy = function() {
         return window.cytograph;
     }
     clickToQuery();
