@@ -10,7 +10,7 @@ type num = number;
 type str = string;
 type bool = boolean;
 
-type Section = wtf.default.Section;
+type Section = wtf.Section;
 type ToolbarMode = '' | 'explore' | 'move' | 'edge';
 type ToolbarUpdownMode = '' | 'up' | 'down' | 'updown';
 const cognatus = {

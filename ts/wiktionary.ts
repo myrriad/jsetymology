@@ -51,7 +51,7 @@ namespace Wiktionary {
     }
     function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): [etys: EtyEntry[], doc: wtf.Document] | undefined { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
         // let doc3 = doc2[0];
-        let doc = (doc2 instanceof Array ? doc2[0] : doc2) as wtf.default.Document;
+        let doc = (doc2 instanceof Array ? doc2[0] : doc2) as wtf.Document;
         if (!doc) {
             return undefined;
         }
@@ -63,7 +63,7 @@ namespace Wiktionary {
         let dictEntries = [];
 
 
-        let toplvl = doc.sections()[0] as wtf.default.Section | null;
+        let toplvl = doc.sections()[0] as wtf.Section | null;
 
         let skiplang = false;
         // auto-inferral
@@ -98,12 +98,12 @@ namespace Wiktionary {
             if (toplvl.title().toLowerCase() === lang?.toLowerCase() || skiplang) {
 
                 flag = true;
-                for (let lvl2 = toplvl.sections()[0] as wtf.default.Section | null; lvl2; lvl2 = lvl2.nextSibling()) {
+                for (let lvl2 = (toplvl.sections() as Section[])[0] as wtf.Section | null; lvl2; lvl2 = lvl2.nextSibling()) {
                     // console.log(lvl2);
                     if (/Etymology \d+/.test(lvl2.title())) {
                         multiEtyMode = true;
                         let myDictEntries = [];
-                        for (let lvl3 = lvl2.sections()[0] as wtf.default.Section | null; lvl3; lvl3 = lvl3.nextSibling()) {
+                        for (let lvl3 = (lvl2.sections() as Section[])[0] as wtf.Section | null; lvl3; lvl3 = lvl3.nextSibling()) {
                             if (WIKTIONARY_POS.indexOf(lvl3.title().toLowerCase()) >= 0) {
                                 myDictEntries.push(parseDictEntry(lvl3));
                             }
@@ -137,7 +137,7 @@ namespace Wiktionary {
     function parseDictEntry(sec: Section): DictEntry {
         let defn = sec;
         let derivs = [];
-        for (let sec2 = sec.sections()[0] as wtf.default.Section | null; sec2; sec2 = sec2.nextSibling()) {
+        for (let sec2 = (sec.sections() as Section[])[0] as wtf.Section | null; sec2; sec2 = sec2.nextSibling()) {
             if (sec2.title() === 'Derived terms') {
                 derivs.push(sec2);
             }
