@@ -1,34 +1,37 @@
 "use strict";
 // <reference path='js/langcodes/gencodes.js'/>
-let decodeTemplate;
-function twordRemoveAngleTknr(inp, startidx) {
-    let built = '';
-    let levels = 0;
-    let captureStart = startidx;
-    let i = startidx;
-    for (; i < inp.length; i++) {
-        let charAt = inp[i];
-        if (charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
-            if (levels === 0) {
-                // we were capturing. now we entered a dead zone
-                built += inp.substring(captureStart, i);
+var Templates;
+(function (Templates) {
+    function twordRemoveAngleTknr(inp, startidx) {
+        let built = '';
+        let levels = 0;
+        let captureStart = startidx;
+        let i = startidx;
+        for (; i < inp.length; i++) {
+            let charAt = inp[i];
+            if (charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
+                if (levels === 0) {
+                    // we were capturing. now we entered a dead zone
+                    built += inp.substring(captureStart, i);
+                }
+                levels++;
             }
-            levels++;
-        }
-        else if (charAt === '>') {
-            levels--;
-            if (levels === 0) {
-                // we were ignoring. now we must capture again.
-                captureStart = i + 1;
+            else if (charAt === '>') {
+                levels--;
+                if (levels === 0) {
+                    // we were ignoring. now we must capture again.
+                    captureStart = i + 1;
+                }
             }
         }
+        if (levels === 0) {
+            // if we are in capture mode at the end, then we must add the remainder
+            built += inp.substring(captureStart);
+        }
+        return built;
     }
-    if (levels === 0) {
-        // if we are in capture mode at the end, then we must add the remainder
-        built += inp.substring(captureStart);
-    }
-    return built;
-}
+    Templates.twordRemoveAngleTknr = twordRemoveAngleTknr;
+})(Templates || (Templates = {}));
 function twordExtractMultiTknr() {
 }
 class Templated {
@@ -45,17 +48,17 @@ class Templated {
     static make(ttype, word, langcode, self_lang, orig_template) {
         if (!word || word === '-')
             return undefined;
-        let word2 = word.includes('<') || word.includes('>') ? twordRemoveAngleTknr(word, 0) : word;
+        let word2 = word.includes('<') || word.includes('>') ? Templates.twordRemoveAngleTknr(word, 0) : word;
         return new Templated(ttype, word2, langcode, self_lang, orig_template);
     }
     get isRecon() {
         if (this._is_recon === undefined) {
-            this._is_recon = isReconstructed(this.word, this.lang, this.langcode);
+            this._is_recon = Templates.isReconstructed(this.word, this.lang, this.langcode);
         }
         return this._is_recon;
     }
 }
-(function () {
+(function (Templates) {
     function getFromKey(templ, key) {
         // @ts-ignore
         return _multiGetKeyFunc(templ, key, false, [], false);
@@ -269,7 +272,7 @@ class Templated {
                         return m;
                 }
                 let flag = false;
-                for (let pos of templPOS) {
+                for (let pos of Etymology.templPOS) {
                     if (ttype.endsWith('-' + pos)) {
                         flag = true;
                         break;
@@ -337,7 +340,7 @@ class Templated {
         // return [word, lang]; //`${lang}, ${word}`;
         // return undefined;
     }
-    decodeTemplate = function (templstr) {
+    function decodeTemplate(templstr) {
         assert(templstr.startsWith('{{') && templstr.endsWith('}}'), `messed up template ${templstr}`);
         let ttxt = templstr.slice(2, -2);
         let parts = ttxt.trim().split('|');
@@ -347,113 +350,121 @@ class Templated {
         // if(result) {
         // return new Templated(ttype, result[0], result[1]);
         // }
-    };
-}());
-function decodeWord(word, lang, langcode, isRecon) {
-    if (isRecon === undefined)
-        isRecon = isReconstructed(word, lang, langcode);
-    if (isRecon && word.startsWith('*')) {
-        word = word.slice(1);
     }
-    if (lang.includes('Latin') || lang === 'Old English') {
-        let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
-        let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
-        for (let i = 0; i < macrons.length; i++) {
-            word = word.replace(macrons[i], norms[i]);
+    Templates.decodeTemplate = decodeTemplate;
+})(Templates || (Templates = {}));
+(function (Templates) {
+    function decodeWord(word, lang, langcode, isRecon) {
+        if (isRecon === undefined)
+            isRecon = isReconstructed(word, lang, langcode);
+        if (isRecon && word.startsWith('*')) {
+            word = word.slice(1);
         }
+        if (lang.includes('Latin') || lang === 'Old English') {
+            let macrons = ['Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō', 'Ū', 'ū', 'Ȳ', 'ȳ'];
+            let norms = ['A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'Y', 'y'];
+            for (let i = 0; i < macrons.length; i++) {
+                word = word.replace(macrons[i], norms[i]);
+            }
+        }
+        return word;
     }
-    return word;
-}
-function isReconstructed(word, lang, langcode) {
-    /* hard-coded heuristic*/
-    if (langcode && langcode.endsWith('-pro'))
-        return true;
-    if (lang.startsWith('Proto'))
-        return true;
-    if (word.startsWith('*')) {
-        if (lang.startsWith('Old ') || lang.startsWith('Middle '))
+    Templates.decodeWord = decodeWord;
+    function isReconstructed(word, lang, langcode) {
+        /* hard-coded heuristic*/
+        if (langcode && langcode.endsWith('-pro'))
             return true;
-        if (lang.includes('Latin'))
+        if (lang.startsWith('Proto'))
             return true;
-        if (word.length >= 3)
-            return true;
-        return false;
-        // you know it's probably true. It's better 
-    } //
-    return false;
-}
-function toggleCognates() {
-    showCognates = !showCognates;
-}
-function updateCustomTemplateWhitelists() {
-    let whitestr = $('#twhitelist').val();
-    twhitelist = whitestr.split(',').map(x => $.trim(x));
-    let blackstr = $('#tblacklist').val();
-    tblacklist = blackstr.split(',').map(x => $.trim(x));
-    // whitestr = whitestr.replace()
-    setCookie('twhitelist', whitestr);
-    setCookie('tblacklist', blackstr);
-}
-function findRelevance(templatestr) {
-    // this is what decides whether a template is green or grey in the sidebar
-    // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
-    // makes a Mediawiki parser emulator
-    assert(templatestr.indexOf('}}') >= 0, `messed up template ${templatestr}`);
-    let pipe = templatestr.indexOf('|');
-    let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
-    let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
-    // let user defined whitelist/ blacklist override.
-    if (twhitelist.includes(ttype))
-        return true;
-    if (tblacklist.includes(ttype))
-        return false;
-    let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
-        'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
-        'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
-        'psm', 'mention', 'm', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
-    if (etys.includes(ttype))
-        return true; // Whitelist.
-    if (['cognate', 'cog'].includes(ttype)) {
-        if (showCognates)
-            return true;
-        return false;
-    }
-    if (['senseid',
-        'syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
-        'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
-        'IPA', 'rfap', 'rfp', 'Q', 'sup', 'topics'].includes(ttype))
-        return false;
-    for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
-        if (ttype.startsWith(comb))
+        if (word.startsWith('*')) {
+            if (lang.startsWith('Old ') || lang.startsWith('Middle '))
+                return true;
+            if (lang.includes('Latin'))
+                return true;
+            if (word.length >= 3)
+                return true;
             return false;
-    // Form of.
-    // https://en.wiktionary.org/wiki/Category:Form-of_templates
-    // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
-    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
-    let frag = ttype;
-    let formFlag = false;
-    if (ttype.endsWith('-form')) {
-        frag = ttype.slice(-5); // take off the form
-        formFlag = true;
-        // pretty likely
-        console.log('Candidate: ' + ttype);
-    }
-    for (let pos of templPOS)
-        if (frag.endsWith('-' + pos))
-            return true; // actually these seem not to be useful
-    if (ttype.endsWith(' of')) {
-        // many POSs end with ' of'.
-        return templatestr.includes('|'); // but only report as useful if we actually have arguments. 
-        // return true; 
-    }
-    // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
-    if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
-        'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype))
+            // you know it's probably true. It's better 
+        } //
         return false;
-    if (templatestr.includes('-')) {
-        // return true; // if it has a hyphen, there's a pretty good chance it's a lemma
-        return templatestr.includes('|'); // only report as useful if we actually have arguments. 
     }
-    // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
-    return false;
-}
+    Templates.isReconstructed = isReconstructed;
+    function toggleCognates() {
+        showCognates = !showCognates;
+    }
+    Templates.toggleCognates = toggleCognates;
+    function updateCustomTemplateWhitelists() {
+        let whitestr = $('#twhitelist').val();
+        twhitelist = whitestr.split(',').map(x => $.trim(x));
+        let blackstr = $('#tblacklist').val();
+        tblacklist = blackstr.split(',').map(x => $.trim(x));
+        // whitestr = whitestr.replace()
+        localStorage.setItem('twhitelist', whitestr);
+        localStorage.setItem('tblacklist', blackstr);
+    }
+    Templates.updateCustomTemplateWhitelists = updateCustomTemplateWhitelists;
+    function findRelevance(templatestr) {
+        // this is what decides whether a template is green or grey in the sidebar
+        // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
+        // makes a Mediawiki parser emulator
+        assert(templatestr.indexOf('}}') >= 0, `messed up template ${templatestr}`);
+        let pipe = templatestr.indexOf('|');
+        let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
+        let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
+        // let user defined whitelist/ blacklist override.
+        if (twhitelist.includes(ttype))
+            return true;
+        if (tblacklist.includes(ttype))
+            return false;
+        let etys = ['derived', 'der', 'borrowed', 'bor', 'learned borrowing', 'lbor', 'orthographic borrowing', 'obor', 'inherited', 'inh',
+            'PIE root', 'root', 'affix', 'af', 'prefix', 'pre', 'confix', 'con', 'suffix', 'suf', 'compound', 'com', 'blend', 'clipping', 'short for',
+            'back-form', 'doublet', 'onomatopoeic', 'onom', 'calque', 'cal', 'semantic loan', 'sl', 'named-after', 'phono-semantic matching',
+            'psm', 'mention', 'm', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
+        if (etys.includes(ttype))
+            return true; // Whitelist.
+        if (['cognate', 'cog'].includes(ttype)) {
+            if (showCognates)
+                return true;
+            return false;
+        }
+        if (['senseid',
+            'syn', 'label', 'qualifier', 'ux', 'uxi', 'head', 'ws',
+            'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
+            'IPA', 'rfap', 'rfp', 'Q', 'sup', 'topics'].includes(ttype))
+            return false;
+        for (let comb of ['quote', 'R:', 'Swadesh', 'ws '])
+            if (ttype.startsWith(comb))
+                return false;
+        // Form of.
+        // https://en.wiktionary.org/wiki/Category:Form-of_templates
+        // https://en.wiktionary.org/wiki/Category:Form-of_templates_by_language
+        // https://en.wiktionary.org/wiki/Wiktionary:Templates#Form-of_templates
+        let frag = ttype;
+        let formFlag = false;
+        if (ttype.endsWith('-form')) {
+            frag = ttype.slice(-5); // take off the form
+            formFlag = true;
+            // pretty likely
+            console.log('Candidate: ' + ttype);
+        }
+        for (let pos of Etymology.templPOS)
+            if (frag.endsWith('-' + pos))
+                return true; // actually these seem not to be useful
+        if (ttype.endsWith(' of')) {
+            // many POSs end with ' of'.
+            return templatestr.includes('|'); // but only report as useful if we actually have arguments. 
+            // return true; 
+        }
+        // https://en.wiktionary.org/wiki/Wiktionary:Templates#Etymology
+        if (['delete', 'rfd', 'rfd-redundant', 'rfv', 'rfv-sense', 't-needed', 'rfscript', 'rfap', 'rfc', 'rfdate', 'rfdef', 'rfe', 'rfp', 'rfi',
+            'tea room', 'rfv-passed', 'rfv-failed', 'rfv-archived', 'rfd-passed', 'rfd-failed', 'rfd-archived'].includes(ttype))
+            return false;
+        if (templatestr.includes('-')) {
+            // return true; // if it has a hyphen, there's a pretty good chance it's a lemma
+            return templatestr.includes('|'); // only report as useful if we actually have arguments. 
+        }
+        // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
+        return false;
+    }
+    Templates.findRelevance = findRelevance;
+})(Templates || (Templates = {}));

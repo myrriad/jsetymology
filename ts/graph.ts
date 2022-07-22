@@ -21,12 +21,12 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
         isRecon = target.data().isRecon;
         langcode = target.data().langcode;
     } else {
-        isRecon = isReconstructed(word, lang, langcode);
+        isRecon = Templates.isReconstructed(word, lang, langcode);
         // this fails in case olang is inferred
 
     }
 
-    fetchEtyEntry(word, lang, isRecon, 
+    Etymology.fetchEtyEntry(word, lang, isRecon, 
         target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
     .then(function onEtyEntry(out) {
         if(!out) return;
@@ -46,13 +46,13 @@ function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular) {
             displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
             displayBreak(newdiv);
             if(etyentry.ety) {
-                plopSectionToDiv(etyentry.ety, newdiv);
+                Sidebar.transferToSidebar(etyentry.ety, newdiv);
             } else {
                 friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
             }
-            for (let defn of etyentry.defns) plopSectionToDiv(defn.defn, newdiv);
+            for (let defn of etyentry.defns) Sidebar.transferToSidebar(defn.defn, newdiv);
             // onCheckbox();
-            $('#closeinspect')[0].appendChild(newdiv); // this must come BEFORE
+            $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
 
             orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
         }
@@ -100,8 +100,8 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
     let i = 1;
 
     
-    // let headers = $('#closeinspect h3');
-    let divlets = $('#closeinspect div.ety');
+    // let headers = $('#sidebar h3');
+    let divlets = $('#sidebar div.ety');
     for (let etydiv of divlets) { // code for multi etymologies
         let lastConnector;
         let $etydiv = $(etydiv);
@@ -116,7 +116,7 @@ function createTree(oword: str, olang: str): cytoscape.NodeSingular {
             }
             let txt = temptxt.textContent;
             if(!txt) continue;
-            let out = decodeTemplate(txt);
+            let out = Templates.decodeTemplate(txt);
             if (!out) continue;
             let temps: Templated[];
             if ((out as any).length) { // quickie to check if it's a non-zero array

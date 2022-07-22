@@ -40,11 +40,11 @@ function assert(x: any, message = '', hard = true, hardest = false) {
 }
 
 function clearDiv() {
-    $('#closeinspect')[0].innerHTML = '';
+    $('#sidebar')[0].innerHTML = '';
 }
 function displayElement(div: ParentNode | undefined, htmltype: str, str?: string, top = false, color?: str): void {
 
-    if (!div) div = $('#closeinspect div').last()[0];
+    if (!div) div = $('#sidebar div').last()[0];
     let span = document.createElement(htmltype);
 
     if(str) {

@@ -1,33 +1,48 @@
 body {
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-    margin-top: 0px; /*all of these used to be 8px*/
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    margin-top: 0px;
+    /*all of these used to be 8px*/
     margin-left: 0px;
     margin-right: 0px;
 }
+
 h1 {
     font-size: 40px;
     font-weight: 600;
 }
+
+
 /* h1 { */
-    /* font-family: "Open Sans","Helvetica",sans-serif,sans-serif; */
+
+
+/* font-family: "Open Sans","Helvetica",sans-serif,sans-serif; */
+
+
 /* } */
+
 #topheader {
     margin-top: 0px;
     display: flex;
 }
+
 #biggest-div {
     margin-left: 13px;
 }
+
 #flexwrap {
     display: flex;
 }
+
 #inspector {
-    flex: 0 0 15%; /*left. smaller = bigger left*/
+    flex: 0 0 15%;
+    /*left. smaller = bigger left*/
     margin-left: 23px;
 }
-#closeinspect {
+
+#sidebar {
     white-space: pre-wrap;
-    flex: 1; /*right*/
+    flex: 1;
+    /*right*/
     font-family: 'Times New Roman', Times, serif;
     border: solid black 1px;
     background-color: ghostwhite;
@@ -35,7 +50,8 @@ h1 {
     min-width: 400px;
     margin-right: 15px;
 }
-#closeinspect:empty {
+
+#sidebar:empty {
     display: none
 }
 
@@ -45,32 +61,39 @@ h1 {
     padding: 5px;
     min-width: 400px;
 }
-#infobar > * {
+
+#infobar>* {
     margin: 10px;
 }
+
 #infobar p {
     margin-left: 15px;
 }
+
 #infobar p button {
     margin: 0px;
 }
+
 .template {
     cursor: pointer;
 }
-.template.t-active {
-    background-color: #00FF0022; /*#0000FF22; /*#FF000022; /*#00FF0022;*/
 
+.template.t-active {
+    background-color: #00FF0022;
+    /*#0000FF22; /*#FF000022; /*#00FF0022;*/
 }
+
 .template.t-inactive {
     background-color: #00000022;
-
 }
+
 #biggest-div {
     display: inherit;
 }
 
 #dasdfshare {
-    background-color: white; /* Green */
+    background-color: white;
+    /* Green */
     border: solid black 1px;
     color: black;
     /* padding: 0px 10px; */
@@ -80,51 +103,72 @@ h1 {
     font-size: 16px;
 }
 
+
 /* The Modal (background) https://www.w3schools.com/howto/howto_css_modals.asp*/
+
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
 }
+
 
 /* Modal Content/Box */
+
 .modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
+    background-color: #fefefe;
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    /* Could be more or less, depending on screen size */
 }
 
+
 /* The Close Button */
+
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .close:hover,
 .close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
-

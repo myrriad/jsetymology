@@ -1,5 +1,5 @@
-
-const PARTS_OF_SPEECH = [
+namespace Etymology {
+export const PARTS_OF_SPEECH = [
     "noun", "verb", "adjective", "adverb", "determiner",
     "article", "preposition", "conjunction", "proper noun",
     "letter", "character", "phrase", "proverb", "idiom", // add particle
@@ -7,13 +7,15 @@ const PARTS_OF_SPEECH = [
     "definitions", "pronoun",
     "particle", "root" // These POS were found in P-I-E articles
 ];
-const templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
 
-const RELATIONS = [
+export const templPOS = ['adj', 'adv', 'con', 'det', 'interj', 'noun', 'num', 'part', 'postp', 'prep', 'pron', 'proper noun', 'verb'];
+
+export const RELATIONS = [
     "synonyms", "antonyms", "hypernyms", "hyponyms",
     "meronyms", "holonyms", "troponyms", "related terms",
     "coordinate terms",
 ]
+}
 
 
 
@@ -34,12 +36,14 @@ class EtyEntry {
     }
 
 }
-function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): undefined | [etys: EtyEntry[], doc: wtf.Document] { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
+
+namespace Etymology {
+export function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): [etys: EtyEntry[], doc: wtf.Document] | undefined { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
     // doc.
     // let doc3 = doc2[0];
     let doc = doc2 instanceof Array ? doc2[0] : doc2;
     if (!doc) {
-        friendlyError($('#closeinspect')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
+        friendlyError($('#sidebar')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
 
         let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang)}"]`)[0];
         h.data().searched = true;
@@ -76,7 +80,7 @@ function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str,
                     lang = 'English';
                     $('#qlang').val(lang); // auto-infer English
                 } else {
-                    friendlyError($('#closeinspect')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
+                    friendlyError($('#sidebar')[0], `More than 1 lang, cannot auto-infer! ${langs.join(', ')}`);
                     throw "More than 1 lang, cannot auto-infer!";
                 }
             }
@@ -126,9 +130,9 @@ function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str,
     // members.links().map((l) => l.page())
     //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
 }
-function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedresponse?: wtf.Document, callback?: (etys: EtyEntry[], doc: wtf.Document) => void) {
+export function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedresponse?: wtf.Document, callback?: (etys: EtyEntry[], doc: wtf.Document) => void) {
     if (!word) throw "You didn't pass a word in to search!";
-    let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${decodeWord(word, lang)}` : decodeWord(word, lang); // anti-macron here and nowhere else
+    let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${Templates.decodeWord(word, lang)}` : Templates.decodeWord(word, lang); // anti-macron here and nowhere else
 
     return wtffetch(qy, {
         lang: 'en',
@@ -144,7 +148,7 @@ function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedresponse
         return undefined;
     }); // function hoisting
 }
-function parseDictEntry(sec: Section): DictEntry {
+export function parseDictEntry(sec: Section): DictEntry {
     let defn = sec;
     let derivs = [];
     for (let sec2 = sec.sections()[0] as wtf.default.Section | null; sec2; sec2 = sec2.nextSibling()) {
@@ -156,4 +160,5 @@ function parseDictEntry(sec: Section): DictEntry {
     assert(derivs.length <= 1, 'more than 1 deriv? ' + derivs, false);
 
     return new DictEntry(defn, derivs ? derivs[0] : undefined);
+}
 }

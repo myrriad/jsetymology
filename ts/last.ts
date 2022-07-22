@@ -105,7 +105,7 @@ window.addEventListener("load", function () {
     if (twhitelist) $('#twhitelist').val(twhitelist);
     let tblacklist = localStorage.getItem('tblacklist');
     if (tblacklist) $('#tblacklist').val(tblacklist);
-    updateCustomTemplateWhitelists();
+    Templates.updateCustomTemplateWhitelists();
 
 
     // let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];

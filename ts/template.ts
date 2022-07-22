@@ -1,33 +1,34 @@
 // <reference path='js/langcodes/gencodes.js'/>
-let decodeTemplate: (templstr: str) => Templated | Templated[] | undefined;
 
-function twordRemoveAngleTknr(inp: str, startidx: num): str {
-    let built = '';
-    let levels = 0;
-    let captureStart = startidx;
-    let i = startidx;
-    for(;i<inp.length;i++) {
-        let charAt = inp[i];
-        if(charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
+namespace Templates {
+    export function twordRemoveAngleTknr(inp: str, startidx: num): str {
+        let built = '';
+        let levels = 0;
+        let captureStart = startidx;
+        let i = startidx;
+        for(;i<inp.length;i++) {
+            let charAt = inp[i];
+            if(charAt === '<') { // it seems that we should be safe to ignore everything inside these brackets.
 
-            if(levels === 0) {
-                // we were capturing. now we entered a dead zone
-                built += inp.substring(captureStart, i);
-            }
-            levels++;
-        } else if(charAt === '>') {
-            levels--;
-            if(levels === 0) {
-                // we were ignoring. now we must capture again.
-                captureStart = i+1;
+                if(levels === 0) {
+                    // we were capturing. now we entered a dead zone
+                    built += inp.substring(captureStart, i);
+                }
+                levels++;
+            } else if(charAt === '>') {
+                levels--;
+                if(levels === 0) {
+                    // we were ignoring. now we must capture again.
+                    captureStart = i+1;
+                }
             }
         }
+        if(levels === 0) {
+            // if we are in capture mode at the end, then we must add the remainder
+            built += inp.substring(captureStart);
+        }
+        return built;
     }
-    if(levels === 0) {
-        // if we are in capture mode at the end, then we must add the remainder
-        built += inp.substring(captureStart);
-    }
-    return built;
 }
 function twordExtractMultiTknr() {
 
@@ -41,7 +42,7 @@ class Templated {
     orig_template?: str;
     static make(ttype: str, word: str, langcode: str, self_lang?: str, orig_template?: str) {
         if(!word || word === '-') return undefined;
-        let word2 = word.includes('<') || word.includes('>') ? twordRemoveAngleTknr(word, 0) : word;
+        let word2 = word.includes('<') || word.includes('>') ? Templates.twordRemoveAngleTknr(word, 0) : word;
         
         return new Templated(ttype, word2, langcode, self_lang, orig_template);
     }
@@ -57,12 +58,13 @@ class Templated {
     _is_recon:boolean|undefined;
     get isRecon() {
         if(this._is_recon === undefined) {
-            this._is_recon = isReconstructed(this.word, this.lang, this.langcode);
+            this._is_recon = Templates.isReconstructed(this.word, this.lang, this.langcode);
         }
         return this._is_recon;
     }
 }
-(function() {
+namespace Templates {
+
     function getFromKey(templ: wtf.Template | str, key: num): str | undefined{
         // @ts-ignore
         return _multiGetKeyFunc(templ, key, false, [], false) as str;
@@ -264,7 +266,7 @@ class Templated {
                         return m;
                 }
                 let flag = false;
-                for(let pos of templPOS) {
+                for(let pos of Etymology.templPOS) {
                     if(ttype.endsWith('-' + pos)) {
                         flag = true;
                         break;
@@ -330,7 +332,7 @@ class Templated {
             // return [word, lang]; //`${lang}, ${word}`;
         // return undefined;
     }
-    decodeTemplate = function(templstr: str) {
+    export function decodeTemplate(templstr: str) {
         assert(templstr.startsWith('{{') && templstr.endsWith('}}'), `messed up template ${templstr}`);
         let ttxt = templstr.slice(2, -2);
         let parts = ttxt.trim().split('|');
@@ -341,8 +343,9 @@ class Templated {
             // return new Templated(ttype, result[0], result[1]);
         // }
     }
-}());
-function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
+}
+namespace Templates {
+export function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
     if (isRecon === undefined) isRecon = isReconstructed(word, lang, langcode);
     if(isRecon && word.startsWith('*')) {
         word = word.slice(1);
@@ -356,7 +359,7 @@ function decodeWord(word: str, lang: str, langcode?: str, isRecon?:boolean) {
     }
     return word;
 }
-function isReconstructed(word: str, lang: str, langcode?: str) {
+export function isReconstructed(word: str, lang: str, langcode?: str) {
     /* hard-coded heuristic*/
     if(langcode && langcode.endsWith('-pro')) return true;
     if(lang.startsWith('Proto')) return true;
@@ -371,10 +374,10 @@ function isReconstructed(word: str, lang: str, langcode?: str) {
 
     
 }
-function toggleCognates() {
+export function toggleCognates() {
     showCognates = !showCognates;
 }
-function updateCustomTemplateWhitelists() {
+export function updateCustomTemplateWhitelists() {
     let whitestr = $('#twhitelist').val() as str;
     twhitelist = whitestr.split(',').map(x => $.trim(x));
     let blackstr = $('#tblacklist').val() as str;
@@ -383,7 +386,7 @@ function updateCustomTemplateWhitelists() {
     localStorage.setItem('twhitelist', whitestr);
     localStorage.setItem('tblacklist', blackstr);
 }
-function findRelevance(templatestr: str) {
+export function findRelevance(templatestr: str) {
     // this is what decides whether a template is green or grey in the sidebar
     // Let's just hard code it. Unless someone wants to make a script that scrapes wiktionary template specs or
     // makes a Mediawiki parser emulator
@@ -428,7 +431,7 @@ function findRelevance(templatestr: str) {
         // pretty likely
         console.log('Candidate: ' + ttype);
     }
-    for (let pos of templPOS) if (frag.endsWith('-' + pos)) return true; // actually these seem not to be useful
+    for (let pos of Etymology.templPOS) if (frag.endsWith('-' + pos)) return true; // actually these seem not to be useful
 
     if (ttype.endsWith(' of')) {
         // many POSs end with ' of'.
@@ -448,4 +451,5 @@ function findRelevance(templatestr: str) {
     // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
 
     return false;
+}
 }

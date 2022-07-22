@@ -92,9 +92,13 @@ window.addEventListener("load", function () {
     // let's look for url query params.
     let searchParams = new URLSearchParams(window.location.search);
     let i = 0;
-    $('#twhitelist').val(getCookie('twhitelist'));
-    $('#tblacklist').val(getCookie('tblacklist'));
-    updateCustomTemplateWhitelists();
+    let twhitelist = localStorage.getItem('twhitelist');
+    if (twhitelist)
+        $('#twhitelist').val(twhitelist);
+    let tblacklist = localStorage.getItem('tblacklist');
+    if (tblacklist)
+        $('#tblacklist').val(tblacklist);
+    Templates.updateCustomTemplateWhitelists();
     // let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];
     //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek
     // if (!whitelist.includes(window.location.search)) return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS

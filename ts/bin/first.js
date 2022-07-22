@@ -25,11 +25,11 @@ function assert(x, message = '', hard = true, hardest = false) {
         }
 }
 function clearDiv() {
-    $('#closeinspect')[0].innerHTML = '';
+    $('#sidebar')[0].innerHTML = '';
 }
-function friendlyElement(div, htmltype, str, top = false, color) {
+function displayElement(div, htmltype, str, top = false, color) {
     if (!div)
-        div = $('#closeinspect div').last()[0];
+        div = $('#sidebar div').last()[0];
     let span = document.createElement(htmltype);
     if (str) {
         let txt = document.createTextNode(str);
@@ -44,20 +44,20 @@ function friendlyElement(div, htmltype, str, top = false, color) {
         div.appendChild(span);
     }
 }
-function friendlyBreak(div, top = false) {
-    friendlyElement(div, 'br', undefined, top);
+function displayBreak(div, top = false) {
+    displayElement(div, 'br', undefined, top);
 }
-function friendlyInfo(div, str, override = false, top = false, color = 'black;', newline = true) {
+function displayInfo(div, str, override = false, top = false, color = 'black;', newline = true) {
     if (override)
         clearDiv();
     if (top && newline)
-        friendlyBreak(div, true);
-    friendlyElement(div, 'span', str, top, color);
+        displayBreak(div, true);
+    displayElement(div, 'span', str, top, color);
     if (!top && newline)
-        friendlyBreak(div, false);
+        displayBreak(div, false);
 }
 function friendlyError(div, str, override = true, top = true, ital = false, newline = true) {
-    friendlyInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
+    displayInfo(div, str, override, top, `red;${ital ? ' font-style=italic;' : ''}`, newline);
 }
 function _parse(...strs) {
     let ret = new Array(strs.length);
@@ -87,18 +87,6 @@ function a(obj) {
 let showCognates = true;
 let twhitelist = [];
 let tblacklist = [];
-const setCookie = (name, value) => {
-    // const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = name + '=' + encodeURIComponent(value); // expires on browser close+ '; expires=' + expires + '; path=' + path;
-};
-function getCookie(name) {
-    for (let v of document.cookie.split('; ')) {
-        const parts = v.split('=');
-        if (parts[0] === name)
-            return decodeURIComponent(parts[1]);
-    }
-    return '';
-}
 // const deleteCookie = (name: str, path: str) => {
 // setCookie(name, '', -1, path);
 // }

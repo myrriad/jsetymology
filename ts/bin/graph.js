@@ -1,14 +1,12 @@
 "use strict";
 // const { data } = require("jquery");
 // declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
-function wlToTree(word, lang, target, reLayout = true, downward) {
+function wlToTree(word, lang, target) {
     var _a;
     if (word === undefined)
         word = $('#qword').val();
     if (lang === undefined)
         lang = $('#qlang').val();
-    if (downward === undefined)
-        downward = false;
     let [oword, olang] = _parse(word, lang);
     if (window.jsetymologyDebug)
         console.log(`DEBUG ${oword}; ${olang}`);
@@ -25,10 +23,10 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
         langcode = target.data().langcode;
     }
     else {
-        isRecon = isReconstructed(word, lang, langcode);
+        isRecon = Templates.isReconstructed(word, lang, langcode);
         // this fails in case olang is inferred
     }
-    fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
+    Etymology.fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
         .then(function onEtyEntry(out) {
         if (!out)
             return;
@@ -43,20 +41,20 @@ function wlToTree(word, lang, target, reLayout = true, downward) {
             let newdiv = document.createElement('div');
             newdiv.classList.add('ety');
             if (data2.length > 1) {
-                friendlyElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
+                displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
             }
-            friendlyInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
-            friendlyBreak(newdiv);
+            displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
+            displayBreak(newdiv);
             if (etyentry.ety) {
-                plopSectionToDiv(etyentry.ety, newdiv);
+                Sidebar.transferToSidebar(etyentry.ety, newdiv);
             }
             else {
                 friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
             }
             for (let defn of etyentry.defns)
-                plopSectionToDiv(defn.defn, newdiv);
+                Sidebar.transferToSidebar(defn.defn, newdiv);
             // onCheckbox();
-            $('#closeinspect')[0].appendChild(newdiv); // this must come BEFORE
+            $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
             orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
         }
         // success. save wikitext
@@ -97,8 +95,8 @@ function createTree(oword, olang) {
         orig.style('background-color', 'green');
     }
     let i = 1;
-    // let headers = $('#closeinspect h3');
-    let divlets = $('#closeinspect div.ety');
+    // let headers = $('#sidebar h3');
+    let divlets = $('#sidebar div.ety');
     for (let etydiv of divlets) { // code for multi etymologies
         let lastConnector;
         let $etydiv = $(etydiv);
@@ -115,7 +113,7 @@ function createTree(oword, olang) {
             let txt = temptxt.textContent;
             if (!txt)
                 continue;
-            let out = decodeTemplate(txt);
+            let out = Templates.decodeTemplate(txt);
             if (!out)
                 continue;
             let temps;
