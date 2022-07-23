@@ -137,38 +137,18 @@ var Graph;
             if (!out) {
                 // there is no document
                 // we still must mark the node
-                let h = cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
-                h.data().searched = true;
-                h.style('background-color', 'green');
+                target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
+                target.data().searched = true;
+                target.style('background-color', 'green');
                 return;
             }
-            let [data2, doc] = out;
-            window.etyentries = data2;
-            if (!data2 || data2.length === 0)
+            let [entries, doc] = out;
+            if (!entries || entries.length === 0)
                 throw "No entries found!";
             clearDiv();
             let orig;
-            for (let i = 0; i < data2.length; i++) {
-                let etyentry = data2[i];
-                let newdiv = document.createElement('div');
-                newdiv.classList.add('ety');
-                if (data2.length > 1) {
-                    displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
-                }
-                displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
-                displayBreak(newdiv);
-                if (etyentry.ety) {
-                    Sidebar.transferToSidebar(etyentry.ety, newdiv);
-                }
-                else {
-                    displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
-                }
-                for (let defn of etyentry.defns)
-                    Sidebar.transferToSidebar(defn.defn, newdiv);
-                // onCheckbox();
-                $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
-                orig = Graph.createTree(oword, olang); // this has createGraph() logic so we must create node in here too
-            }
+            Sidebar.transferAllEntries(entries);
+            orig = Graph.createTree(oword, olang); // this has createGraph() logic so we must create node in here too
             // success. save wikitext
             // the node better exist
             if (doc && doc.wikitext())
@@ -177,7 +157,7 @@ var Graph;
         // Temporarily disable URL request for debugging.
     }
     Graph.wlToTree = wlToTree;
-    function createTree(oword, olang) {
+    function createTree(oword, olang, target) {
         // homebrew graph creation.
         // relies on second.ts
         // let origin = cy.$('node#origin');
@@ -190,24 +170,24 @@ var Graph;
         if (!olang)
             olang = _parse($('#qlang').val());
         wls.addwl(oword, olang);
-        let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
         let fromScratch = cy().$('node').length === 0;
-        if (!(origarr && origarr.length)) {
-            let target = cy().add({
+        if (!target)
+            target = cy().$(`node[id="${oword}, ${olang}"]`); // if we didn't get the target as an argument, look for target in graph
+        if (!(target && target.length)) { // if target doesn't exist in graph, create it
+            cy().add({
                 group: 'nodes',
                 data: {
                     id: `${oword}, ${olang}`,
                 }
             })[0];
+            target = cy().$(`node[id="${oword}, ${olang}"]`);
         }
-        origarr = cy().$(`node[id="${oword}, ${olang}"]`);
         assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
-        if (origarr && origarr.length) {
-            let orig = origarr[0];
+        if (target && target.length) {
+            let orig = target[0];
             orig.data().searched = true;
             orig.style('background-color', 'green');
         }
-        let i = 1;
         // let headers = $('#sidebar h3');
         let divlets = $('#sidebar div.ety');
         for (let etydiv of divlets) { // code for multi etymologies

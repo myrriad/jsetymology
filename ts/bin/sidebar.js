@@ -14,7 +14,7 @@ var Sidebar;
         div.appendChild(textbox);
         return textbox;
     }
-    function transferToSidebar(entry, sidebar) {
+    function transferToSidebarDiv(entry, sidebar) {
         if (!sidebar)
             sidebar = $('#sidebar div').last()[0];
         // TODO plop a link here for easy access
@@ -43,7 +43,32 @@ var Sidebar;
         displayBreak(sidebar, false);
         return true;
     }
-    Sidebar.transferToSidebar = transferToSidebar;
+    Sidebar.transferToSidebarDiv = transferToSidebarDiv;
+    function transferAllEntries(entries) {
+        // formerly in graph.ts under 
+        for (let i = 0; i < entries.length; i++) {
+            let etyentry = entries[i];
+            let newdiv = document.createElement('div');
+            newdiv.classList.add('ety');
+            if (entries.length > 1) {
+                displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
+            }
+            displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
+            displayBreak(newdiv);
+            if (etyentry.ety) {
+                Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+            }
+            else {
+                displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+            }
+            for (let defn of etyentry.defns)
+                Sidebar.transferToSidebarDiv(defn.defn, newdiv);
+            // onCheckbox();
+            $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
+            // Graph.createTree used to be here, back when this for-loop was in graph.ts
+        }
+    }
+    Sidebar.transferAllEntries = transferAllEntries;
     function templateTknr(inp, startidx, nests) {
         // TODO reuse this to recognize cogs
         assert(inp[startidx] === '{' && inp[startidx + 1] === '{', `messed up template!`);

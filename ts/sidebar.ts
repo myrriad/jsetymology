@@ -12,7 +12,7 @@ function _appendText(text: str, div?: ParentNode) {
     div.appendChild(textbox);
     return textbox;
 }
-export function transferToSidebar(entry: Section, sidebar?: ParentNode) {
+export function transferToSidebarDiv(entry: Section, sidebar?: ParentNode) {
     if (!sidebar) sidebar = $('#sidebar div').last()[0];
     // TODO plop a link here for easy access
     let sec = entry; // instanceof EtyEntry ? entry.ety! : entry;
@@ -43,6 +43,30 @@ export function transferToSidebar(entry: Section, sidebar?: ParentNode) {
     displayBreak(sidebar, false);
 
     return true;
+}
+
+export function transferAllEntries(entries: EtyEntry[]) {
+    // formerly in graph.ts under 
+    for (let i = 0; i < entries.length; i++) {
+        let etyentry = entries[i];
+        let newdiv = document.createElement('div');
+        newdiv.classList.add('ety');
+        if (entries.length > 1) {
+            displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
+        }
+        displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
+        displayBreak(newdiv);
+        if (etyentry.ety) {
+            Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+        } else {
+            displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+        }
+        for (let defn of etyentry.defns) Sidebar.transferToSidebarDiv(defn.defn, newdiv);
+        // onCheckbox();
+        $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
+
+        // Graph.createTree used to be here, back when this for-loop was in graph.ts
+    }
 }
 
 function templateTknr(inp: string, startidx: number, nests: string[]): [str, num] {

@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@types/cytoscape": "^3.19.6",
+    "@types/jasmine": "^4.0.3",
     "@types/jquery": "^3.5.14",
     "npm": "^8.15.0"
   },
