@@ -1,9 +1,11 @@
 class DictEntry {
     defn;
     deriv;
-    constructor(defn: Section, deriv?: Section) {
+    desc;
+    constructor(defn: Section, deriv?: Section, desc?: Section) {
         this.defn = defn;
         this.deriv = deriv;
+        this.desc = desc;
     }
 }
 class EtyEntry {
@@ -16,6 +18,21 @@ class EtyEntry {
 
 }
 
+class WiktionaryResult {
+    doc: wtf.Document;
+    entries: EtyEntry[];
+
+    /**
+     * original query string used
+     */
+    query: string;
+    constructor(query: string, entries: EtyEntry[], doc: wtf.Document) {
+        this.entries = entries;
+        this.query = query;
+        this.doc = doc;
+    }
+}
+
 namespace Wiktionary {
     export const WIKTIONARY_POS = [
         "noun", "verb", "adjective", "adverb", "determiner",
@@ -26,8 +43,13 @@ namespace Wiktionary {
         "particle", "root" // These POS were found in P-I-E articles
     ];
 
-    export function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedDoc?: wtf.Document, 
+    export function fetchCategories(word: string, lang = '', reconstr = false, cachedDoc?: wtf.Document,
             callback?: (etys: EtyEntry[], doc: wtf.Document) => void) {
+                // TODO
+    }
+
+    export function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedDoc?: wtf.Document, 
+            callback?: (result: WiktionaryResult) => void) {
         if (!word) throw "You didn't pass a word in to search!";
         let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${Templates.decodeWord(word, lang)}` : Templates.decodeWord(word, lang); // anti-macron here and nowhere else
 
@@ -35,12 +57,12 @@ namespace Wiktionary {
             lang: 'en',
             wiki: 'wiktionary'
         }, cachedDoc).then((doc) => {
-            let ret = ondoc(doc, word, lang, qy);
-            if (ret) {
-                let [etys, doc] = ret;
-                if (callback)
-                    callback(etys, doc);
-                return ret;
+            let result = ondoc(doc, word, lang, qy);
+            if (result) {
+                if (callback) {
+                    callback(result);
+                }
+                return result;
             } else {
                 // there is no document
                 displayError($('#sidebar')[0], `Could not find the document for ${word}, ${lang}! https://en.wiktionary.org/wiki/${qy}`, false);
@@ -49,7 +71,7 @@ namespace Wiktionary {
             return undefined;
         }); 
     }
-    function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): [etys: EtyEntry[], doc: wtf.Document] | undefined { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
+    function ondoc(doc2: wtf.Document | wtf.Document[] | null, word: str, lang: str, qy: str): WiktionaryResult | undefined { // (error: unknown, result: wtf.Document | wtf.Document[] | null)
         // let doc3 = doc2[0];
         let doc = (doc2 instanceof Array ? doc2[0] : doc2) as wtf.Document;
         if (!doc) {
@@ -128,7 +150,7 @@ namespace Wiktionary {
         assert(flag, "No section found or parsed?", false);
         // if(flag) console.warn("No section found or parsed?")
         // if (callback) callback(etys, doc);
-        return [etys, doc];
+        return new WiktionaryResult(qy, etys, doc);
         // let members = doc.get('etymology'); // doc.infobox().get('current members')
         // members.links().map((l) => l.page())
         //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
@@ -137,14 +159,18 @@ namespace Wiktionary {
     function parseDictEntry(sec: Section): DictEntry {
         let defn = sec;
         let derivs = [];
+        let descs = [];
         for (let sec2 = (sec.sections() as Section[])[0] as wtf.Section | null; sec2; sec2 = sec2.nextSibling()) {
             if (sec2.title() === 'Derived terms') {
                 derivs.push(sec2);
+            } else if(sec2.title() === 'Descendants') {
+                descs.push(sec2);
             }
 
         }
-        assert(derivs.length <= 1, 'more than 1 deriv? ' + derivs, false);
+        assert(derivs.length <= 1, 'more than 1 derived terms section? ' + derivs, false);
+        assert(descs.length <= 1, 'more than 1 descendant section? ' + descs, false);
 
-        return new DictEntry(defn, derivs ? derivs[0] : undefined);
+        return new DictEntry(defn, derivs ? derivs[0] : undefined, descs ? descs[0] : undefined);
     }
 }

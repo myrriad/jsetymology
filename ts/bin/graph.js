@@ -133,8 +133,8 @@ var Graph;
             // this fails in case olang is inferred
         }
         Wiktionary.fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
-            .then(function onEtyEntry(out) {
-            if (!out) {
+            .then(function onEtyEntry(result) {
+            if (!result) {
                 // there is no document
                 // we still must mark the node
                 target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
@@ -142,13 +142,14 @@ var Graph;
                 target.style('background-color', 'green');
                 return;
             }
-            let [entries, doc] = out;
+            let entries = result.entries;
+            let doc = result.doc;
             if (!entries || entries.length === 0)
                 throw "No entries found!";
             clearDiv();
             let orig;
             Sidebar.transferAllEntries(entries);
-            orig = Graph.createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+            orig = Graph.createTreeFromSidebar(oword, olang); // this has createGraph() logic so we must create node in here too
             // success. save wikitext
             // the node better exist
             if (doc && doc.wikitext())
@@ -157,7 +158,7 @@ var Graph;
         // Temporarily disable URL request for debugging.
     }
     Graph.wlToTree = wlToTree;
-    function createTree(oword, olang, target) {
+    function createTreeFromSidebar(oword, olang, target) {
         // homebrew graph creation.
         // relies on second.ts
         // let origin = cy.$('node#origin');
@@ -313,5 +314,5 @@ var Graph;
         assert(ret === null || ret === void 0 ? void 0 : ret.length, "couldn't find node");
         return ret[0];
     }
-    Graph.createTree = createTree;
+    Graph.createTreeFromSidebar = createTreeFromSidebar;
 })(Graph || (Graph = {}));

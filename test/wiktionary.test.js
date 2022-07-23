@@ -1,6 +1,8 @@
 // current cached words: ballena, cadeaux, empezar, llegaron, precio, tomar, vaca
 
+// test case for multiple numbered etys: creo#Spanish
 
+// caput: for desc/derived
 describe("Wiktionary", function() {
     it("queries ballena (cached)", function() {
 
@@ -8,6 +10,7 @@ describe("Wiktionary", function() {
         let result1 = undefined;
         Wiktionary.fetchEtyEntry('ballena', 'Spanish').then((result) => {
             result1 = result;
+            // });
             expect(result.length).toBe(2);
 
             expect(result[0].length).toEqual(1);

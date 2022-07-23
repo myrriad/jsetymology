@@ -1,8 +1,9 @@
 "use strict";
 class DictEntry {
-    constructor(defn, deriv) {
+    constructor(defn, deriv, desc) {
         this.defn = defn;
         this.deriv = deriv;
+        this.desc = desc;
     }
 }
 class EtyEntry {
@@ -10,6 +11,13 @@ class EtyEntry {
         this.defns = defns;
         this.ety = ety;
         this.qy = url;
+    }
+}
+class WiktionaryResult {
+    constructor(query, entries, doc) {
+        this.entries = entries;
+        this.query = query;
+        this.doc = doc;
     }
 }
 var Wiktionary;
@@ -22,6 +30,10 @@ var Wiktionary;
         "definitions", "pronoun",
         "particle", "root" // These POS were found in P-I-E articles
     ];
+    function fetchCategories(word, lang = '', reconstr = false, cachedDoc, callback) {
+        // TODO
+    }
+    Wiktionary.fetchCategories = fetchCategories;
     function fetchEtyEntry(word, lang = '', reconstr = false, cachedDoc, callback) {
         if (!word)
             throw "You didn't pass a word in to search!";
@@ -30,12 +42,12 @@ var Wiktionary;
             lang: 'en',
             wiki: 'wiktionary'
         }, cachedDoc).then((doc) => {
-            let ret = ondoc(doc, word, lang, qy);
-            if (ret) {
-                let [etys, doc] = ret;
-                if (callback)
-                    callback(etys, doc);
-                return ret;
+            let result = ondoc(doc, word, lang, qy);
+            if (result) {
+                if (callback) {
+                    callback(result);
+                }
+                return result;
             }
             else {
                 // there is no document
@@ -119,7 +131,7 @@ var Wiktionary;
         assert(flag, "No section found or parsed?", false);
         // if(flag) console.warn("No section found or parsed?")
         // if (callback) callback(etys, doc);
-        return [etys, doc];
+        return new WiktionaryResult(qy, etys, doc);
         // let members = doc.get('etymology'); // doc.infobox().get('current members')
         // members.links().map((l) => l.page())
         //['Thom Yorke', 'Jonny Greenwood', 'Colin Greenwood'...]
@@ -127,12 +139,17 @@ var Wiktionary;
     function parseDictEntry(sec) {
         let defn = sec;
         let derivs = [];
+        let descs = [];
         for (let sec2 = sec.sections()[0]; sec2; sec2 = sec2.nextSibling()) {
             if (sec2.title() === 'Derived terms') {
                 derivs.push(sec2);
             }
+            else if (sec2.title() === 'Descendants') {
+                descs.push(sec2);
+            }
         }
-        assert(derivs.length <= 1, 'more than 1 deriv? ' + derivs, false);
-        return new DictEntry(defn, derivs ? derivs[0] : undefined);
+        assert(derivs.length <= 1, 'more than 1 derived terms section? ' + derivs, false);
+        assert(descs.length <= 1, 'more than 1 descendant section? ' + descs, false);
+        return new DictEntry(defn, derivs ? derivs[0] : undefined, descs ? descs[0] : undefined);
     }
 })(Wiktionary || (Wiktionary = {}));

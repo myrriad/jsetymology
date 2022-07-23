@@ -421,7 +421,7 @@ export function findRelevance(templatestr: str) {
         'Wikipedia', 'slim-wikipedia', 'Wikisource', 'Wikibooks', 'w', 'pedialite',
         'IPA', 'rfap', 'rfp', 'Q', 'sup', 'topics'].includes(ttype)) return false;
 
-    for (let comb of ['quote', 'R:', 'Swadesh', 'ws ']) if (ttype.startsWith(comb)) return false;
+    for (let comb of ['quote', 'R:', 'Swadesh', 'ws', 'RQ:']) if (ttype.startsWith(comb)) return false;
 
     // Form of.
     // https://en.wiktionary.org/wiki/Category:Form-of_templates

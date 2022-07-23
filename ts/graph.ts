@@ -133,8 +133,8 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
 
     Wiktionary.fetchEtyEntry(word, lang, isRecon, 
         target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
-    .then(function onEtyEntry(out) {
-        if(!out) {
+    .then(function onEtyEntry(result) {
+        if(!result) {
             // there is no document
 
             // we still must mark the node
@@ -143,13 +143,14 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
             target.style('background-color', 'green');
             return;
         }
-        let [entries, doc] = out!;
+        let entries = result.entries;
+        let doc = result.doc;
         if(!entries || entries.length === 0) throw "No entries found!";
         clearDiv();
         let orig: cytoscape.NodeSingular;
 
         Sidebar.transferAllEntries(entries);
-        orig = Graph.createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+        orig = Graph.createTreeFromSidebar(oword, olang); // this has createGraph() logic so we must create node in here too
 
         // success. save wikitext
         // the node better exist
@@ -160,7 +161,7 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
 }
 
 
-    export function createTree(oword: str, olang: str, target?: cytoscape.NodeSingular): cytoscape.NodeSingular {
+    export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape.NodeSingular): cytoscape.NodeSingular {
     // homebrew graph creation.
     // relies on second.ts
     // let origin = cy.$('node#origin');
