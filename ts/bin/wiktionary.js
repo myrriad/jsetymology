@@ -7,16 +7,16 @@ class DictEntry {
     }
 }
 class EtyEntry {
-    constructor(defns, ety, url) {
+    constructor(defns, ety, qy) {
         this.defns = defns;
         this.ety = ety;
-        this.qy = url;
+        this.qy = qy;
     }
 }
 class WiktionaryResult {
     constructor(query, entries, doc) {
         this.entries = entries;
-        this.query = query;
+        this.qy = query;
         this.doc = doc;
     }
 }

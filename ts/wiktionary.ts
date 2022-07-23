@@ -10,10 +10,10 @@ class DictEntry {
 }
 class EtyEntry {
     defns; ety; qy;
-    constructor(defns: DictEntry[], ety?: Section, url?: str) {
+    constructor(defns: DictEntry[], ety?: Section, qy?: str) {
         this.defns = defns;
         this.ety = ety;
-        this.qy = url;
+        this.qy = qy;
     }
 
 }
@@ -25,10 +25,10 @@ class WiktionaryResult {
     /**
      * original query string used
      */
-    query: string;
+    qy: string;
     constructor(query: string, entries: EtyEntry[], doc: wtf.Document) {
         this.entries = entries;
-        this.query = query;
+        this.qy = query;
         this.doc = doc;
     }
 }
