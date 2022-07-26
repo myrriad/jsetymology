@@ -139,7 +139,7 @@ var Graph;
                 // we still must mark the node
                 target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
                 target.data().searched = true;
-                target.style('background-color', 'green');
+                restyleNode(target);
                 return;
             }
             let entries = result.entries;
@@ -160,6 +160,11 @@ var Graph;
         // Temporarily disable URL request for debugging.
     }
     Graph.wlToTree = wlToTree;
+    function restyleNode(node) {
+        if (node.data().searched)
+            node.style('background-color', 'green');
+    }
+    Graph.restyleNode = restyleNode;
     function createTreeFromSidebar(oword, olang, target, updownBehavior = 'up') {
         // homebrew graph creation.
         // relies on second.ts
@@ -173,7 +178,7 @@ var Graph;
         if (!olang)
             olang = _parse($('#qlang').val());
         wls.addwl(oword, olang);
-        let isUp = updownBehavior === 'up';
+        // let isUp = updownBehavior === 'up';
         let fromScratch = cy().$('node').length === 0;
         if (!target)
             target = cy().$(`node[id="${oword}, ${olang}"]`); // if we didn't get the target as an argument, look for target in graph
@@ -190,16 +195,20 @@ var Graph;
         if (target && target.length) {
             let orig = target[0];
             orig.data().searched = true;
-            orig.style('background-color', 'green');
+            restyleNode(orig);
         }
         // let headers = $('#sidebar h3');
-        let divlets = $('#sidebar div.ety');
-        for (let etydiv of divlets) { // code for multi etymologies
+        let divlets = $('#sidebar div');
+        for (let div of divlets) { // code for multi etymologies
             let lastConnector;
-            let $etydiv = $(etydiv);
+            let $div = $(div);
+            let isUp = true; // for definitions and etymoloy
+            if (div.classList.contains('sidebar-desc')) {
+                isUp = false;
+            }
             // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
             // if(temp)
-            for (let anything of $etydiv.children('span')) {
+            for (let anything of $div.children('span')) {
                 let temptxt;
                 if (anything.matches('.template.t-active')) {
                     temptxt = anything; // here is a template

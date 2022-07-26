@@ -48,38 +48,48 @@ var Sidebar;
         // formerly in graph.ts under 
         for (let i = 0; i < entries.length; i++) {
             let etyentry = entries[i];
-            let newdiv = document.createElement('div');
-            newdiv.classList.add('ety');
+            let defnDiv = document.createElement('div');
+            let etyDiv = undefined;
+            let descDiv = undefined;
             if (entries.length > 1) {
-                displayElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
+                displayElement(defnDiv, 'h3', `Definition ${i + 1}:`); // 1-index
             }
-            displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
-            displayBreak(newdiv);
+            displayInfo(defnDiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
+            displayBreak(defnDiv);
+            for (let defn of etyentry.defns)
+                Sidebar.transferToSidebarDiv(defn.defn, defnDiv);
+            $('#sidebar')[0].appendChild(defnDiv);
             if (updownBehavior === 'up' || updownBehavior === 'updown') {
+                etyDiv = document.createElement('div');
+                etyDiv.classList.add('sidebar-ety');
                 if (etyentry.ety) {
-                    Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+                    Sidebar.transferToSidebarDiv(etyentry.ety, etyDiv);
                 }
                 else {
-                    displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+                    displayError(defnDiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
                 }
-                for (let defn of etyentry.defns)
-                    Sidebar.transferToSidebarDiv(defn.defn, newdiv);
             }
             if (updownBehavior === 'down' || updownBehavior === 'updown') {
+                descDiv = document.createElement('div');
+                descDiv.classList.add('sidebar-desc');
                 for (let defn of etyentry.defns) {
                     if (defn.deriv) {
-                        Sidebar.transferToSidebarDiv(defn.deriv, newdiv);
+                        Sidebar.transferToSidebarDiv(defn.deriv, descDiv);
                     }
                     if (defn.deriv && defn.desc) {
-                        displayBreak(newdiv);
+                        displayBreak(descDiv);
                     }
                     if (defn.desc) {
-                        Sidebar.transferToSidebarDiv(defn.desc, newdiv);
+                        Sidebar.transferToSidebarDiv(defn.desc, descDiv);
                     }
                 }
             }
             // onCheckbox();
-            $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
+            $('#sidebar')[0].appendChild(defnDiv);
+            if (etyDiv)
+                $('#sidebar')[0].appendChild(etyDiv);
+            if (descDiv)
+                $('#sidebar')[0].appendChild(descDiv);
             // Graph.createTree used to be here, back when this for-loop was in graph.ts
         }
     }

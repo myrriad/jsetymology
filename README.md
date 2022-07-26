@@ -69,6 +69,13 @@ PIE suffixes: https://en.wiktionary.org/wiki/Reconstruction:Proto-Indo-European/
  - [ ] Instead of showing raw templates, show an interpreted version (with the name of language nad word) with the full template info revealed on hover
  alchemy, Tagalog
  - [ ] Remove all not containing relavent languages button (all languages before opening descendants )
-
+ - [ ] option for reworked tiering system that only on basis of languages 
  Buttons for auto-infer
 http://jsfiddle.net/AndreaLigios/jtLbpy62/2281/
+
+
+
+abrigar#Spanish
+
+words that don't work
+litera#Spanish and litter#English
