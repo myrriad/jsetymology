@@ -4,6 +4,11 @@
 
 // caput: for desc/derived
 
+// empezar is a decent one to write tests for, since it's already cached
+// vacci- has a {{prefixsee}} template
+// pettia#LL. actually refers to pettia#Latin (hard code it?)
+// echar
+
 // to easily cache sample words: use the GUI querier, then call doc.wikitext() then copy-paste it into cached.ts
 describe("Wiktionary", function() {
     it("queries ballena (cached)", function() {

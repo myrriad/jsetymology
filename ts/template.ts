@@ -399,6 +399,7 @@ export function findRelevance(templatestr: str) {
     let end = pipe === -1 ? templatestr.indexOf('}}') : pipe;
     let ttype = templatestr.slice(templatestr.indexOf('{{') + 2, end);
 
+    let remainder = pipe === -1 ? undefined : templatestr.slice(pipe + 1, templatestr.indexOf('}}'));
     // let user defined whitelist/ blacklist override.
     if(twhitelist.includes(ttype)) return true;
     if(tblacklist.includes(ttype)) return false;
@@ -410,6 +411,9 @@ export function findRelevance(templatestr: str) {
         'psm', 'mention', 'm', 'noncognate', 'noncog', 'langname-mention', 'm+', 'rfe']; //, 'etystub', 'unknown', 'unk'];
 
     if (etys.includes(ttype)) return true; // Whitelist.
+
+    let descs = ['desc', 'desctree'];
+    if(descs.includes(ttype)) return true;
 
     if (['cognate', 'cog'].includes(ttype)) {
         if(showCognates) return true;
@@ -450,7 +454,12 @@ export function findRelevance(templatestr: str) {
     if (templatestr.includes('-')) {
         // return true; // if it has a hyphen, there's a pretty good chance it's a lemma
         
-        return templatestr.includes('|'); // only report as useful if we actually have arguments. 
+        if(templatestr.includes('|')) { // only report as useful if we actually have arguments. 
+            if(remainder && remainder.length === 1) return false; // if there's a remainder and it's one character, it's probably
+            // something not useful like {{es-}}
+            return true;
+        } 
+        return false;
     }
     // requests: https://en.wiktionary.org/wiki/Wiktionary:Templates#Requests
 

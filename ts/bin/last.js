@@ -12,6 +12,10 @@ function onCollector() {
         });
     }
 }
+function autoGraphTemplates() {
+    let val = cognatus.autoGraphTemplates;
+    cognatus.autoGraphTemplates = !val;
+}
 function toggleEdges(on) {
     // let edges = cy().edges();
     // if(on === undefined) on = (document.getElementById('edges-toggle') as HTMLInputElement).checked;
@@ -55,6 +59,12 @@ function onLeftClick(event) {
         }
     }
 }
+/**
+ * TODO:
+ * I want to change Rclick behavior to rclick -> add nodes in the opposite direction as the toolbar mode indicates.
+ * (so kinda like subjunctive mood)
+ * @param event
+ */
 function onRightClick(event) {
     if (cognatus.toolbar.mode === 'explore') {
         let target = event.target;

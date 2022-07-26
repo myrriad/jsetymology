@@ -44,7 +44,7 @@ var Sidebar;
         return true;
     }
     Sidebar.transferToSidebarDiv = transferToSidebarDiv;
-    function transferAllEntries(entries) {
+    function transferAllEntries(entries, updownBehavior = 'up') {
         // formerly in graph.ts under 
         for (let i = 0; i < entries.length; i++) {
             let etyentry = entries[i];
@@ -55,14 +55,29 @@ var Sidebar;
             }
             displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
             displayBreak(newdiv);
-            if (etyentry.ety) {
-                Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+            if (updownBehavior === 'up' || updownBehavior === 'updown') {
+                if (etyentry.ety) {
+                    Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+                }
+                else {
+                    displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+                }
+                for (let defn of etyentry.defns)
+                    Sidebar.transferToSidebarDiv(defn.defn, newdiv);
             }
-            else {
-                displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+            if (updownBehavior === 'down' || updownBehavior === 'updown') {
+                for (let defn of etyentry.defns) {
+                    if (defn.deriv) {
+                        Sidebar.transferToSidebarDiv(defn.deriv, newdiv);
+                    }
+                    if (defn.deriv && defn.desc) {
+                        displayBreak(newdiv);
+                    }
+                    if (defn.desc) {
+                        Sidebar.transferToSidebarDiv(defn.desc, newdiv);
+                    }
+                }
             }
-            for (let defn of etyentry.defns)
-                Sidebar.transferToSidebarDiv(defn.defn, newdiv);
             // onCheckbox();
             $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
             // Graph.createTree used to be here, back when this for-loop was in graph.ts

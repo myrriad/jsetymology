@@ -103,6 +103,48 @@ h1 {
     font-size: 16px;
 }
 
+.cy-overlay {
+    position: absolute;
+    left: 35%;
+    top: 35%;
+    /* bottom: 50%; */
+    height: 30%;
+    width: 30%;
+    padding: 0.5em;
+    /* transform: translate(-50%, -50%); */
+    background: #fff;
+    border: 1px solid #999;
+    /* border-radius: 40px; */
+    margin-left: -1px;
+    box-sizing: content-box;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    /* align-items: center; */
+}
+
+.cy-overlay-close {
+    /*flex to the right*/
+    /* position: absolute; */
+    margin-left: auto;
+    right: 85%;
+    height: fit-content;
+    padding: 0.1em;
+    color: red;
+}
+
+.cy-overlay-button {
+    /*go to the bottom*/
+    bottom: 10%;
+}
+
+.cy-overlay-close:hover {
+    cursor: pointer;
+    background: #ccc;
+    color: #fff;
+}
+
 
 /* The Modal (background) https://www.w3schools.com/howto/howto_css_modals.asp*/
 

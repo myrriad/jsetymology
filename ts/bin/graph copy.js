@@ -148,10 +148,8 @@ var Graph;
                 throw "No entries found!";
             clearDiv();
             let orig;
-            let behavior = cognatus.toolbar.updown;
-            Sidebar.transferAllEntries(entries, behavior);
-            if (cognatus.autoGraphTemplates)
-                orig = Graph.createTreeFromSidebar(oword, olang, undefined, cognatus.toolbar.updown); // this has createGraph() logic so we must create node in here too
+            Sidebar.transferAllEntries(entries);
+            orig = Graph.createTreeFromSidebar(oword, olang); // this has createGraph() logic so we must create node in here too
             // success. save wikitext
             // the node better exist
             if (doc && doc.wikitext())
@@ -160,7 +158,7 @@ var Graph;
         // Temporarily disable URL request for debugging.
     }
     Graph.wlToTree = wlToTree;
-    function createTreeFromSidebar(oword, olang, target, updownBehavior = 'up') {
+    function createTreeFromSidebar(oword, olang, target) {
         // homebrew graph creation.
         // relies on second.ts
         // let origin = cy.$('node#origin');
@@ -173,7 +171,6 @@ var Graph;
         if (!olang)
             olang = _parse($('#qlang').val());
         wls.addwl(oword, olang);
-        let isUp = updownBehavior === 'up';
         let fromScratch = cy().$('node').length === 0;
         if (!target)
             target = cy().$(`node[id="${oword}, ${olang}"]`); // if we didn't get the target as an argument, look for target in graph
@@ -286,20 +283,6 @@ var Graph;
                     else {
                         try {
                             let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
-                            // TODO: we need to attach updown information to each edge
-                            // we know whether we're searching up or down because they're 2 completely different
-                            // searches in sidebar
-                            // in that case, switch source
-                            let sourceNode;
-                            let targetNode;
-                            if (isUp) {
-                                sourceNode = me;
-                                targetNode = connector;
-                            }
-                            else {
-                                sourceNode = connector;
-                                targetNode = me;
-                            }
                             cy().add({
                                 group: 'edges',
                                 data: {
@@ -307,8 +290,8 @@ var Graph;
                                     // displaylabel: (document.getElementById('edges-toggle') as HTMLInputElement).checked,
                                     label: `${_parse(temp.ttype)}`,
                                     template: `${temp.orig_template}`,
-                                    source: sourceNode,
-                                    target: targetNode,
+                                    source: me,
+                                    target: connector,
                                 },
                                 classes: classes
                             });

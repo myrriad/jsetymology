@@ -1,3 +1,5 @@
+// TODO https://www.typescriptlang.org/docs/handbook/declaration-files/deep-dive.html
+
 export declare class Document {
   categories(clue?: number): string[]
   category(clue?: number): string | null

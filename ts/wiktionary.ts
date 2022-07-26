@@ -51,7 +51,7 @@ namespace Wiktionary {
     export function fetchEtyEntry(word: string, lang = '', reconstr = false, cachedDoc?: wtf.Document, 
             callback?: (result: WiktionaryResult) => void) {
         if (!word) throw "You didn't pass a word in to search!";
-        let qy = reconstr ? `Reconstruction:${lang.replace(' ', '-')}/${Templates.decodeWord(word, lang)}` : Templates.decodeWord(word, lang); // anti-macron here and nowhere else
+        let qy = reconstr ? `Reconstruction:${lang === 'Proto Indo European' ? 'Proto-Indo-European' : lang.replace(' ', '_')}/${Templates.decodeWord(word, lang)}` : Templates.decodeWord(word, lang); // anti-macron here and nowhere else
 
         return wtffetch(qy, {
             lang: 'en',

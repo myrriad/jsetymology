@@ -22,10 +22,10 @@
 
         gtag('config', 'G-XF94WS05DE');
     </script>
-    <script src='js/cytoscape.min.js'></script>
+    <script src='js/libs/cytoscape.min.js'></script>
     <!--https://unpkg.com/cytoscape/dist/cytoscape.min.js-->
-    <script src='js/jquery.js'></script>
-
+    <script src='js/libs/jquery.js'></script>
+    <script src="js/libs/jquery-ui-1.13.2.min.js"></script>
     <!-- popper import imports -->
     <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
@@ -38,11 +38,11 @@
 
     <!-- <script src="https://unpkg.com/cytoscape-panzoom@2.5.3/cytoscape-panzoom.js"></script> -->
     <script src='js/cytoscape-panzoom.js'></script>
-    </script>
+    <script src='ts/bin/cytostuff.js'></script>
     <!-- <script src="https://cdn.jsdelivr.net/gh/cytoscape/cytoscape-navigator/@2.0.1/cytoscape-navigator.js"></script> -->
 
     <!-- <script src="https://unpkg.com/wtf_wikipedia"></script> -->
-    <script src='js/wtf.min.js'></script>
+    <script src='js/libs/wtf.min.js'></script>
     <!-- <script src='https://unpkg.com/wtf-plugin-html'></script> -->
 
     <script src='js/langcodes/gencodes.js'></script>
@@ -112,12 +112,14 @@
             <!-- <summary>Text Output</summary> -->
             <!-- <div id="target">{{=quer}}</div> -->
             <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label for="tb-toggle">Click on templates to toggle</label>
-            <input type="checkbox" id="tb-toggle" name="scales" checked onchange="toggleCognates()"><label for="tb-toggle">Show cognates</label>
+            <input type="checkbox" id="cog-toggle" name="scales" checked onchange="toggleCognates()"><label for="cog-toggle">Show cognates</label>
             <!-- <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()"> -->
             <!-- <label for="downward-toggle">Add nodes downwards</label> -->
             <!-- <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()"> -->
             <!-- <label for="upward-toggle">Add nodes upwards</label> -->
-            <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="tb-toggle">Show edge labels</label>
+            <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="edges-toggle">Show edge labels</label>
+            <input type="checkbox" id="automatic-graph-toggle" name="scales" checked onchange="autoGraphTemplates()"><label for="automatic-graph-toggle">Automatically graph templates from sidebar</label>
+
         </div>
 
         <div id='flexwrap'>
@@ -141,8 +143,8 @@
                         <h3>TEMPLATES (right side)</h3>
                         <p>
                             Left click on templates to toggle visibility.<br>
-                            <button onclick="Graph.createTree()">Add to graph</button> will take all of the nodes and add them to the graph.<br> Note - the graph will add all of the templates by default. So removed templates will only take effect after
-                            clearing the graph and regraphing the connections.
+                            <button onclick="Graph.createTreeFromSidebar()">Add to graph</button> will take all of the nodes and add them to the graph.<br> Note - the graph will add all of the templates by default. So removed templates will only take
+                            effect after clearing the graph and regraphing the connections.
                         </p>
                         <input type="text" id="twhitelist" name="twhitelist" placeholder="Whitelisted templates, comma separated" />
                         <br><input type="text" id="tblacklist" name="tblacklist" placeholder="Blacklisted templates, Comma separated" />
@@ -153,7 +155,7 @@
                 </details>
                 <br>
                 <div id='sidebar'></div>
-                <button onclick="Graph.createTree()">Add to graph</button>
+                <button onclick="Graph.createTreeFromSidebar()">Add to graph</button>
             </div>
         </div>
         <!-- <div id="collectordiv">
@@ -186,8 +188,6 @@
 
 
     <!--script type="module"-->
-    <script type="module">
-    </script>
 
     </div>
     <!-- /EDIT -->

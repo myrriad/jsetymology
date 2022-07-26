@@ -25,7 +25,7 @@ Green node = already processed.
 5. Templates are found again and are either highlighted grey or green. Grey templates are ignored; green templates are
 considered for inclusion. The function that makes this decision is findRelevance() in template.ts and is hardcoded.
 5b. A non-hardcoded, user-configurable method to decide template inclusion is in the works. It involves a whitelist and blacklist stored as a cookie.
-6. When "Add to graph" is clicked, all of the green templates are added to the graph (Graph.wlToTree(), Graph.createTree() in graph.ts)
+6. When "Add to graph" is clicked, all of the green templates are added to the graph (Graph.wlToTree(), Graph.createTreeFromSidebar() in graph.ts)
 7. (6b) Each template (stored as a string) is converted to a Templated object. (decodeTemplate in template.ts, called in createTree())
 8. (6c) These Templated objects know which word, lang combination to connect to because of another hardcoded function: _templSwitch() in template.ts (there really isn't an alternative because templates are arbitrary and user defined and the alternative is web scraping the wiktionary template definitions page.)
 9. NB: When the button "Submit" is clicked, steps 1 through 6 are automatically called, so the data is added to the graph automatically.
@@ -61,6 +61,14 @@ bin/cytostart.js, relayout.ts, last.ts: contains a bunch of cytoscape stuff. Cyt
  - [x] !! SHARE BUTTON! (kinda)
  - [ ] !! RANDOM BUTTON! https://en.wiktionary.org/wiki/Wiktionary:Random_page
  - [ ] "Don't show again" tour dialog box
+ - [ ] Updown graph direction doesn't work. add a property to each edge
 
+ - [ ] {{see desc}} indicates many more descendants
+ - [ ] different colors for up/down
+PIE suffixes: https://en.wiktionary.org/wiki/Reconstruction:Proto-Indo-European/-*-yeti: doesn't work orrectly
+ - [ ] Instead of showing raw templates, show an interpreted version (with the name of language nad word) with the full template info revealed on hover
  alchemy, Tagalog
+ - [ ] Remove all not containing relavent languages button (all languages before opening descendants )
+
+ Buttons for auto-infer
 http://jsfiddle.net/AndreaLigios/jtLbpy62/2281/

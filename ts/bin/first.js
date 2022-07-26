@@ -3,6 +3,7 @@ window.universe = { batchIndex: 0 };
 window.doc = undefined;
 const cognatus = {
     showEdgeLabels: true,
+    autoGraphTemplates: true,
     // mode: 'explore', // 'explore', 'move', 'edge'
     toolbar: {
         mode: 'explore',

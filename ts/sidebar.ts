@@ -45,7 +45,7 @@ export function transferToSidebarDiv(entry: Section, sidebar?: ParentNode) {
     return true;
 }
 
-export function transferAllEntries(entries: EtyEntry[]) {
+export function transferAllEntries(entries: EtyEntry[], updownBehavior: ToolbarUpdownMode='up') {
     // formerly in graph.ts under 
     for (let i = 0; i < entries.length; i++) {
         let etyentry = entries[i];
@@ -56,12 +56,29 @@ export function transferAllEntries(entries: EtyEntry[]) {
         }
         displayInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
         displayBreak(newdiv);
-        if (etyentry.ety) {
-            Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
-        } else {
-            displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+
+        if(updownBehavior === 'up' || updownBehavior === 'updown') {
+            if (etyentry.ety) {
+                Sidebar.transferToSidebarDiv(etyentry.ety, newdiv);
+            } else {
+                displayError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+            }
+            for (let defn of etyentry.defns) Sidebar.transferToSidebarDiv(defn.defn, newdiv);
         }
-        for (let defn of etyentry.defns) Sidebar.transferToSidebarDiv(defn.defn, newdiv);
+        if (updownBehavior === 'down' || updownBehavior === 'updown') {
+            for (let defn of etyentry.defns) {
+                if(defn.deriv) {
+                    Sidebar.transferToSidebarDiv(defn.deriv, newdiv);
+                }
+                if(defn.deriv && defn.desc) {
+                    displayBreak(newdiv);
+                }
+                if(defn.desc) {
+                    Sidebar.transferToSidebarDiv(defn.desc, newdiv);
+                }
+            }
+        }
+
         // onCheckbox();
         $('#sidebar')[0].appendChild(newdiv); // this must come BEFORE
 

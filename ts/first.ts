@@ -15,6 +15,7 @@ type ToolbarMode = '' | 'explore' | 'move' | 'edge';
 type ToolbarUpdownMode = '' | 'up' | 'down' | 'updown';
 const cognatus = {
     showEdgeLabels: true,
+    autoGraphTemplates: true,
     // mode: 'explore', // 'explore', 'move', 'edge'
     toolbar: {
         mode: 'explore' as ToolbarMode,
