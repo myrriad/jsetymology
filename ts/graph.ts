@@ -132,7 +132,8 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
         // this fails in case olang is inferred
 
     }
-
+    let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+    let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
     Wiktionary.fetchEtyEntry(word, lang, isRecon, 
         target?.data()?.wikitext ? wtf(target.data().wikitext) : undefined)
     .then(function onEtyEntry(result) {
@@ -141,7 +142,8 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
 
             // we still must mark the node
             target = target ? target : cy().$(`node[id="${_parse(word!)}, ${_parse(lang ? lang : '')}"]`)[0];
-            target.data().searched = true;
+            if(isUp) target.data().searchedUp = true;
+            if (isDown) target.data().searchedDown = true;
             restyleNode(target);
             return;
         }
@@ -166,7 +168,19 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
 
 export function restyleNode(node: cytoscape.NodeSingular) {
 
-    if(node.data().searched) node.style('background-color', 'green');
+    // green = searched up
+    // blue = searched down
+    // green-blue = searched up and down
+    if (node.data().searchedUp && node.data().searchedDown) {
+        node.style('background-color', '#0d98ba');
+        return;
+    }
+    if(node.data().searchedUp) {
+        node.style('background-color', 'green');
+    }
+    if (node.data().searchedDown) {
+        node.style('background-color', 'blue');
+    }
     
 }
 
@@ -198,9 +212,13 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
         target = cy().$(`node[id="${oword}, ${olang}"]`);
     }
     assert(cy().$(`node[id="${oword}, ${olang}"]`)?.length, "couldn't find node");
+
+    let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+    let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
     if (target && target.length) {
         let orig = target[0];
-        orig.data().searched = true;
+        if (isUp) target.data().searchedUp = true;
+        if (isDown) target.data().searchedDown = true;
         restyleNode(orig);
     }
     

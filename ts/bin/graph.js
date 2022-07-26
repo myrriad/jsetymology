@@ -132,13 +132,18 @@ var Graph;
             isRecon = Templates.isReconstructed(word, lang, langcode);
             // this fails in case olang is inferred
         }
+        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
         Wiktionary.fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
             .then(function onEtyEntry(result) {
             if (!result) {
                 // there is no document
                 // we still must mark the node
                 target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
-                target.data().searched = true;
+                if (isUp)
+                    target.data().searchedUp = true;
+                if (isDown)
+                    target.data().searchedDown = true;
                 restyleNode(target);
                 return;
             }
@@ -161,8 +166,19 @@ var Graph;
     }
     Graph.wlToTree = wlToTree;
     function restyleNode(node) {
-        if (node.data().searched)
+        // green = searched up
+        // blue = searched down
+        // green-blue = searched up and down
+        if (node.data().searchedUp && node.data().searchedDown) {
+            node.style('background-color', '#0d98ba');
+            return;
+        }
+        if (node.data().searchedUp) {
             node.style('background-color', 'green');
+        }
+        if (node.data().searchedDown) {
+            node.style('background-color', 'blue');
+        }
     }
     Graph.restyleNode = restyleNode;
     function createTreeFromSidebar(oword, olang, target, updownBehavior = 'up') {
@@ -192,9 +208,14 @@ var Graph;
             target = cy().$(`node[id="${oword}, ${olang}"]`);
         }
         assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
+        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
         if (target && target.length) {
             let orig = target[0];
-            orig.data().searched = true;
+            if (isUp)
+                target.data().searchedUp = true;
+            if (isDown)
+                target.data().searchedDown = true;
             restyleNode(orig);
         }
         // let headers = $('#sidebar h3');
