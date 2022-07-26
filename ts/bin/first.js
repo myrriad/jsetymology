@@ -9,6 +9,7 @@ const cognatus = {
         mode: 'explore',
         updown: 'up'
     },
+    historyIndex: 0,
     aggressiveTemplateInclusion: false
 };
 ;

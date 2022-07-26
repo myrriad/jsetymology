@@ -21,6 +21,7 @@ const cognatus = {
         mode: 'explore' as ToolbarMode,
         updown: 'up' as ToolbarUpdownMode
     },
+    historyIndex: 0, // this is used for undo/redo
     aggressiveTemplateInclusion: false
 };
 

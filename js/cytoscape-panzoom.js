@@ -606,23 +606,19 @@ SOFTWARE.
                     });
 
                     $tEye.bind("mousedown", function(e) {
-                        if (e.button != 0) {
+                        if (e.button != 0) { // ??? what does this do?
                             return;
                         }
                         toggleEdges();
                         return false; // prevent propogation, like the reset button
                     });
                     $tUndo.bind("mousedown", function(e) {
-                        if (e.button != 0) {
-                            return;
-                        }
-                        return false; // WIP
+                        Graph.undo();
+                        return false;
                     });
                     $tRedo.bind("mousedown", function(e) {
-                        if (e.button != 0) {
-                            return;
-                        }
-                        return false; // WIP
+                        Graph.redo();
+                        return false;
                     });
 
                     function registerModes(modename, modes) {

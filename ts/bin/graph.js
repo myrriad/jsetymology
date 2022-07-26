@@ -156,7 +156,7 @@ var Graph;
             let behavior = cognatus.toolbar.updown;
             Sidebar.transferAllEntries(entries, behavior);
             if (cognatus.autoGraphTemplates)
-                orig = Graph.createTreeFromSidebar(oword, olang, undefined, cognatus.toolbar.updown); // this has createGraph() logic so we must create node in here too
+                orig = Graph.createTreeFromSidebar(oword, olang, undefined); // this has createGraph() logic so we must create node in here too
             // success. save wikitext
             // the node better exist
             if (doc && doc.wikitext())
@@ -181,13 +181,18 @@ var Graph;
         }
     }
     Graph.restyleNode = restyleNode;
-    function createTreeFromSidebar(oword, olang, target, updownBehavior = 'up') {
-        // homebrew graph creation.
-        // relies on second.ts
+    /**
+     * Homebrew graph creation.
+     * Assumes oword, olang are already parsed once.
+     * Returns the target node.
+     * Uses critical global config variables: cognatus.toolbar.updown, cognatus.historyIndex
+     * @param oword target word
+     * @param olang target language
+     * @param target target node
+     * @returns
+     */
+    function createTreeFromSidebar(oword, olang, target) {
         // let origin = cy.$('node#origin');
-        // target = 
-        // assumes oword, olang are already parsed once.
-        // returns the origin.
         var _a, _b;
         if (!oword)
             oword = _parse($('#qword').val());
@@ -208,8 +213,12 @@ var Graph;
             target = cy().$(`node[id="${oword}, ${olang}"]`);
         }
         assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
+        // !!! per-node config settings
         let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
         let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
+        let historyIndex = cognatus.historyIndex++; // used for undo/redo
+        Graph.redoCache = {}; // by incrementing historyIndex, we must override the redos
+        // !!! end per-node config settings
         if (target && target.length) {
             let orig = target[0];
             if (isUp)
@@ -225,10 +234,9 @@ var Graph;
             let $div = $(div);
             let isUp = true; // for definitions and etymoloy
             if (div.classList.contains('sidebar-desc')) {
-                isUp = false;
+                isUp = false; // only for descendants do we construct the nodes downwards
             }
             // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-            // if(temp)
             for (let anything of $div.children('span')) {
                 let temptxt;
                 if (anything.matches('.template.t-active')) {
@@ -250,7 +258,7 @@ var Graph;
                 else
                     temps = [out];
                 for (let temp of temps) {
-                    let word = _parse(temp.word);
+                    let word = _parse(temp.word); // we extract the word, lang etc. from the template
                     let langcode = _parse(temp.langcode);
                     let lang = _parse(temp.lang);
                     if (!lang)
@@ -258,7 +266,7 @@ var Graph;
                     if (!word)
                         continue;
                     // put the anti-macron on the querying side.
-                    let targetarr = cy().$(`node[id="${word}, ${lang}"]`);
+                    let targetarr = cy().$(`node[id="${word}, ${lang}"]`); // we look for an existing node that matches
                     let target;
                     if (targetarr && targetarr.length) {
                         target = targetarr[0];
@@ -271,14 +279,16 @@ var Graph;
                             data: {
                                 id: `${word}, ${lang}`,
                                 langcode: langcode,
-                                isRecon: temp.isRecon
+                                isRecon: temp.isRecon,
+                                historyIndex: historyIndex
                                 // data: { weight: 75 },
                                 // position: { x: 200, y: 200 }
                             },
                         });
                     }
-                    // we have the other word. Now we want to look for the node to conenct that word to
-                    // usually it's the origin, but for chains of inheritance we want to do inheritance.
+                    // Now that we have the other word, we need to worry about
+                    // what edge to make in order to connect that word to the graph.
+                    // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
                     let prev = temptxt.previousSibling;
                     let connector;
                     if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
@@ -305,13 +315,12 @@ var Graph;
                     let me = `${word}, ${lang}`;
                     lastConnector = me;
                     // console.log(`edge ${me};  ${connector}`)
-                    let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
-                    //  || ${oword}, ${olang}
+                    let id = `${_parse(temp.ttype)} || ${connector}; ${me}`; //  || ${oword}, ${olang}
                     if (cy().$(`edge[id="${id}"]`).length) {
                         // console.log(`Duplicate edge: ${id}`);
                     }
                     else if (temp.ttype == 'cog') {
-                        // make an exception for cognates. dont' add edges
+                        // make an exception for cognates. Don't add edges
                     }
                     else {
                         try {
@@ -339,6 +348,7 @@ var Graph;
                                     template: `${temp.orig_template}`,
                                     source: sourceNode,
                                     target: targetNode,
+                                    historyIndex: historyIndex
                                 },
                                 classes: classes
                             });
@@ -362,4 +372,46 @@ var Graph;
         return ret[0];
     }
     Graph.createTreeFromSidebar = createTreeFromSidebar;
+    Graph.redoCache = {};
+    function undo(historyIndex) {
+        if (historyIndex === undefined)
+            historyIndex = cognatus.historyIndex - 1;
+        // we undo all actions from [historyIndex, cognatus.historyIndex), moving backwards in time.
+        if (historyIndex >= cognatus.historyIndex)
+            throw "Cannot undo a future action";
+        if (historyIndex < 0)
+            return; // soft fail if we reach the undo limit
+        let i = cognatus.historyIndex - 1; // we move backwards in time
+        while (i >= historyIndex) {
+            let thatAction = cy().elements(`[historyIndex=${i}]`); // get all cy nodes with that history index
+            thatAction.remove(); // remove them from the graph
+            Graph.redoCache[i] = thatAction;
+            i--;
+        }
+        cognatus.historyIndex = i + 1; // undo that last decrement
+        Graph.relayout();
+    }
+    Graph.undo = undo;
+    function redo(futureIndex) {
+        // we redo all actions from [cognatus.historyIndex, futureIndex]
+        // if futureIndex is undefined, then redo only 1 action
+        if (futureIndex === undefined)
+            futureIndex = cognatus.historyIndex;
+        if (futureIndex < cognatus.historyIndex)
+            throw "Can't redo an action that occurs before current history index";
+        let i = cognatus.historyIndex;
+        while (i <= futureIndex) { // (all of the actions from [cognatus.historyIndex, futureIndex])
+            let thatAction = Graph.redoCache[futureIndex];
+            if (thatAction === undefined) {
+                // there's nothing to be redone.
+                break;
+            }
+            thatAction.restore();
+            Graph.redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
+            i++;
+        }
+        cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
+        Graph.relayout();
+    }
+    Graph.redo = redo;
 })(Graph || (Graph = {}));

@@ -214,3 +214,7 @@ h1 {
     /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
+
+form {
+    margin-block-end: 0.2em;
+}

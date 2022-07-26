@@ -156,7 +156,7 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
         let behavior = cognatus.toolbar.updown;
         Sidebar.transferAllEntries(entries, behavior);
         
-        if(cognatus.autoGraphTemplates) orig = Graph.createTreeFromSidebar(oword, olang, undefined, cognatus.toolbar.updown); // this has createGraph() logic so we must create node in here too
+        if(cognatus.autoGraphTemplates) orig = Graph.createTreeFromSidebar(oword, olang, undefined); // this has createGraph() logic so we must create node in here too
 
         // success. save wikitext
         // the node better exist
@@ -184,13 +184,18 @@ export function restyleNode(node: cytoscape.NodeSingular) {
     
 }
 
-export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape.NodeSingular, updownBehavior: ToolbarUpdownMode='up'): cytoscape.NodeSingular {
-    // homebrew graph creation.
-    // relies on second.ts
+/**
+ * Homebrew graph creation.
+ * Assumes oword, olang are already parsed once.
+ * Returns the target node.
+ * Uses critical global config variables: cognatus.toolbar.updown, cognatus.historyIndex
+ * @param oword target word
+ * @param olang target language
+ * @param target target node
+ * @returns 
+ */
+export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape.NodeSingular): cytoscape.NodeSingular {
     // let origin = cy.$('node#origin');
-    // target = 
-    // assumes oword, olang are already parsed once.
-    // returns the origin.
     
     if (!oword) oword = _parse($('#qword').val() as str);
     if (!olang) olang = _parse($('#qlang').val() as str);
@@ -199,7 +204,6 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
     // let isUp = updownBehavior === 'up';
 
     let fromScratch = cy().$('node').length === 0;
-
     if (!target) target = cy().$(`node[id="${oword}, ${olang}"]`) as unknown as cytoscape.NodeSingular; // if we didn't get the target as an argument, look for target in graph
 
     if (!(target && target.length)) { // if target doesn't exist in graph, create it
@@ -213,8 +217,13 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
     }
     assert(cy().$(`node[id="${oword}, ${olang}"]`)?.length, "couldn't find node");
 
+    // !!! per-node config settings
     let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
     let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
+    let historyIndex = cognatus.historyIndex++; // used for undo/redo
+    redoCache = {}; // by incrementing historyIndex, we must override the redos
+    // !!! end per-node config settings
+
     if (target && target.length) {
         let orig = target[0];
         if (isUp) target.data().searchedUp = true;
@@ -229,11 +238,10 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
         let $div = $(div);
         let isUp = true;// for definitions and etymoloy
         if(div.classList.contains('sidebar-desc')) {
-            isUp = false;
+            isUp = false; // only for descendants do we construct the nodes downwards
         } 
             
         // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-            // if(temp)
         for(let anything of $div.children('span')) {
             let temptxt;
             if (anything.matches('.template.t-active')) {
@@ -250,34 +258,36 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
                 temps = out as Templated[];
             } else temps = [out as Templated];
             for (let temp of temps) {
-                let word = _parse(temp.word);
+                let word = _parse(temp.word); // we extract the word, lang etc. from the template
                 let langcode = _parse(temp.langcode);
                 let lang = _parse(temp.lang);
                 if (!lang) lang = langcode;
                 if (!word) continue;
 
                 // put the anti-macron on the querying side.
-                let targetarr = cy().$(`node[id="${word}, ${lang}"]`);
+                let targetarr = cy().$(`node[id="${word}, ${lang}"]`); // we look for an existing node that matches
                 let target;
                 if (targetarr && targetarr.length) {
                     target = targetarr[0];
                     target.data().langcode = langcode;
                     target.data().isRecon = temp.isRecon;
                 } else {
-                    target = cy().add({
+                    target = cy().add({ // if not, we create one
                         group: 'nodes',
                         data: {
                             id: `${word}, ${lang}`,
                             langcode: langcode,
-                            isRecon: temp.isRecon
+                            isRecon: temp.isRecon,
+                            historyIndex: historyIndex
 
                             // data: { weight: 75 },
                             // position: { x: 200, y: 200 }
                         },
                     });
                 }
-                // we have the other word. Now we want to look for the node to conenct that word to
-                // usually it's the origin, but for chains of inheritance we want to do inheritance.
+                // Now that we have the other word, we need to worry about
+                // what edge to make in order to connect that word to the graph.
+                // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
                 let prev = temptxt.previousSibling;
                 let connector;
                 if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
@@ -303,13 +313,12 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
                 let me = `${word}, ${lang}`;
                 lastConnector = me;
                 // console.log(`edge ${me};  ${connector}`)
-                let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
-                
-                //  || ${oword}, ${olang}
+                let id = `${_parse(temp.ttype)} || ${connector}; ${me}`; //  || ${oword}, ${olang}
+
                 if(cy().$(`edge[id="${id}"]`).length) {
                     // console.log(`Duplicate edge: ${id}`);
                 } else if(temp.ttype == 'cog') {
-                    // make an exception for cognates. dont' add edges
+                    // make an exception for cognates. Don't add edges
                 } else {
                     try {
                         let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
@@ -337,6 +346,8 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
                                 template: `${temp.orig_template}`, // FIXME unparsed. But afaik this is ok???
                                 source: sourceNode,
                                 target: targetNode,
+                                historyIndex: historyIndex
+
                             },
                             classes: classes
                         });
@@ -359,6 +370,49 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
     assert(ret?.length, "couldn't find node");
     return ret[0];
 
+}
+
+export var redoCache = {} as {[key: number]: cytoscape.Collection};
+
+export function undo(historyIndex?: num) {
+    if(historyIndex === undefined) historyIndex = cognatus.historyIndex - 1;
+    // we undo all actions from [historyIndex, cognatus.historyIndex), moving backwards in time.
+
+    if(historyIndex >= cognatus.historyIndex) throw "Cannot undo a future action";
+    if (historyIndex < 0) return; // soft fail if we reach the undo limit
+
+    let i = cognatus.historyIndex-1; // we move backwards in time
+    while(i >= historyIndex) {
+
+        let thatAction = cy().elements(`[historyIndex=${i}]`); // get all cy nodes with that history index
+        thatAction.remove(); // remove them from the graph
+        redoCache[i] = thatAction;
+        i--;
+    }
+    cognatus.historyIndex = i + 1; // undo that last decrement
+    relayout();
+}
+export function redo(futureIndex?: num) {
+    // we redo all actions from [cognatus.historyIndex, futureIndex]
+    // if futureIndex is undefined, then redo only 1 action
+    if(futureIndex === undefined) futureIndex = cognatus.historyIndex; 
+
+    if (futureIndex < cognatus.historyIndex) throw "Can't redo an action that occurs before current history index";
+    
+    let i = cognatus.historyIndex;
+    while(i <= futureIndex) {     // (all of the actions from [cognatus.historyIndex, futureIndex])
+
+        let thatAction = redoCache[futureIndex];
+        if(thatAction === undefined) {
+            // there's nothing to be redone.
+            break;
+        }
+        thatAction.restore();
+        redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
+        i++;
+    }
+    cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
+    relayout();
 }
 
 }

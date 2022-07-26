@@ -209,6 +209,8 @@ var Templates;
             case 'ncog':
             case 'nc':
             case 'l':
+            case 'desc':
+            case 'desctree':
                 lang = getFromKey(wtfobj, 1); // this is all according to spec. TODO apply flexible, as shown below as impl. in "form of"
                 word = getFromKey(wtfobj, 2);
                 break;

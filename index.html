@@ -111,15 +111,20 @@
             <!-- <details> -->
             <!-- <summary>Text Output</summary> -->
             <!-- <div id="target">{{=quer}}</div> -->
-            <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label for="tb-toggle">Click on templates to toggle</label>
             <input type="checkbox" id="cog-toggle" name="scales" checked onchange="toggleCognates()"><label for="cog-toggle">Show cognates</label>
             <!-- <input type="checkbox" id="downwards-toggle" name="scales" checked onchange="toggleDownwards()"> -->
             <!-- <label for="downward-toggle">Add nodes downwards</label> -->
             <!-- <input type="checkbox" id="upwards-toggle" name="scales" checked onchange="toggleUpwards()"> -->
             <!-- <label for="upward-toggle">Add nodes upwards</label> -->
-            <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="edges-toggle">Show edge labels</label>
             <input type="checkbox" id="automatic-graph-toggle" name="scales" checked onchange="autoGraphTemplates()"><label for="automatic-graph-toggle">Automatically graph templates from sidebar</label>
+            <details style="display:inline-block; margin-left: 10px;">
+                <summary>More</summary>
+                <input type="checkbox" id="tb-toggle" name="scales" checked onchange="onCheckbox()"><label for="tb-toggle">Click on templates to
+                toggle</label>
+                <input type="checkbox" id="edges-toggle" name="scales" checked onchange="toggleEdges()"><label for="edges-toggle">Show edge
+                labels</label>
 
+            </details>
         </div>
 
         <div id='flexwrap'>
@@ -208,7 +213,7 @@
             <!--"{{=URL('admin','default','index', scheme='https')}}">-->
             <i class="glyphicon glyphicon-cog"></i>
         </a>
-        <p>Fork me on <a href="https://github.com/myrriad/jsetymology">github!</a>
+        <p>Help contribute through <a href="https://github.com/myrriad/jsetymology">Github!</a>
             <br>Cognatetool icon is by <a href="https://thenounproject.com/search/?q=network+tree&i=1569724">
           Trevor Dsouza from the Noun Project</a></p>
     </div>

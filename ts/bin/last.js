@@ -71,11 +71,25 @@ function onRightClick(event) {
         cy().remove(target);
     }
 }
+function onKeyTapped(e) {
+    if (e.ctrlKey) {
+        // console.log(e);
+        if (e.key === 'z') {
+            // console.log('undo!');
+            Graph.undo();
+        }
+        else if (e.key === 'y') {
+            Graph.redo();
+        }
+    }
+}
 function clickToQuery() {
     let c = cy();
     c.unbind('click'); // unbind before binding an event to prevent binding it twice/multiple times
     c.bind('tap', 'node, edge', onLeftClick); // tap is a combined click and touchstart that works with both mouse and touchscreen
     c.on('cxttap', "node, edge", onRightClick); // right click to remove nodes and edges
+    // on keypress  
+    document.addEventListener('keydown', onKeyTapped);
 }
 function pruneSinglets() {
     cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove();
