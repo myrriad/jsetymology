@@ -98,11 +98,11 @@
                 <!-- Trigger/Open The Modal -->
                 <input type="button" value="Share Results" id="share" onclick="shareResults();">
             </form>
-            <div id="myModal" class="modal">
+            <div id="my-popup-modal" class="modal">
 
                 <!-- Modal content -->
                 <div class="modal-content">
-                    <span class="close" onclick="$('#myModal')[0].style.display = 'none';">&times;</span>
+                    <span class="close" onclick="$('#my-popup-modal')[0].style.display = 'none';">&times;</span>
                     <p id="shareurl">Some text in the Modal..</p>
                 </div>
 
@@ -127,11 +127,13 @@
             </details>
         </div>
 
-        <div id='flexwrap' class="test-big">
+        <div id='flexwrap'>
+            <!-- class="test-big">-->
 
             <!-- </details> -->
-            <div id="left-wrapper" class="test">
-                <div id="cy"></div>
+            <div id="left-wrapper">
+                <!--class="test">-->
+                <div id="cy-wrap"></div>
                 <div id="lang-roadmap">
                     <form id="myform" onsubmit="return false;">
                         <label for="lang-native">Language to find cognates in:</label>
@@ -141,7 +143,7 @@
 
                 </div>
             </div>
-            <div id='right-wrapper' class="test">
+            <div id='right-wrapper'>
                 <details>
                     <summary>Additional Information</summary>
                     <div id='infobar'>

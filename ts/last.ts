@@ -149,7 +149,7 @@ window.addEventListener("load", function () {
 });
 
 function shareResults() {
-    $('#myModal')[0].style.display = 'block';
+    $('#my-popup-modal')[0].style.display = 'block';
     $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
 }
 function saveNativeLanguage(e: HTMLInputElement) {

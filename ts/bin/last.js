@@ -136,7 +136,7 @@ window.addEventListener("load", function () {
     $('#lang-native').val(getNativeLanguage());
 });
 function shareResults() {
-    $('#myModal')[0].style.display = 'block';
+    $('#my-popup-modal')[0].style.display = 'block';
     $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
 }
 function saveNativeLanguage(e) {

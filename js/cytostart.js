@@ -53,7 +53,7 @@ function testGraph(node_count) {
 
 function initiable(obj, restyle = true) {
     if (!obj.hasOwnProperty("container")) {
-        obj["container"] = document.getElementById('cy'); // container to render in
+        obj["container"] = document.getElementById('cy-wrap'); // container to render in
     } else if (!obj.hasOwnProperty("layout")) {
         obj["layout"] = { name: 'dagre' } // , rows: 1}; // dagre
     }
