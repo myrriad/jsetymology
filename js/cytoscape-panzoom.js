@@ -613,11 +613,11 @@ SOFTWARE.
                         return false; // prevent propogation, like the reset button
                     });
                     $tUndo.bind("mousedown", function(e) {
-                        Graph.undo();
+                        Graph.History.undo();
                         return false;
                     });
                     $tRedo.bind("mousedown", function(e) {
-                        Graph.redo();
+                        Graph.History.redo();
                         return false;
                     });
 

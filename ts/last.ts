@@ -83,9 +83,9 @@ function onKeyTapped(e: KeyboardEvent) {
         if (e.key === 'z') {
             // console.log('undo!');
 
-            Graph.undo();
+            Graph.History.undo();
         } else if (e.key === 'y') {
-            Graph.redo();
+            Graph.History.redo();
         }
     }
 
@@ -143,9 +143,22 @@ window.addEventListener("load", function () {
     }
     cy().fit();
 
+    $('#lang-native').val(getNativeLanguage());
+
+
 });
 
 function shareResults() {
     $('#myModal')[0].style.display = 'block';
     $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
+}
+function saveNativeLanguage(e: HTMLInputElement) {
+    // var id = e.id;  // get the sender's id to save it . 
+    var val = e.value; // get the value. 
+    localStorage.setItem('nativeLang', val);// Every time user writing something, the localStorage's value will override . 
+}
+function getNativeLanguage() {
+    let stored = localStorage.getItem('nativeLang');
+    if(stored === null) return 'English';
+    return stored;
 }

@@ -217,7 +217,7 @@ var Graph;
         let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
         let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
         let historyIndex = cognatus.historyIndex++; // used for undo/redo
-        Graph.redoCache = {}; // by incrementing historyIndex, we must override the redos
+        History.redoCache = {}; // by incrementing historyIndex, we must override the redos
         // !!! end per-node config settings
         if (target && target.length) {
             let orig = target[0];
@@ -372,46 +372,57 @@ var Graph;
         return ret[0];
     }
     Graph.createTreeFromSidebar = createTreeFromSidebar;
-    Graph.redoCache = {};
-    function undo(historyIndex) {
-        if (historyIndex === undefined)
-            historyIndex = cognatus.historyIndex - 1;
-        // we undo all actions from [historyIndex, cognatus.historyIndex), moving backwards in time.
-        if (historyIndex >= cognatus.historyIndex)
-            throw "Cannot undo a future action";
-        if (historyIndex < 0)
-            return; // soft fail if we reach the undo limit
-        let i = cognatus.historyIndex - 1; // we move backwards in time
-        while (i >= historyIndex) {
-            let thatAction = cy().elements(`[historyIndex=${i}]`); // get all cy nodes with that history index
-            thatAction.remove(); // remove them from the graph
-            Graph.redoCache[i] = thatAction;
-            i--;
-        }
-        cognatus.historyIndex = i + 1; // undo that last decrement
-        Graph.relayout();
-    }
-    Graph.undo = undo;
-    function redo(futureIndex) {
-        // we redo all actions from [cognatus.historyIndex, futureIndex]
-        // if futureIndex is undefined, then redo only 1 action
-        if (futureIndex === undefined)
-            futureIndex = cognatus.historyIndex;
-        if (futureIndex < cognatus.historyIndex)
-            throw "Can't redo an action that occurs before current history index";
-        let i = cognatus.historyIndex;
-        while (i <= futureIndex) { // (all of the actions from [cognatus.historyIndex, futureIndex])
-            let thatAction = Graph.redoCache[futureIndex];
-            if (thatAction === undefined) {
-                // there's nothing to be redone.
-                break;
+    let History;
+    (function (History) {
+        History.redoCache = {};
+        History.undoCache = {};
+        // PROBLEM. redos can be both deletions and addition actions. The clean way would be to create an Action class that encompasses
+        // both deletion and addition. but that would be a lot of storage and i don't want to implement that atm.
+        // export function logUndoableAction(historyIndex: num, ) {
+        //     // if it's a simple node addition, then we do NOT need to log the action
+        //     // but if it's a deletion or modification, then we DO need to log the action
+        //     undoCache[historyIndex] = cy().elements().clone();
+        // }
+        function undo(historyIndex) {
+            if (historyIndex === undefined)
+                historyIndex = cognatus.historyIndex - 1;
+            // we undo all actions from [historyIndex, cognatus.historyIndex), moving backwards in time.
+            if (historyIndex >= cognatus.historyIndex)
+                throw "Cannot undo a future action";
+            if (historyIndex < 0)
+                return; // soft fail if we reach the undo limit
+            let i = cognatus.historyIndex - 1; // we move backwards in time
+            while (i >= historyIndex) {
+                let thatAction = cy().elements(`[historyIndex=${i}]`); // get all cy nodes with that history index
+                thatAction.remove(); // remove them from the graph
+                History.redoCache[i] = thatAction;
+                i--;
             }
-            thatAction.restore();
-            Graph.redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
-            i++;
+            cognatus.historyIndex = i + 1; // undo that last decrement
+            Graph.relayout();
         }
-        cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
-        Graph.relayout();
-    }
-    Graph.redo = redo;
+        History.undo = undo;
+        function redo(futureIndex) {
+            // we redo all actions from [cognatus.historyIndex, futureIndex]
+            // if futureIndex is undefined, then redo only 1 action
+            if (futureIndex === undefined)
+                futureIndex = cognatus.historyIndex;
+            if (futureIndex < cognatus.historyIndex)
+                throw "Can't redo an action that occurs before current history index";
+            let i = cognatus.historyIndex;
+            while (i <= futureIndex) { // (all of the actions from [cognatus.historyIndex, futureIndex])
+                let thatAction = History.redoCache[futureIndex];
+                if (thatAction === undefined) {
+                    // there's nothing to be redone.
+                    break;
+                }
+                thatAction.restore();
+                History.redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
+                i++;
+            }
+            cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
+            Graph.relayout();
+        }
+        History.redo = redo;
+    })(History = Graph.History || (Graph.History = {}));
 })(Graph || (Graph = {}));
