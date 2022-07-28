@@ -1,6 +1,6 @@
-(window as any).universe = { batchIndex: 0 };
+var universe = { batchIndex: 0 };
 
-(window as any).doc = undefined;
+var doc = undefined;
 
 declare function cy(): cytoscape.Core;
 

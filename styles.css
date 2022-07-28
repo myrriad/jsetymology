@@ -60,6 +60,8 @@ h1 {
     /* width: 40em; */
     margin-left: 23px;
     flex: 0 0 20em;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 #sidebar {

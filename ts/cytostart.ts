@@ -1,23 +1,25 @@
-function defaultGraph() {
-    return {
-        elements: [ // list of graph elements to start with
-            { // node a
-                data: { id: 'a' }
-            },
-            { // node b
-                data: { id: 'b' }
-            },
-            { // node c
-                data: { id: 'c' }
-            },
-            { // edge ab
-                data: { id: 'ab', source: 'a', target: 'b' }
-            }
-        ]
-    };
-}
+// function defaultGraph(): cytoscape.CytoscapeOptions {
+//     return {
+//         "elements": {
+//             "nodes": [ // list of graph elements to start with
+//                 { // node a
+//                     data: { id: 'a' }
+//                 },
+//                 { // node b
+//                     data: { id: 'b' }
+//                 },
+//                 { // node c
+//                     data: { id: 'c' }
+//                 }
+//             ],
+//             "edges": [{ // edge ab
+//                 data: { id: 'ab', source: 'a', target: 'b' }
+//             }]
+//         }
+//     };
+// }
 
-function testGraph(node_count) {
+function testGraph(node_count=2): cytoscape.CytoscapeOptions {
     var obj = {
         "elements": {
             "nodes": [{
@@ -37,6 +39,7 @@ function testGraph(node_count) {
         "data": []
     };
     if (node_count >= 3) {
+        // @ts-ignore
         obj['elements']['nodes'].push({
             "data": { "id": "c" }
         });
@@ -51,7 +54,7 @@ function testGraph(node_count) {
     return obj;
 }
 
-function initiable(obj, restyle = true) {
+function initiable(obj: cytoscape.CytoscapeOptions, restyle = true) {
     if (!obj.hasOwnProperty("container")) {
         obj["container"] = document.getElementById('cy-wrap'); // container to render in
     } else if (!obj.hasOwnProperty("layout")) {
@@ -98,9 +101,10 @@ function initiable(obj, restyle = true) {
     return obj;
 }
 
-function makePopper(ele) {
-    let ref = ele.popperRef(); // used only for positioning
+function makePopper(ele: cytoscape.SingularElementArgument) {
+    let ref = (ele as any).popperRef(); // used only for positioning
 
+    // @ts-ignore
     ele.tippy = tippy(ref, { // tippy options:
         content: () => {
             let content = document.createElement('div');
@@ -130,24 +134,27 @@ function bindTooltips() {
     cy.elements().unbind('mouseout');
     cy.elements().bind('mouseout', (event) => event.target.tippy.hide());
 }
-
-function createCyto(data, reLayout = false) {
+var cytograph: cytoscape.Core;
+function createCyto(data: cytoscape.CytoscapeOptions, reLayout = false) {
     // alert("hi");
     /** @type {cytoscape.Core} */
     var cy = window.cytograph;
     if (!data) {
-        data = defaultGraph();
+        data = testGraph();
     }
     var tograph = data;
     if (cy) { // merge graph with old graph
-        var jsonify, elems;
+        // var jsonify, elems;
         // print(jsonify = cy.json(), "prior:");// to json
 
         // cy.$('*[loadBatch=50]')
 
         // print(data, "data:");
         // print(elems = data["elements"], "elements:");// get elements of the new data
+        return;
+        // all of this stuff is irrelevant now
 
+        /*
         for (let elem of elems.nodes) {
             elem.data.batchIndex = window.universe.batchIndex;
         }
@@ -163,6 +170,7 @@ function createCyto(data, reLayout = false) {
         window.cytograph = cy;
         bindTooltips();
         return cy;
+        */
 
     } else { // if it's the first time
         // formerly if relayout
@@ -176,10 +184,11 @@ function createCyto(data, reLayout = false) {
     // the following only gets executed on initialization.
     window.cytograph = cy; // endpoint for modules. TODO: explore alternatives to global state
     window.cy = function() {
-        return window.cytograph;
+        return (window as any).cytograph;
     }
     clickToQuery();
     bindTooltips();
+    // @ts-ignore
     let nav = cy.panzoom();
     return cy;
 }

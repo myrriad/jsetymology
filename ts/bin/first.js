@@ -1,6 +1,6 @@
 "use strict";
-window.universe = { batchIndex: 0 };
-window.doc = undefined;
+var universe = { batchIndex: 0 };
+var doc = undefined;
 const cognatus = {
     showEdgeLabels: true,
     autoGraphTemplates: true,
