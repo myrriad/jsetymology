@@ -132,19 +132,14 @@ var Graph;
             isRecon = Templates.isReconstructed(word, lang, langcode);
             // this fails in case olang is inferred
         }
-        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
-        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
         Wiktionary.fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
             .then(function onEtyEntry(result) {
             if (!result) {
                 // there is no document
                 // we still must mark the node
                 target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
-                if (isUp)
-                    target.data().searchedUp = true;
-                if (isDown)
-                    target.data().searchedDown = true;
-                restyleNode(target);
+                target.data().searched = true;
+                target.style('background-color', 'green');
                 return;
             }
             let entries = result.entries;
@@ -153,10 +148,8 @@ var Graph;
                 throw "No entries found!";
             clearDiv();
             let orig;
-            let behavior = cognatus.toolbar.updown;
-            Sidebar.transferAllEntries(entries, behavior);
-            if (cognatus.autoGraphTemplates)
-                orig = Graph.createTreeFromSidebar(oword, olang, undefined); // this has createGraph() logic so we must create node in here too
+            Sidebar.transferAllEntries(entries);
+            orig = Graph.createTreeFromSidebar(oword, olang); // this has createGraph() logic so we must create node in here too
             // success. save wikitext
             // the node better exist
             if (doc && doc.wikitext())
@@ -165,41 +158,19 @@ var Graph;
         // Temporarily disable URL request for debugging.
     }
     Graph.wlToTree = wlToTree;
-    function restyleNode(node) {
-        // green = searched up
-        // blue = searched down
-        // green-blue = searched up and down
-        if (node.data().searchedUp && node.data().searchedDown) {
-            node.style('background-color', '#0d98ba');
-            return;
-        }
-        if (node.data().searchedUp) {
-            node.style('background-color', 'green');
-        }
-        if (node.data().searchedDown) {
-            node.style('background-color', 'blue');
-        }
-    }
-    Graph.restyleNode = restyleNode;
-    /**
-     * Homebrew graph creation.
-     * Assumes oword, olang are already parsed once.
-     * Returns the target node.
-     * Uses critical global config variables: cognatus.toolbar.updown, cognatus.historyIndex
-     * @param oword target word
-     * @param olang target language
-     * @param target target node
-     * @returns
-     */
     function createTreeFromSidebar(oword, olang, target) {
+        // homebrew graph creation.
+        // relies on second.ts
         // let origin = cy.$('node#origin');
+        // target = 
+        // assumes oword, olang are already parsed once.
+        // returns the origin.
         var _a, _b;
         if (!oword)
             oword = _parse($('#qword').val());
         if (!olang)
             olang = _parse($('#qlang').val());
         wls.addwl(oword, olang);
-        // let isUp = updownBehavior === 'up';
         let fromScratch = cy().$('node').length === 0;
         if (!target)
             target = cy().$(`node[id="${oword}, ${olang}"]`); // if we didn't get the target as an argument, look for target in graph
@@ -213,31 +184,19 @@ var Graph;
             target = cy().$(`node[id="${oword}, ${olang}"]`);
         }
         assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
-        // !!! per-node config settings
-        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
-        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
-        let historyIndex = cognatus.historyIndex++; // used for undo/redo
-        History.redoCache = {}; // by incrementing historyIndex, we must override the redos
-        // !!! end per-node config settings
         if (target && target.length) {
             let orig = target[0];
-            if (isUp)
-                target.data().searchedUp = true;
-            if (isDown)
-                target.data().searchedDown = true;
-            restyleNode(orig);
+            orig.data().searched = true;
+            orig.style('background-color', 'green');
         }
         // let headers = $('#sidebar h3');
-        let divlets = $('#sidebar div');
-        for (let div of divlets) { // code for multi etymologies
+        let divlets = $('#sidebar div.ety');
+        for (let etydiv of divlets) { // code for multi etymologies
             let lastConnector;
-            let $div = $(div);
-            let isUp = true; // for definitions and etymoloy
-            if (div.classList.contains('sidebar-desc')) {
-                isUp = false; // only for descendants do we construct the nodes downwards
-            }
+            let $etydiv = $(etydiv);
             // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-            for (let anything of $div.children('span')) {
+            // if(temp)
+            for (let anything of $etydiv.children('span')) {
                 let temptxt;
                 if (anything.matches('.template.t-active')) {
                     temptxt = anything; // here is a template
@@ -258,7 +217,7 @@ var Graph;
                 else
                     temps = [out];
                 for (let temp of temps) {
-                    let word = _parse(temp.word); // we extract the word, lang etc. from the template
+                    let word = _parse(temp.word);
                     let langcode = _parse(temp.langcode);
                     let lang = _parse(temp.lang);
                     if (!lang)
@@ -266,7 +225,7 @@ var Graph;
                     if (!word)
                         continue;
                     // put the anti-macron on the querying side.
-                    let targetarr = cy().$(`node[id="${word}, ${lang}"]`); // we look for an existing node that matches
+                    let targetarr = cy().$(`node[id="${word}, ${lang}"]`);
                     let target;
                     if (targetarr && targetarr.length) {
                         target = targetarr[0];
@@ -278,19 +237,15 @@ var Graph;
                             group: 'nodes',
                             data: {
                                 id: `${word}, ${lang}`,
-                                word: word,
-                                lang: lang,
                                 langcode: langcode,
-                                isRecon: temp.isRecon,
-                                historyIndex: historyIndex
+                                isRecon: temp.isRecon
                                 // data: { weight: 75 },
                                 // position: { x: 200, y: 200 }
                             },
                         });
                     }
-                    // Now that we have the other word, we need to worry about
-                    // what edge to make in order to connect that word to the graph.
-                    // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
+                    // we have the other word. Now we want to look for the node to conenct that word to
+                    // usually it's the origin, but for chains of inheritance we want to do inheritance.
                     let prev = temptxt.previousSibling;
                     let connector;
                     if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
@@ -317,30 +272,17 @@ var Graph;
                     let me = `${word}, ${lang}`;
                     lastConnector = me;
                     // console.log(`edge ${me};  ${connector}`)
-                    let id = `${_parse(temp.ttype)} || ${connector}; ${me}`; //  || ${oword}, ${olang}
+                    let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
+                    //  || ${oword}, ${olang}
                     if (cy().$(`edge[id="${id}"]`).length) {
                         // console.log(`Duplicate edge: ${id}`);
                     }
                     else if (temp.ttype == 'cog') {
-                        // make an exception for cognates. Don't add edges
+                        // make an exception for cognates. dont' add edges
                     }
                     else {
                         try {
                             let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
-                            // TODO: we need to attach updown information to each edge
-                            // we know whether we're searching up or down because they're 2 completely different
-                            // searches in sidebar
-                            // in that case, switch source
-                            let sourceNode;
-                            let targetNode;
-                            if (isUp) {
-                                sourceNode = me;
-                                targetNode = connector;
-                            }
-                            else {
-                                sourceNode = connector;
-                                targetNode = me;
-                            }
                             cy().add({
                                 group: 'edges',
                                 data: {
@@ -348,9 +290,8 @@ var Graph;
                                     // displaylabel: (document.getElementById('edges-toggle') as HTMLInputElement).checked,
                                     label: `${_parse(temp.ttype)}`,
                                     template: `${temp.orig_template}`,
-                                    source: sourceNode,
-                                    target: targetNode,
-                                    historyIndex: historyIndex
+                                    source: me,
+                                    target: connector,
                                 },
                                 classes: classes
                             });
@@ -374,62 +315,4 @@ var Graph;
         return ret[0];
     }
     Graph.createTreeFromSidebar = createTreeFromSidebar;
-    let History;
-    (function (History) {
-        History.redoCache = {};
-        History.undoCache = {};
-        // PROBLEM. redos can be both deletions and addition actions. The clean way would be to create an Action class that encompasses
-        // both deletion and addition. but that would be a lot of storage and i don't want to implement that atm.
-        // export function logUndoableAction(historyIndex: num, ) {
-        //     // if it's a simple node addition, then we do NOT need to log the action
-        //     // but if it's a deletion or modification, then we DO need to log the action
-        //     undoCache[historyIndex] = cy().elements().clone();
-        // }
-        function undo(historyIndex) {
-            if (historyIndex === undefined)
-                historyIndex = cognatus.historyIndex - 1;
-            // we undo all actions from [historyIndex, cognatus.historyIndex), moving backwards in time.
-            if (historyIndex >= cognatus.historyIndex)
-                throw "Cannot undo a future action";
-            if (historyIndex < 0)
-                return; // soft fail if we reach the undo limit
-            let i = cognatus.historyIndex - 1; // we move backwards in time
-            while (i >= historyIndex) {
-                let thatAction = cy().elements(`[historyIndex=${i}]`); // get all cy nodes with that history index
-                thatAction.remove(); // remove them from the graph
-                History.redoCache[i] = thatAction;
-                i--;
-            }
-            cognatus.historyIndex = i + 1; // undo that last decrement
-            Graph.relayout();
-        }
-        History.undo = undo;
-        function redo(futureIndex) {
-            // we redo all actions from [cognatus.historyIndex, futureIndex]
-            // if futureIndex is undefined, then redo only 1 action
-            if (futureIndex === undefined)
-                futureIndex = cognatus.historyIndex;
-            if (futureIndex < cognatus.historyIndex)
-                throw "Can't redo an action that occurs before current history index";
-            let i = cognatus.historyIndex;
-            while (i <= futureIndex) { // (all of the actions from [cognatus.historyIndex, futureIndex])
-                let thatAction = History.redoCache[futureIndex];
-                if (thatAction === undefined) {
-                    // there's nothing to be redone.
-                    break;
-                }
-                thatAction.restore();
-                History.redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
-                i++;
-            }
-            cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
-            Graph.relayout();
-        }
-        History.redo = redo;
-        function registerRemove(nodes) {
-            // console.log(`registerRemove ${historyIndex}`);
-            // undoCache[historyIndex] = node.restore();
-        }
-        History.registerRemove = registerRemove;
-    })(History = Graph.History || (Graph.History = {}));
 })(Graph || (Graph = {}));

@@ -1,1 +1,2 @@
 cadeau, gateau, gato
+// https://en.wiktionary.org/wiki/пришёл
