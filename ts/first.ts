@@ -22,7 +22,8 @@ const cognatus = {
         updown: 'up' as ToolbarUpdownMode
     },
     historyIndex: 0, // this is used for undo/redo
-    aggressiveTemplateInclusion: false
+    aggressiveTemplateInclusion: false,
+    defaultDescList: '.*English|.*French|.*Spanish|.*Latin|.*Germanic|Proto-Indo-European|Angl.*'
 };
 
 declare namespace LANGCODES {

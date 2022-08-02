@@ -232,6 +232,8 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
     }
     
     // let headers = $('#sidebar h3');
+
+
     let divlets = $('#sidebar div');
     for (let div of divlets) { // code for multi etymologies
         let lastConnector;
@@ -276,6 +278,8 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
                         group: 'nodes',
                         data: {
                             id: `${word}, ${lang}`,
+                            word: word,
+                            lang: lang,
                             langcode: langcode,
                             isRecon: temp.isRecon,
                             historyIndex: historyIndex
@@ -421,6 +425,10 @@ export namespace History {
         }
         cognatus.historyIndex = i; // we increment. if cognatus.historyIndex === futureIndex, this is the same as cognatus.historyIndex++;
         relayout();
+    }
+    export function registerRemove(nodes: cytoscape.Collection) {
+        // console.log(`registerRemove ${historyIndex}`);
+        // undoCache[historyIndex] = node.restore();
     }
 }
 

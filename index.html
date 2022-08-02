@@ -95,6 +95,8 @@
                 <input type="button" value="relayout" onclick="Graph.relayout();" />
                 <input type="button" value="recenter" onclick="cy().fit(undefined,50);" />
                 <input type="button" value="load random" onclick="loadRandom();" />
+                <input type="button" value="prune last desc. tree" onclick="pruneLastDescTree();" />
+
                 <!-- Trigger/Open The Modal -->
                 <input type="button" value="Share Results" id="share" onclick="shareResults();">
             </form>
@@ -138,6 +140,9 @@
                     <form id="myform" onsubmit="return false;">
                         <label for="lang-native">Language to find cognates in:</label>
                         <input type="text" id="lang-native" placeholder='(Your native language)' onchange='saveNativeLanguage(this)'>
+                        <br>
+                        <label for="lang-native">Regex matcher whitelist for expanding descendants: </label>
+                        <input type="text" id="lang-desc-list" placeholder='(Your native language)' onchange='saveToStorage("descendantList", this)'>
                         <input type="submit" value="Save">
                     </form>
 

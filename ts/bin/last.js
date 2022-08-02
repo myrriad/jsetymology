@@ -92,7 +92,18 @@ function clickToQuery() {
     document.addEventListener('keydown', onKeyTapped);
 }
 function pruneSinglets() {
-    cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove();
+    Graph.History.registerRemove(cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove());
+}
+function pruneLastDescTree() {
+    let descRegex = getFromStorage('descendantRegex');
+    if (descRegex)
+        descRegex = new RegExp(cognatus.defaultDescList);
+    else
+        descRegex = new RegExp(cognatus.defaultDescList);
+    Graph.History.registerRemove(cy().nodes(`[historyIndex = ${cognatus.historyIndex - 1}]`)
+        .filter((element, i) => !descRegex.test(element.data().lang))
+        .remove());
+    Graph.relayout();
 }
 const SAMPLE = function () {
     let ret = {};
@@ -134,19 +145,24 @@ window.addEventListener("load", function () {
     }
     cy().fit();
     $('#lang-native').val(getNativeLanguage());
+    $('#lang-desc-list').val(getFromStorage('descendantList', cognatus.defaultDescList));
 });
 function shareResults() {
     $('#my-popup-modal')[0].style.display = 'block';
     $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
 }
+function saveToStorage(key, e) {
+    localStorage.setItem(key, e.value);
+}
 function saveNativeLanguage(e) {
-    // var id = e.id;  // get the sender's id to save it . 
-    var val = e.value; // get the value. 
-    localStorage.setItem('nativeLang', val); // Every time user writing something, the localStorage's value will override . 
+    saveToStorage('nativeLang', e);
+}
+function getFromStorage(key, setDefault) {
+    let stored = localStorage.getItem(key);
+    if (stored === null)
+        return setDefault;
+    return stored;
 }
 function getNativeLanguage() {
-    let stored = localStorage.getItem('nativeLang');
-    if (stored === null)
-        return 'English';
-    return stored;
+    return getFromStorage('nativeLang', 'English');
 }

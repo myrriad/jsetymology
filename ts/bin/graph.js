@@ -278,6 +278,8 @@ var Graph;
                             group: 'nodes',
                             data: {
                                 id: `${word}, ${lang}`,
+                                word: word,
+                                lang: lang,
                                 langcode: langcode,
                                 isRecon: temp.isRecon,
                                 historyIndex: historyIndex
@@ -424,5 +426,10 @@ var Graph;
             Graph.relayout();
         }
         History.redo = redo;
+        function registerRemove(nodes) {
+            // console.log(`registerRemove ${historyIndex}`);
+            // undoCache[historyIndex] = node.restore();
+        }
+        History.registerRemove = registerRemove;
     })(History = Graph.History || (Graph.History = {}));
 })(Graph || (Graph = {}));

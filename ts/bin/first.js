@@ -10,7 +10,8 @@ const cognatus = {
         updown: 'up'
     },
     historyIndex: 0,
-    aggressiveTemplateInclusion: false
+    aggressiveTemplateInclusion: false,
+    defaultDescList: '.*English|.*French|.*Spanish|.*Latin|.*Germanic|Proto-Indo-European|Angl.*'
 };
 ;
 function assert(x, message = '', hard = true, hardest = false) {
