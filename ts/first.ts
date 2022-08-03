@@ -21,7 +21,7 @@ const cognatus = {
         mode: 'explore' as ToolbarMode,
         updown: 'up' as ToolbarUpdownMode
     },
-    historyIndex: 0, // this is used for undo/redo
+    actionIndex: 0, // this is used for undo/redo. See also: historyIndex
     aggressiveTemplateInclusion: false,
     defaultDescList: '.*English|.*French|.*Spanish|.*Latin|.*Germanic|Proto-Indo-European|Angl.*'
 };
@@ -86,13 +86,14 @@ function _parse(...strs: str[]) {
             ret[i] = '';
             continue;
         }
+        // this is mainly for cytoscape ids
         str = str.replace('"', 'quote'); // https://js.cytoscape.org/#selectors/notes-amp-caveats
         str = str.replace('\\', 'backslash');
         str = str.replace(',', 'comma');
         str = str.replace('$', 'dsign');
         str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
+        str = str.replace('|', 'pipe');
+        str = str.replace(';', 'semicolon');
 
         ret[i] = str;
     }

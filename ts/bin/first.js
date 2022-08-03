@@ -9,7 +9,7 @@ const cognatus = {
         mode: 'explore',
         updown: 'up'
     },
-    historyIndex: 0,
+    actionIndex: 0,
     aggressiveTemplateInclusion: false,
     defaultDescList: '.*English|.*French|.*Spanish|.*Latin|.*Germanic|Proto-Indo-European|Angl.*'
 };
@@ -70,13 +70,14 @@ function _parse(...strs) {
             ret[i] = '';
             continue;
         }
+        // this is mainly for cytoscape ids
         str = str.replace('"', 'quote'); // https://js.cytoscape.org/#selectors/notes-amp-caveats
         str = str.replace('\\', 'backslash');
         str = str.replace(',', 'comma');
         str = str.replace('$', 'dsign');
         str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
-        str = str.replace(',', 'comma');
+        str = str.replace('|', 'pipe');
+        str = str.replace(';', 'semicolon');
         ret[i] = str;
     }
     if (ret.length === 1)

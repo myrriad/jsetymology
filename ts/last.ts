@@ -72,7 +72,9 @@ function onLeftClick(event: cytoscape.EventObject) {
 function onRightClick(event: cytoscape.EventObject) {
     if(cognatus.toolbar.mode === 'explore') {
         let target = event.target;
-        cy().remove(target);
+        Graph.History.logDeletion(
+            cy().remove(target)
+        );
     }
 }
 function onKeyTapped(e: KeyboardEvent) {
@@ -100,7 +102,7 @@ function clickToQuery() {
     document.addEventListener('keydown', onKeyTapped);
 }
 function pruneSinglets() {
-    Graph.History.registerRemove(
+    Graph.History.logDeletion(
         cy().filter(function (element, i) {return element.isNode() && element.degree(false) < 1}).remove()
     );
 }
@@ -108,8 +110,8 @@ function pruneLastDescTree() {
     let descRegex = getFromStorage('descendantRegex');
     if (descRegex) descRegex = new RegExp(cognatus.defaultDescList);
     else descRegex = new RegExp(cognatus.defaultDescList);
-    Graph.History.registerRemove(
-        cy().nodes(`[historyIndex = ${cognatus.historyIndex-1}]`)
+    Graph.History.logDeletion(
+        cy().nodes(`[actionIndex = ${cognatus.actionIndex-1}]`)
             .filter((element, i) => !descRegex.test(element.data().lang))
             .remove()
     );
