@@ -121,3 +121,5 @@ wls.toURLQuery = function () {
     wls._wlstrcache = ret;
     return ret;
 };
+let _ = (function () {
+})();

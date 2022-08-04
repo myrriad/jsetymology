@@ -1,5 +1,11 @@
 // <reference path='js/langcodes/gencodes.js'/>
 
+// current state:
+// adding wtf-templates.js breaks conjugations because getFromKey(wtfobj, 1);
+// wtfobj now recognizes the template.
+// apparently, with the extension recognizing the template, then the wtf.Template no longer has a list field. (??)
+// wtf.Template.json().list only exists if the template is not recognized. 
+
 class Templated {
     ttype: str;
     langcode: string;
@@ -116,17 +122,29 @@ namespace Templates {
             return undefined;
         }
         let wtfdata = wtfobj.json() as any; // {list: str[], template: str} & str[];
+
+        // weirdly, wtfdata.list is undefined if the template IS recognized (ie. if we had loaded up wtf-plugin-wiktionary)
         let did_list = undefined;
-        if (wtfdata && wtfdata.list && key - 1 < wtfdata.list.length) {
-            elem = wtfdata.list[key - 1];
-            did_list = true;
-        } else {
+        // if(wtfdata && !wtfdata.list && wtfdata.tags) wtfdata.list = wtfdata.tags; // restore I guess?
+        if(wtfdata) {
+            if(wtfdata.list) {
+                if (key - 1 < wtfdata.list.length) {
+                    elem = wtfdata.list[key - 1];
+                    did_list = true;
+                }
+            } else {
+                if (error) throw new Error(`Template ${wtfobj.wikitext()} does not have a .list!`);
+            }
+        }
+        if (did_list === undefined) {
             did_list = false;
             if ((key + '') in wtfdata) {
                 elem = wtfdata[(key + '')];
             } else {
-                if(error) throw "Cannot find parameter number " + key;
-                else return undefined;
+                if(error) throw `Cannot find parameter key "${key}" in template ${wtfobj.wikitext()}`;
+                else {
+                    console.warn(`Cannot find parameter key "${key}" in template ${wtfobj.wikitext()}`);
+                } return undefined;
             }
         }
         if (!make_temps) return elem;
