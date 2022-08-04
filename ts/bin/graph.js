@@ -291,6 +291,7 @@ var Graph;
                     // Now that we have the other word, we need to worry about
                     // what edge to make in order to connect that word to the graph.
                     // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
+                    // i'm tempted to just group the results by approx. how old each language is. But this will need me to extract language info
                     let prev = temptxt.previousSibling;
                     let connector;
                     if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
