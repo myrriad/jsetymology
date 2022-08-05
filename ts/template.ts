@@ -134,6 +134,7 @@ namespace Templates {
                 }
             } else {
                 if (error) throw new Error(`Template ${wtfobj.wikitext()} does not have a .list!`);
+                console.warn(`Template ${wtfobj.wikitext()} does not have a .list!`);
             }
         }
         if (did_list === undefined) {
@@ -142,9 +143,7 @@ namespace Templates {
                 elem = wtfdata[(key + '')];
             } else {
                 if(error) throw `Cannot find parameter key "${key}" in template ${wtfobj.wikitext()}`;
-                else {
-                    console.warn(`Cannot find parameter key "${key}" in template ${wtfobj.wikitext()}`);
-                } return undefined;
+                return undefined;
             }
         }
         if (!make_temps) return elem;

@@ -154,7 +154,7 @@ export function wlToTree(word?: str, lang?: str, target?: cytoscape.NodeSingular
         let orig: cytoscape.NodeSingular;
 
         let behavior = cognatus.toolbar.updown;
-        Sidebar.transferAllEntries(entries, behavior);
+        Sidebar.htmlbar.transferAllEntries(entries, behavior);
         
         if(cognatus.autoGraphTemplates) orig = Graph.createTreeFromSidebar(oword, olang, undefined); // this has createGraph() logic so we must create node in here too
 
@@ -233,25 +233,23 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
     
     // let headers = $('#sidebar h3');
 
-
-    let divlets = $('#sidebar div');
+    let bar = Sidebar.htmlbar;
+    let divlets = bar.yieldDivlets(); //$('#sidebar div'); // SIdebar.htmlbar.yieldDivlets();
     for (let div of divlets) { // code for multi etymologies
         let lastConnector;
-        let $div = $(div);
         let isUp = true;// for definitions and etymoloy
         if(div.classList.contains('sidebar-desc')) {
             isUp = false; // only for descendants do we construct the nodes downwards
         } 
             
         // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-        for(let anything of $div.children('span')) {
-            let temptxt;
-            if (anything.matches('.template.t-active')) {
-                temptxt = anything; // here is a template
-            } else {
+        for (let span of bar.yieldSpans(div)) { // div.querySelectorAll('span')) { 
+            if (!bar.isTemplate(span)) { // anything.matches('.template.t-active')) {
                 continue; // here is text
             }
-            let txt = temptxt.textContent;
+            let tempSpan = span as Sidebar.TemplateSpan; // here is a template. (in reality it's just a span)
+
+            let txt = tempSpan.textContent;
             if(!txt) continue;
             let out = Templates.decodeTemplate(txt);
             if (!out) continue;
@@ -293,7 +291,7 @@ export function createTreeFromSidebar(oword: str, olang: str, target?: cytoscape
                 // what edge to make in order to connect that word to the graph.
                 // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
                 // i'm tempted to just group the results by approx. how old each language is. But this will need me to extract language info
-                let prev = temptxt.previousSibling;
+                let prev = tempSpan.previousSibling;
                 let connector;
                 if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
                     // if(prev.nodeName === 'H3') {
