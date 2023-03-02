@@ -87,7 +87,7 @@ class HTMLSidebar extends GeneralizedSidebar<HTMLElement, HTMLSpanElement> {
                 if (etyentry.ety) {
                     this.transferToSidebarDiv(etyentry.ety, etyDiv);
                 } else {
-                    displayError(defnDiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+                    displayError(defnDiv, `No etymology found. (Perhaps it has a lemma form?)`, true, true, true, true);
                 }
             }
             if (updownBehavior === 'down' || updownBehavior === 'updown') {
