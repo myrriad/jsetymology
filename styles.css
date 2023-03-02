@@ -1,33 +1,94 @@
 body {
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
-    margin-top: 0px; /*all of these used to be 8px*/
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    margin-top: 0px;
+    /*all of these used to be 8px*/
     margin-left: 0px;
     margin-right: 0px;
 }
+
 h1 {
     font-size: 40px;
     font-weight: 600;
+    padding-top: 0.5em;
+    padding-left: 4em;
+    margin-bottom: 0;
+    padding-bottom: 0.5em;
 }
+
+
 /* h1 { */
-    /* font-family: "Open Sans","Helvetica",sans-serif,sans-serif; */
+
+
+/* font-family: "Open Sans","Helvetica",sans-serif,sans-serif; */
+
+
 /* } */
-#topheader {
-    margin-top: 0px;
-    display: flex;
+
+#top-header {
+    /* display: flex; */
+    background-color: #333;
+    /* background-color: azure; */
+    /* color: #222; */
+    /* color: #333; */
+    /* color: powderblue; */
+    color: white;
 }
+
 #biggest-div {
-    margin-left: 13px;
+    margin-top: 1em;
+    margin-left: 5vw;
 }
+
+#biggest-div p {
+    padding: 0px;
+    margin-top: 0px;
+}
+
+#form-div {
+    display: flex;
+    flex-direction: column;
+}
+
 #flexwrap {
     display: flex;
+    flex-direction: row;
+    width: 100%;
 }
-#inspector {
-    flex: 0 0 15%; /*left. smaller = bigger left*/
+
+#cy-wrap {
+    width: 100%;
+    height: 500px;
+    /*margin-top: 100px;*/
+    /*top: 100px;*/
+    /*left: 100px;*/
+    border: 1px solid black;
+}
+
+#left-wrapper {
+    /* width: 60%; */
+    /* height: 500px; */
+    flex: 0 1 60%;
+    min-width: 0;
+    /*that ONE LINE of code is all it took and CRUCIAL ;----;*/
+}
+
+#lang-roadmap {
+    margin-top: 1em;
+}
+
+#right-wrapper {
+    /*left. smaller = bigger left*/
+    /* width: 40em; */
     margin-left: 23px;
+    flex: 0 0 20em;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
-#closeinspect {
+
+#sidebar {
     white-space: pre-wrap;
-    flex: 1; /*right*/
+    flex: 1;
+    /*right*/
     font-family: 'Times New Roman', Times, serif;
     border: solid black 1px;
     background-color: ghostwhite;
@@ -35,7 +96,8 @@ h1 {
     min-width: 400px;
     margin-right: 15px;
 }
-#closeinspect:empty {
+
+#sidebar:empty {
     display: none
 }
 
@@ -45,36 +107,174 @@ h1 {
     padding: 5px;
     min-width: 400px;
 }
-#infobar > * {
+
+#infobar>* {
     margin: 10px;
 }
+
 #infobar p {
     margin-left: 15px;
 }
+
 #infobar p button {
     margin: 0px;
 }
+
 .template {
     cursor: pointer;
 }
-.template.t-active {
-    background-color: #00FF0022; /*#0000FF22; /*#FF000022; /*#00FF0022;*/
 
+.template.t-active {
+    background-color: #00FF0022;
+    /*#0000FF22; /*#FF000022; /*#00FF0022;*/
 }
+
 .template.t-inactive {
     background-color: #00000022;
-
 }
+
 #biggest-div {
     display: inherit;
 }
 
+#dasdfshare {
+    background-color: white;
+    /* Green */
+    border: solid black 1px;
+    color: black;
+    /* padding: 0px 10px; */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.cy-overlay {
+    position: absolute;
+    left: 35%;
+    top: 35%;
+    /* bottom: 50%; */
+    height: 30%;
+    width: 30%;
+    padding: 0.5em;
+    /* transform: translate(-50%, -50%); */
+    background: #fff;
+    border: 1px solid #999;
+    /* border-radius: 40px; */
+    margin-left: -1px;
+    box-sizing: content-box;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    /* align-items: center; */
+}
+
+.cy-overlay-close {
+    /*flex to the right*/
+    /* position: absolute; */
+    margin-left: auto;
+    right: 85%;
+    height: fit-content;
+    padding: 0.1em;
+    color: red;
+}
+
+.cy-overlay-button {
+    /*go to the bottom*/
+    bottom: 10%;
+}
+
+.cy-overlay-close:hover {
+    cursor: pointer;
+    background: #ccc;
+    color: #fff;
+}
+
+
+/* The Modal (background) https://www.w3schools.com/howto/howto_css_modals.asp*/
+
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+
+/* Modal Content/Box */
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    /* Could be more or less, depending on screen size */
+}
+
+
+/* The Close Button */
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
+}
+
+form {
+    margin-block-end: 0.2em;
+}
+
+.test {
+    border: 1px solid red !important;
+}
+
+.test-big {
+    border: 1px dashed red !important;
+    /* font-size: 20px; */
+}
+
+#footer {
+    margin-left: 5vw;
+    padding: 5px;
 }

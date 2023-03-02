@@ -1,212 +1,454 @@
 "use strict";
 // const { data } = require("jquery");
 // declare function relayout(cy?: cytoscape.Core, fromScratch?:bool): void;
-function wlToTree(word, lang, target, reLayout = true, downward) {
-    var _a;
-    if (word === undefined)
-        word = $('#qword').val();
-    if (lang === undefined)
-        lang = $('#qlang').val();
-    if (downward === undefined)
-        downward = false;
-    let [oword, olang] = _parse(word, lang);
-    if (window.jsetymologyDebug)
-        console.log(`DEBUG ${oword}; ${olang}`);
-    // TODO search for existing node in graph, to extract additional info like langcode, isRecon
-    if (!target) {
-        let targetarr = cy().$(`node[id="${oword}, ${olang}"]`);
-        if (targetarr && targetarr.length) {
-            target = targetarr[0];
-        }
-    }
-    let isRecon, langcode;
-    if (target) {
-        isRecon = target.data().isRecon;
-        langcode = target.data().langcode;
-    }
-    else {
-        isRecon = isReconstructed(word, lang, langcode);
-        // this fails in case olang is inferred
-    }
-    fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
-        .then(function onEtyEntry(out) {
-        if (!out)
-            return;
-        let [data2, doc] = out;
-        window.etyentries = data2;
-        if (!data2 || data2.length === 0)
-            throw "No entries found!";
-        clearDiv();
-        let orig;
-        for (let i = 0; i < data2.length; i++) {
-            let etyentry = data2[i];
-            let newdiv = document.createElement('div');
-            newdiv.classList.add('ety');
-            if (data2.length > 1) {
-                friendlyElement(newdiv, 'h3', `Etymology ${i + 1}:`); // 1-index
-            }
-            friendlyInfo(newdiv, `https://en.wiktionary.org/wiki/${etyentry.qy}`);
-            friendlyBreak(newdiv);
-            if (etyentry.ety) {
-                plopSectionToDiv(etyentry.ety, newdiv);
+var Graph;
+(function (Graph) {
+    function relayout(cy, fromScratch = true) {
+        if (!cy)
+            cy = window.cytograph;
+        else
+            window.cytograph = cy;
+        let options = {
+            name: 'dagre',
+            fit: true,
+            padding: 30,
+            boundingBox: undefined,
+            avoidOverlap: true,
+            avoidOverlapPadding: 10,
+            nodeDimensionsIncludeLabels: false,
+            spacingFactor: undefined,
+            condense: false,
+            rows: undefined,
+            cols: undefined,
+            position: function (node) { if (node.neighborhood('node').length == 0)
+                return { row: 1, col: undefined }; },
+            sort: undefined,
+            animate: false,
+            animationDuration: 500,
+            animationEasing: undefined,
+            animateFilter: function (node, i) { return true; },
+            ready: undefined,
+            stop: undefined,
+            transform: function (node, position) { return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
+        };
+        let zoomTo = cy.zoom(); // we need to make a shallow copy
+        // the current pan location we know is the location of the mouse, which is where the 
+        // searched node used to be
+        // let p1 = p();
+        let r1 = r();
+        let r2;
+        // HOLY CRAP IMPORTANT! renderedPosition() instead of position()
+        var layout = cy.layout(options);
+        layout.promiseOn('layoutstop').then(function () {
+            if (!cy)
+                cy = window.cytograph;
+            cy.zoom(zoomTo); // VITAL!!!!!! put the zoom RIGHT AT THE BEGINNING or else ALL THE PANNING CALCS WILL MESS UP!!!
+            // we want to keep the moused node under the mouse throughout the transition to make it smooth.
+            // therefore, we want node.renderedPosition() to remain constant.
+            // to do this, we calculate change in renderedPosition()
+            // and pan the camera by an additional renderedPosition() to offset
+            // mouseAtOld - nodeAtOld = mouseAtNew - nodeAtNew
+            // assert(nodeOld.id() === nodeNew.id());
+            // cy.pan({ x: viewPanOld.x - nodeOldAt.x + nodeNewAt.x, y: viewPanOld.y - nodeOldAt.y + nodeNewAt.y});
+            r2 = r();
+            if (fromScratch || !r1 || !r2) { // they're all 0
+                cy.fit(undefined, 50);
             }
             else {
-                friendlyError(newdiv, `No etymology found. (Perhaps it\'s lemmatized?)`, true, true, true, true);
+                // cy.pan(p1);
+                let r1a = a(r1);
+                let r2a = a(r2);
+                // let p2 = p();
+                // console.log('GOAL: ' + r1a);
+                // console.log('CURRENT: ' + r2a);
+                let diff = r2a.map((x, i) => r1a[i] - x);
+                // let dr = r2 - r1
+                // console.log(`DIFF: ` + diff);
+                // HOLY SH*T. THIS GETS F*CKED UP BECAUSE OF A RACE CONDITION
+                cy.panBy({ x: diff[0], y: diff[1] });
+                // console.log('CURRENT: ' + a(r()));
             }
-            for (let defn of etyentry.defns)
-                plopSectionToDiv(defn.defn, newdiv);
-            // onCheckbox();
-            $('#closeinspect')[0].appendChild(newdiv); // this must come BEFORE
-            orig = createTree(oword, olang); // this has createGraph() logic so we must create node in here too
+        });
+        layout.run(); // this is ASYNCHRONOUS!!!! Tough bugs because of RACE CONDITIONS!!!
+    }
+    Graph.relayout = relayout;
+    function pan(to, cy) {
+        if (!cy)
+            cy = window.cytograph;
+        cy.pan({ x: to[0], y: to[1] });
+    }
+    function panIncr(plus, cy) {
+        if (!cy)
+            cy = window.cytograph;
+        let now = Object.assign({}, cy.pan());
+        let plus2 = plus;
+        if (plus2[0]) {
+            cy.pan({ x: now.x + plus2[0], y: now.y + plus2[1] });
         }
-        // success. save wikitext
-        // the node better exist
-        if (doc && doc.wikitext())
-            orig.data().wikitext = doc.wikitext();
-    });
-    // Temporarily disable URL request for debugging.
-}
-function createTree(oword, olang) {
-    // homebrew graph creation.
-    // relies on second.ts
-    // let origin = cy.$('node#origin');
-    // target = 
-    // assumes oword, olang are already parsed once.
-    // returns the origin.
-    var _a, _b;
-    if (!oword)
-        oword = _parse($('#qword').val());
-    if (!olang)
-        olang = _parse($('#qlang').val());
-    let origarr = cy().$(`node[id="${oword}, ${olang}"]`);
-    let fromScratch = cy().$('node').length === 0;
-    if (!(origarr && origarr.length)) {
-        let target = cy().add({
-            group: 'nodes',
-            data: {
-                id: `${oword}, ${olang}`,
-            }
-        })[0];
+        else {
+            cy.pan({ x: now.x + plus2.x, y: now.y + plus2.y });
+        }
     }
-    origarr = cy().$(`node[id="${oword}, ${olang}"]`);
-    assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
-    if (origarr && origarr.length) {
-        let orig = origarr[0];
-        orig.data().searched = true;
-        orig.style('background-color', 'green');
+    function p(cy) {
+        if (!cy)
+            cy = window.cytograph;
+        return Object.assign({}, cy.pan());
     }
-    let i = 1;
-    // dumb code for multi etymologies
-    // let headers = $('#closeinspect h3');
-    let divlets = $('#closeinspect div');
-    for (let etydiv of divlets) {
-        let lastConnector;
-        for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
-            // if(temp)
-            let txt = temptxt.textContent;
-            if (!txt)
-                continue;
-            let out = decodeTemplate(txt);
-            if (!out)
-                continue;
-            let temps;
-            if (out.length) { // quickie to check if it's a non-zero array
-                temps = out;
+    function r(cy) {
+        if (!cy)
+            cy = window.cytograph;
+        let arr = cy.$('node[lastClicked]');
+        if (!arr.length)
+            return;
+        assert(arr.length === 1, "More than one selected?", false);
+        return Object.assign({}, arr[0].renderedPosition());
+    }
+    function s0() { cy().pan({ x: 0, y: 0 }); }
+    let p1, p2, r1, r2;
+})(Graph || (Graph = {}));
+(function (Graph) {
+    function wlToTree(word, lang, target) {
+        var _a;
+        if (word === undefined)
+            word = $('#qword').val();
+        if (lang === undefined)
+            lang = $('#qlang').val();
+        let [oword, olang] = _parse(word, lang);
+        if (window.jsetymologyDebug)
+            console.log(`DEBUG ${oword}; ${olang}`);
+        // TODO search for existing node in graph, to extract additional info like langcode, isRecon
+        if (!target) {
+            let targetarr = cy().$(`node[id="${oword}, ${olang}"]`);
+            if (targetarr && targetarr.length) {
+                target = targetarr[0];
             }
-            else
-                temps = [out];
-            for (let temp of temps) {
-                let word = _parse(temp.word);
-                let langcode = _parse(temp.langcode);
-                let lang = _parse(temp.lang);
-                if (!lang)
-                    lang = langcode;
-                if (!word)
+        }
+        let isRecon, langcode;
+        if (target) {
+            isRecon = target.data().isRecon;
+            langcode = target.data().langcode;
+        }
+        else {
+            isRecon = Templates.isReconstructed(word, lang, langcode);
+            // this fails in case olang is inferred
+        }
+        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
+        Wiktionary.fetchEtyEntry(word, lang, isRecon, ((_a = target === null || target === void 0 ? void 0 : target.data()) === null || _a === void 0 ? void 0 : _a.wikitext) ? wtf(target.data().wikitext) : undefined)
+            .then(function onEtyEntry(result) {
+            if (!result) {
+                // there is no document
+                // we still must mark the node
+                target = target ? target : cy().$(`node[id="${_parse(word)}, ${_parse(lang ? lang : '')}"]`)[0];
+                if (isUp)
+                    target.data().searchedUp = true;
+                if (isDown)
+                    target.data().searchedDown = true;
+                restyleNode(target);
+                return;
+            }
+            let entries = result.entries;
+            let doc = result.doc;
+            if (!entries || entries.length === 0)
+                throw "No entries found!";
+            clearDiv();
+            let orig;
+            let behavior = cognatus.toolbar.updown;
+            Sidebar.htmlbar.transferAllEntries(entries, behavior);
+            if (cognatus.autoGraphTemplates)
+                orig = Graph.createTreeFromSidebar(oword, olang, undefined); // this has createGraph() logic so we must create node in here too
+            // success. save wikitext
+            // the node better exist
+            if (doc && doc.wikitext())
+                orig.data().wikitext = doc.wikitext();
+        });
+        // Temporarily disable URL request for debugging.
+    }
+    Graph.wlToTree = wlToTree;
+    function restyleNode(node) {
+        // green = searched up
+        // blue = searched down
+        // green-blue = searched up and down
+        if (node.data().searchedUp && node.data().searchedDown) {
+            node.style('background-color', '#0d98ba');
+            return;
+        }
+        if (node.data().searchedUp) {
+            node.style('background-color', 'green');
+        }
+        if (node.data().searchedDown) {
+            node.style('background-color', 'blue');
+        }
+    }
+    Graph.restyleNode = restyleNode;
+    /**
+     * Homebrew graph creation.
+     * Assumes oword, olang are already parsed once.
+     * Returns the target node.
+     * Uses critical global config variables: cognatus.toolbar.updown, cognatus.actionIndex
+     * @param oword target word
+     * @param olang target language
+     * @param target target node
+     * @returns
+     */
+    function createTreeFromSidebar(oword, olang, target) {
+        // let origin = cy.$('node#origin');
+        var _a, _b;
+        if (!oword)
+            oword = _parse($('#qword').val());
+        if (!olang)
+            olang = _parse($('#qlang').val());
+        wls.addwl(oword, olang);
+        // let isUp = updownBehavior === 'up';
+        let fromScratch = cy().$('node').length === 0;
+        if (!target)
+            target = cy().$(`node[id="${oword}, ${olang}"]`); // if we didn't get the target as an argument, look for target in graph
+        if (!(target && target.length)) { // if target doesn't exist in graph, create it
+            cy().add({
+                group: 'nodes',
+                data: {
+                    id: `${oword}, ${olang}`,
+                }
+            })[0];
+            target = cy().$(`node[id="${oword}, ${olang}"]`);
+        }
+        assert((_a = cy().$(`node[id="${oword}, ${olang}"]`)) === null || _a === void 0 ? void 0 : _a.length, "couldn't find node");
+        // !!! per-node config settings
+        let isUp = cognatus.toolbar.updown === 'up' || cognatus.toolbar.updown === 'updown';
+        let isDown = cognatus.toolbar.updown === 'down' || cognatus.toolbar.updown === 'updown';
+        let actionIndex = cognatus.actionIndex++; // used for undo/redo
+        History.wipeRedos(); // by incrementing actionIndex, we must override the redos
+        // !!! end per-node config settings
+        if (target && target.length) {
+            let orig = target[0];
+            if (isUp)
+                target.data().searchedUp = true;
+            if (isDown)
+                target.data().searchedDown = true;
+            restyleNode(orig);
+        }
+        // let headers = $('#sidebar h3');
+        let bar = Sidebar.htmlbar;
+        let divlets = bar.yieldDivlets(); //$('#sidebar div'); // SIdebar.htmlbar.yieldDivlets();
+        for (let div of divlets) { // code for multi etymologies
+            let lastConnector;
+            let isUp = true; // for definitions and etymoloy
+            if (div.classList.contains('sidebar-desc')) {
+                isUp = false; // only for descendants do we construct the nodes downwards
+            }
+            // for (let temptxt of etydiv.querySelectorAll('span.template.t-active')) {
+            for (let span of bar.yieldSpans(div)) { // div.querySelectorAll('span')) { 
+                if (!bar.isTemplate(span)) { // anything.matches('.template.t-active')) {
+                    continue; // here is text
+                }
+                let tempSpan = span; // here is a template. (in reality it's just a span)
+                let txt = tempSpan.textContent;
+                if (!txt)
                     continue;
-                // put the anti-macron on the querying side.
-                let targetarr = cy().$(`node[id="${word}, ${lang}"]`);
-                let target;
-                if (targetarr && targetarr.length) {
-                    target = targetarr[0];
-                    target.data().langcode = langcode;
-                    target.data().isRecon = temp.isRecon;
+                let out = Templates.decodeTemplate(txt);
+                if (!out)
+                    continue;
+                let temps;
+                if (out.length) { // quickie to check if it's a non-zero array
+                    temps = out;
                 }
-                else {
-                    target = cy().add({
-                        group: 'nodes',
-                        data: {
-                            id: `${word}, ${lang}`,
-                            langcode: langcode,
-                            isRecon: temp.isRecon
-                            // data: { weight: 75 },
-                            // position: { x: 200, y: 200 }
-                        },
-                    });
-                }
-                // we have the other word. Now we want to look for the node to conenct that word to
-                // usually it's the origin, but for chains of inheritance we want to do inheritance.
-                let prev = temptxt.previousSibling;
-                let connector;
-                if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
-                    // if(prev.nodeName === 'H3') {
-                    // connector = `${oword}, ${olang}`; // reset origin when crossing etymologies.
-                    // Edit: TODO doesn't work
-                    // }
-                    if (prev.textContent.toLowerCase().includes('from') // from
-                        || prev.textContent === ', ') {
-                        // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
-                        if (prev.previousSibling && ((_b = prev.previousSibling.textContent) === null || _b === void 0 ? void 0 : _b.startsWith('{{root'))) {
-                            // make an exception for the first thing being a root or ine-root
-                        }
-                        else if (temps.length >= 2) { // make an exception for if we're an affixal type. 
-                        }
-                        else {
-                            connector = lastConnector;
-                        }
+                else
+                    temps = [out];
+                for (let temp of temps) {
+                    let word = _parse(temp.word); // we extract the word, lang etc. from the template
+                    let langcode = _parse(temp.langcode);
+                    let lang = _parse(temp.lang);
+                    if (!lang)
+                        lang = langcode;
+                    if (!word)
+                        continue;
+                    // put the anti-macron on the querying side.
+                    let targetarr = cy().$(`node[id="${word}, ${lang}"]`); // we look for an existing node that matches
+                    let target;
+                    if (targetarr && targetarr.length) {
+                        target = targetarr[0];
+                        target.data().langcode = langcode;
+                        target.data().isRecon = temp.isRecon;
                     }
-                }
-                if (!connector) {
-                    connector = `${oword}, ${olang}`;
-                }
-                let me = `${word}, ${lang}`;
-                lastConnector = me;
-                // console.log(`edge ${me};  ${connector}`)
-                let id = `${_parse(temp.ttype)} || ${connector}; ${me}`;
-                //  || ${oword}, ${olang}
-                if (cy().$(`edge[id="${id}"]`).length) {
-                    console.log(`Duplicate edge: ${id}`);
-                }
-                else if (temp.ttype == 'cog') {
-                    // make an exception for cognates. dont' add edges
-                }
-                else {
-                    try {
-                        cy().add({
-                            group: 'edges',
+                    else {
+                        target = cy().add({
+                            group: 'nodes',
                             data: {
-                                id: id,
-                                label: `${_parse(temp.ttype)}`,
-                                template: `${temp.orig_template}`,
-                                source: me,
-                                target: connector,
-                            }
+                                id: `${word}, ${lang}`,
+                                word: word,
+                                lang: lang,
+                                langcode: langcode,
+                                isRecon: temp.isRecon,
+                                actionIndex: actionIndex
+                                // data: { weight: 75 },
+                                // position: { x: 200, y: 200 }
+                            },
                         });
                     }
-                    catch (e) {
-                        if (e.message.startsWith(`Can not create second element with ID \`${id}`)) {
-                            console.log(`Duplicate edge: ${id}`);
+                    // Now that we have the other word, we need to worry about
+                    // what edge to make in order to connect that word to the graph.
+                    // This is MESSY - should we attach the edge to the origin, or chain inheritance, etc.?
+                    // i'm tempted to just group the results by approx. how old each language is. But this will need me to extract language info
+                    let prev = tempSpan.previousSibling;
+                    let connector;
+                    if (lastConnector && prev && prev.textContent && !prev.textContent.includes('.')) {
+                        // if(prev.nodeName === 'H3') {
+                        // connector = `${oword}, ${olang}`; // reset origin when crossing etymologies.
+                        // Edit: TODO doesn't work
+                        // }
+                        if (prev.textContent.toLowerCase().includes('from') // from
+                            || prev.textContent === ', ') {
+                            // || prev.textContent.length >= 2 && /^[^A-Za-z]*$/.test(prev.textContent)) {// is totally nonalphabetical, ie. if it's something like `, `
+                            if (prev.previousSibling && ((_b = prev.previousSibling.textContent) === null || _b === void 0 ? void 0 : _b.startsWith('{{root'))) {
+                                // make an exception for the first thing being a root or ine-root
+                            }
+                            else if (temps.length >= 2) { // make an exception for if we're an affixal type. 
+                            }
+                            else {
+                                connector = lastConnector;
+                            }
                         }
-                        else {
-                            // soft fails. Usually because there is a duplicate edge.
-                            throw e;
+                    }
+                    if (!connector) {
+                        connector = `${oword}, ${olang}`;
+                    }
+                    let me = `${word}, ${lang}`;
+                    lastConnector = me;
+                    // console.log(`edge ${me};  ${connector}`)
+                    let id = `${_parse(temp.ttype)} || ${connector}; ${me}`; //  || ${oword}, ${olang}
+                    if (cy().$(`edge[id="${id}"]`).length) {
+                        // console.log(`Duplicate edge: ${id}`);
+                    }
+                    else if (temp.ttype == 'cog') {
+                        // make an exception for cognates. Don't add edges
+                    }
+                    else {
+                        try {
+                            let classes = cognatus.showEdgeLabels ? 'showLabel' : '';
+                            // TODO: we need to attach updown information to each edge
+                            // we know whether we're searching up or down because they're 2 completely different
+                            // searches in sidebar
+                            // in that case, switch source
+                            let sourceNode;
+                            let targetNode;
+                            if (isUp) {
+                                sourceNode = me;
+                                targetNode = connector;
+                            }
+                            else {
+                                sourceNode = connector;
+                                targetNode = me;
+                            }
+                            cy().add({
+                                group: 'edges',
+                                data: {
+                                    id: id,
+                                    // displaylabel: (document.getElementById('edges-toggle') as HTMLInputElement).checked,
+                                    label: `${_parse(temp.ttype)}`,
+                                    template: `${temp.orig_template}`,
+                                    source: sourceNode,
+                                    target: targetNode,
+                                    actionIndex: actionIndex
+                                },
+                                classes: classes
+                            });
+                        }
+                        catch (e) {
+                            if (e.message.startsWith(`Can not create second element with ID \`${id}`)) {
+                                // console.log(`Duplicate edge: ${id}`);
+                            }
+                            else {
+                                // soft fails. Usually because there is a duplicate edge.
+                                throw e;
+                            }
                         }
                     }
                 }
             }
         }
+        Graph.relayout(undefined, fromScratch);
+        let ret = cy().$(`node[id="${oword}, ${olang}"]`);
+        assert(ret === null || ret === void 0 ? void 0 : ret.length, "couldn't find node");
+        return ret[0];
     }
-    relayout(undefined, fromScratch);
-    let ret = cy().$(`node[id="${oword}, ${olang}"]`);
-    assert(ret === null || ret === void 0 ? void 0 : ret.length, "couldn't find node");
-    return ret[0];
-}
+    Graph.createTreeFromSidebar = createTreeFromSidebar;
+    let History;
+    (function (History) {
+        History.redoCache = {};
+        History.deletionsCache = new Map(); // since keys are sorted, optimally we could use a binary tree
+        // PROBLEM. redos can be both deletions and addition actions. The clean way would be to create an Action class that encompasses
+        // both deletion and addition. but that would be a lot of storage and i don't want to implement that atm.
+        /**
+         * Often called when performing a new action.
+         */
+        function wipeRedos() {
+            History.redoCache = {};
+            let actionIndex = cognatus.actionIndex;
+            for (let key of History.deletionsCache.keys()) {
+                if (key >= actionIndex)
+                    History.deletionsCache.delete(key);
+            }
+        }
+        History.wipeRedos = wipeRedos;
+        function logDeletion(nodes) {
+            // if it's a simple node addition, then we do NOT need to log the action
+            // but if it's a deletion or modification, then we DO need to log the action
+            let actionIndex = cognatus.actionIndex;
+            History.deletionsCache.set(actionIndex, nodes);
+            cognatus.actionIndex++;
+        }
+        History.logDeletion = logDeletion;
+        function undo(pastIndex) {
+            if (pastIndex === undefined)
+                pastIndex = cognatus.actionIndex - 1;
+            // we undo all actions from [actionIndex, cognatus.actionIndex), moving backwards in time.
+            if (pastIndex >= cognatus.actionIndex)
+                throw "Cannot undo a future action";
+            if (pastIndex < 0)
+                return; // soft fail if we reach the undo limit
+            let i = cognatus.actionIndex - 1; // we move backwards in time
+            while (i >= pastIndex) {
+                if (History.deletionsCache.has(i)) {
+                    History.deletionsCache.get(i).restore();
+                    // if this is the case we shouldn't get any other actions, unless we counted wrong.
+                }
+                else {
+                    let thatAction = cy().elements(`[actionIndex=${i}]`); // get all cy nodes with that history index
+                    thatAction.remove(); // remove them from the graph
+                    History.redoCache[i] = thatAction;
+                }
+                i--;
+            }
+            cognatus.actionIndex = i + 1; // undo that last decrement
+            // relayout();
+        }
+        History.undo = undo;
+        function redo(futureIndex) {
+            // we redo all actions from [cognatus.actionIndex, futureIndex]
+            // if futureIndex is undefined, then redo only 1 action
+            if (futureIndex === undefined)
+                futureIndex = cognatus.actionIndex;
+            if (futureIndex < cognatus.actionIndex)
+                throw "Can't redo an action that occurs before current history index";
+            let i = cognatus.actionIndex;
+            while (i <= futureIndex) { // (all of the actions from [cognatus.actionIndex, futureIndex])
+                if (History.deletionsCache.has(i)) {
+                    History.deletionsCache.get(i).remove();
+                }
+                else {
+                    let thatAction = History.redoCache[futureIndex];
+                    if (thatAction === undefined) {
+                        // there's nothing to be redone.
+                        break;
+                    }
+                    thatAction.restore();
+                    History.redoCache[futureIndex] === undefined; // wipe from cache to indicacte it's been dealt with
+                }
+                i++;
+            }
+            cognatus.actionIndex = i; // we increment. if cognatus.actionIndex === futureIndex, this is the same as cognatus.actionIndex++;
+            // relayout();
+        }
+        History.redo = redo;
+    })(History = Graph.History || (Graph.History = {}));
+})(Graph || (Graph = {}));

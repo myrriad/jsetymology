@@ -1,26 +1,28 @@
-function defaultGraph() {
-    return {
-        elements: [ // list of graph elements to start with
-            { // node a
-                data: { id: 'a' }
-            },
-            { // node b
-                data: { id: 'b' }
-            },
-            { // node c
-                data: { id: 'c' }
-            },
-            { // edge ab
-                data: { id: 'ab', source: 'a', target: 'b' }
-            }
-        ]
-    };
-}
-function testGraph(node_count) {
+// function defaultGraph(): cytoscape.CytoscapeOptions {
+//     return {
+//         "elements": {
+//             "nodes": [ // list of graph elements to start with
+//                 { // node a
+//                     data: { id: 'a' }
+//                 },
+//                 { // node b
+//                     data: { id: 'b' }
+//                 },
+//                 { // node c
+//                     data: { id: 'c' }
+//                 }
+//             ],
+//             "edges": [{ // edge ab
+//                 data: { id: 'ab', source: 'a', target: 'b' }
+//             }]
+//         }
+//     };
+// }
+
+function testGraph(node_count=2): cytoscape.CytoscapeOptions {
     var obj = {
         "elements": {
-            "nodes": [
-                {
+            "nodes": [{
                     "data": { "id": "a" },
                     "position": { "x": 64.833336, "y": 249 }
                 },
@@ -29,16 +31,15 @@ function testGraph(node_count) {
                     "position": { "x": 194.5, "y": 249 }
                 }
             ],
-            "edges": [
-                {
-                    "data": { "id": "ab", "source": "a", "target": "b" },
-                    "position": { "x": 0, "y": 0 },
-                }
-            ]
+            "edges": [{
+                "data": { "id": "ab", "source": "a", "target": "b" },
+                "position": { "x": 0, "y": 0 },
+            }]
         },
         "data": []
     };
     if (node_count >= 3) {
+        // @ts-ignore
         obj['elements']['nodes'].push({
             "data": { "id": "c" }
         });
@@ -52,9 +53,10 @@ function testGraph(node_count) {
     // cy.json(obj);
     return obj;
 }
-function initiable(obj, restyle = true) {
+
+function initiable(obj: cytoscape.CytoscapeOptions, restyle = true) {
     if (!obj.hasOwnProperty("container")) {
-        obj["container"] = document.getElementById('cy'); // container to render in
+        obj["container"] = document.getElementById('cy-wrap'); // container to render in
     } else if (!obj.hasOwnProperty("layout")) {
         obj["layout"] = { name: 'dagre' } // , rows: 1}; // dagre
     }
@@ -80,7 +82,7 @@ function initiable(obj, restyle = true) {
                 }
             },
             {
-                selector: 'edge[label]',
+                selector: 'edge[label].showLabel',
                 style: {
                     'label': 'data(label)' // maps to data.label
                 }
@@ -99,9 +101,10 @@ function initiable(obj, restyle = true) {
     return obj;
 }
 
-function makePopper(ele) {
-    let ref = ele.popperRef(); // used only for positioning
+function makePopper(ele: cytoscape.SingularElementArgument) {
+    let ref = (ele as any).popperRef(); // used only for positioning
 
+    // @ts-ignore
     ele.tippy = tippy(ref, { // tippy options:
         content: () => {
             let content = document.createElement('div');
@@ -113,13 +116,14 @@ function makePopper(ele) {
         trigger: 'manual' // probably want manual mode
     });
 }
+
 function bindTooltips() {
     // https://stackoverflow.com/questions/54352041/how-can-i-change-the-color-an-individual-node-in-a-grid-of-cytoscape-js
     // https://stackoverflow.com/questions/54547927/show-and-hide-node-info-on-mouseover-in-cytoscape/54556015
 
     var cy = window.cy();
     // cy.ready(function() {
-    cy.elements().forEach(function (ele) {
+    cy.elements().forEach(function(ele) {
         makePopper(ele);
     });
     // });
@@ -130,24 +134,27 @@ function bindTooltips() {
     cy.elements().unbind('mouseout');
     cy.elements().bind('mouseout', (event) => event.target.tippy.hide());
 }
-
-function createCyto(data, reLayout = false) {
+var cytograph: cytoscape.Core;
+function createCyto(data: cytoscape.CytoscapeOptions, reLayout = false) {
     // alert("hi");
     /** @type {cytoscape.Core} */
     var cy = window.cytograph;
     if (!data) {
-        data = defaultGraph();
+        data = testGraph();
     }
     var tograph = data;
     if (cy) { // merge graph with old graph
-        var jsonify, elems;
+        // var jsonify, elems;
         // print(jsonify = cy.json(), "prior:");// to json
 
         // cy.$('*[loadBatch=50]')
 
         // print(data, "data:");
         // print(elems = data["elements"], "elements:");// get elements of the new data
+        return;
+        // all of this stuff is irrelevant now
 
+        /*
         for (let elem of elems.nodes) {
             elem.data.batchIndex = window.universe.batchIndex;
         }
@@ -159,10 +166,11 @@ function createCyto(data, reLayout = false) {
         cy.add(elems); // add data
         // print(tograph = cy.json(), "posterior:");
 
-        if (!reLayout) relayout(cy, true);
+        if (!reLayout) Graph.relayout(cy, true);
         window.cytograph = cy;
         bindTooltips();
         return cy;
+        */
 
     } else { // if it's the first time
         // formerly if relayout
@@ -170,16 +178,17 @@ function createCyto(data, reLayout = false) {
         tograph = initiable(tograph, true);
         // print(tograph, "graphing:");
         cy = cytoscape(tograph); // json back to cyobject, because I don't know how to make cytoscape automatically recalculate positions.
-        relayout(cy, true);
+        Graph.relayout(cy, true);
     }
 
     // the following only gets executed on initialization.
     window.cytograph = cy; // endpoint for modules. TODO: explore alternatives to global state
-    window.cy = function () {
-        return window.cytograph;
+    window.cy = function() {
+        return (window as any).cytograph;
     }
     clickToQuery();
     bindTooltips();
+    // @ts-ignore
     let nav = cy.panzoom();
     return cy;
 }

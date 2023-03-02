@@ -12,7 +12,26 @@ function onCollector() {
         });
     }
 }
-function onTap(event) {
+function autoGraphTemplates() {
+    let val = cognatus.autoGraphTemplates;
+    cognatus.autoGraphTemplates = !val;
+}
+function toggleEdges(on) {
+    // let edges = cy().edges();
+    // if(on === undefined) on = (document.getElementById('edges-toggle') as HTMLInputElement).checked;
+    let val = cognatus.showEdgeLabels;
+    cognatus.showEdgeLabels = !val;
+    cy().edges().toggleClass('showLabel');
+    // @ts-ignore
+    // for(let edge of edges) {
+    //     if(on) {
+    //         edge.data().displaylabel = true;
+    //     } else {
+    //         edge.data().displaylabel = false;
+    //     }
+    // }
+}
+function onLeftClick(event) {
     // TODO: query
     let target = event.target;
     if (target.isEdge()) {
@@ -22,32 +41,69 @@ function onTap(event) {
         // is Node
         cy().$('node[lastClicked]').forEach(x => x.data().lastClicked = undefined);
         target.data().lastClicked = true;
-        if (target && target.length)
-            target = target[0];
-        let id = target.data().id;
-        let as = id.split(", ");
-        $('#qword').val(as[0]);
-        $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
-        // it later reads this to deduce the origin. 
-        // Cue dumb bugs from race conditions. 
-        // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang
-        // TODO implement.
-        // TODO shy away from using word/lang combos everywhere for id.
-        // instead, store word and lang separately in cy().$('node').data()
-        wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+        if (cognatus.toolbar.mode === 'explore') {
+            if (target && target.length)
+                target = target[0];
+            let id = target.data().id;
+            let as = id.split(", ");
+            $('#qword').val(as[0]);
+            $('#qlang').val(as[1]); // TODO this is the DUMBEST CODE OF ALL TIME. it sets the val of an element, because
+            // it later reads this to deduce the origin. 
+            // Cue dumb bugs from race conditions. 
+            // TODO. There is a simple solution. just call cy().$('node[lastClicked])' and use that to retrieve word/lang. implement.
+            // TODO shy away from using word/lang combos everywhere for id.
+            // instead, store word and lang separately in cy().$('node').data()
+            Graph.wlToTree(as[0], as[1], target); // target.data().langcode, target.data().isRecon);
+        }
+        else if (cognatus.toolbar.mode === 'edge') {
+        }
+    }
+}
+/**
+ * TODO:
+ * I want to change Rclick behavior to rclick -> add nodes in the opposite direction as the toolbar mode indicates.
+ * (so kinda like subjunctive mood)
+ * @param event
+ */
+function onRightClick(event) {
+    if (cognatus.toolbar.mode === 'explore') {
+        let target = event.target;
+        Graph.History.logDeletion(cy().remove(target));
+    }
+}
+function onKeyTapped(e) {
+    if (e.ctrlKey) {
+        // console.log(e);
+        if (e.key === 'z') {
+            // console.log('undo!');
+            Graph.History.undo();
+        }
+        else if (e.key === 'y') {
+            Graph.History.redo();
+        }
     }
 }
 function clickToQuery() {
     let c = cy();
     c.unbind('click'); // unbind before binding an event to prevent binding it twice/multiple times
-    c.bind('tap', 'node, edge', onTap); // tap is a combined click and touchstart that works with both mouse and touchscreen
-    c.on('cxttap', "node, edge", function (event) {
-        let target = event.target;
-        c.remove(target);
-    });
+    c.bind('tap', 'node, edge', onLeftClick); // tap is a combined click and touchstart that works with both mouse and touchscreen
+    c.on('cxttap', "node, edge", onRightClick); // right click to remove nodes and edges
+    // on keypress  
+    document.addEventListener('keydown', onKeyTapped);
 }
 function pruneSinglets() {
-    cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove();
+    Graph.History.logDeletion(cy().filter(function (element, i) { return element.isNode() && element.degree(false) < 1; }).remove());
+}
+function pruneLastDescTree() {
+    let descRegex = getFromStorage('descendantRegex');
+    if (descRegex)
+        descRegex = new RegExp(cognatus.defaultDescList);
+    else
+        descRegex = new RegExp(cognatus.defaultDescList);
+    Graph.History.logDeletion(cy().nodes(`[actionIndex = ${cognatus.actionIndex - 1}]`)
+        .filter((element, i) => !descRegex.test(element.data().lang))
+        .remove());
+    Graph.relayout();
 }
 const SAMPLE = function () {
     let ret = {};
@@ -71,17 +127,42 @@ window.addEventListener("load", function () {
     // let's look for url query params.
     let searchParams = new URLSearchParams(window.location.search);
     let i = 0;
-    $('#twhitelist').val(getCookie('twhitelist'));
-    $('#tblacklist').val(getCookie('tblacklist'));
-    updateCustomTemplateWhitelists();
+    let twhitelist = localStorage.getItem('twhitelist');
+    if (twhitelist)
+        $('#twhitelist').val(twhitelist);
+    let tblacklist = localStorage.getItem('tblacklist');
+    if (tblacklist)
+        $('#tblacklist').val(tblacklist);
+    Templates.updateCustomTemplateWhitelists();
     // let whitelist = ['?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek'];
     //myrriad.github.io/jsetymology?ballena=Spanish&phallus=English&%CF%86%CE%AC%CE%BB%CE%BB%CE%B1%CE%B9%CE%BD%CE%B1=Ancient+Greek
     // if (!whitelist.includes(window.location.search)) return; // WARNING: OH MY GOD THIS IS TERRIBLE FOR XSS
     for (let wl of searchParams.entries()) {
-        wlToTree(wl[0], wl[1]);
+        Graph.wlToTree(wl[0], wl[1]);
         if (i > 10)
             break;
         i++;
     }
     cy().fit();
+    $('#lang-native').val(getNativeLanguage());
+    $('#lang-desc-list').val(getFromStorage('descendantList', cognatus.defaultDescList));
 });
+function shareResults() {
+    $('#my-popup-modal')[0].style.display = 'block';
+    $('#shareurl').text(`${window.location.href}${wls.toURLQuery()}`);
+}
+function saveToStorage(key, e) {
+    localStorage.setItem(key, e.value);
+}
+function saveNativeLanguage(e) {
+    saveToStorage('nativeLang', e);
+}
+function getFromStorage(key, setDefault) {
+    let stored = localStorage.getItem(key);
+    if (stored === null)
+        return setDefault;
+    return stored;
+}
+function getNativeLanguage() {
+    return getFromStorage('nativeLang', 'English');
+}

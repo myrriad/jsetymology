@@ -1,0 +1,36 @@
+{
+  "name": "jsetymology",
+  "version": "1.0.0",
+  "description": "Rewrite of pyetymology in js. \r Extracts etymological data from Wiktioanry and displays it in a convenient tree graph.",
+  "main": "index.html",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "wtf_wikipedia": "^10.0.1"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.19.6",
+    "@types/jasmine": "^4.0.3",
+    "@types/jquery": "^3.5.14",
+    "@types/jqueryui": "^1.12.16",
+    "npm": "^8.15.0",
+    "wtf-plugin-wiktionary": "^0.1.0"
+  },
+  "scripts": {
+    "test": "test.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myrriad/jsetymology.git"
+  },
+  "keywords": [
+    "etymology"
+  ],
+  "author": "myrriad",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/myrriad/jsetymology/issues"
+  },
+  "homepage": "https://github.com/myrriad/jsetymology#readme"
+}

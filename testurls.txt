@@ -1,3 +1,0 @@
-https://en.wiktionary.org/w/api.php?action=query&prop=revisions%7Cpageprops&rvprop=content&maxlag=5&rvslots=main&origin=*&format=json&redirects=true&titles=waterfall
-"https://en.wiktionary.org/w/api.php?action=parse&page={urlpart}&prop=wikitext&formatversion=2&format=json#{langtag}"
-"http://en.wiktionary.org/w/api.php?action=query&list=categorymembers&cmtitle={urlpart}&cmprop=title&format=json&cmlimit={cmlimit}{f'#{langtag}' if langtag else ''}"
